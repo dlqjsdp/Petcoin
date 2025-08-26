@@ -1,17 +1,27 @@
-#??? ??? ?????.
+# Spring Boot, MyBatis, 데이터소스 설정 파일
+# @fileName : application.yml
+# @since : 250825
+# @history
+# - 250826 | heekyung | username: petcoin로 수정
+# - 250826 | yukyeong  | MyBatis 설정 추가(컬럼명-필드명 자동 매핑,자동 PK 처리, Enum 매핑), MyBatis SQL 로그 출력 설정 추가
+
 server:
   port: 8080
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ecovery?serverTimezone=UTC
-    username: root
+    url: jdbc:mysql://localhost:3306/petcoin?serverTimezone=UTC
+    username: petcoin
     password: 1234
 
   mybatis:
     config-location: classpath:mybatis-config.xml
     mapper-locations: classpath:mapper/*.xml
+    configuration:
+      map-underscore-to-camel-case: true # DB 컬럼명과 Java 필드명 자동 매핑 (snake_case → camelCase)
+      use-generated-keys: true #자동으로 생성된 PK를 처리하기 위한 설정
+      default-enum-type-handler: org.apache.ibatis.type.EnumTypeHandler # enum 타입 매핑
 
   devtools:
     livereload:
@@ -27,4 +37,6 @@ spring:
 
 logging:
   level:
-    org.hibernate.type.descriptor.sql: trace
+    root: info
+    com.petcoin.mapper: debug
+    org.apache.ibatis: debug
