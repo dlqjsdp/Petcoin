@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    @fileName : MemberMapper.xml
+    - com.petcoin.mapper.MemberMapper 인터페이스와 연결되는 MyBatis 매퍼 XML 파일
+    @author : heekyung
+    @history
+    - 250826 | heekyung | MemberMapper 생성 / 연락처로 회원 조회 코드 작성
+-->
+
+<mapper namespace="com.petcoin.mapper.MemberMapper">
+    <!-- DB 컬럼 ↔ VO 매핑 -->
+    <resultMap id="MemberMap" type="com.petcoin.domain.MemberVO">
+        <id property="memberId" column="member_id"/>
+        <result property="phone" column="phone"/>
+        <result property="role" column="role"/>
+    </resultMap>
+
+    <!-- DB에서 핸드폰 번호 조회 -->
+    <select id="findByPhone" parameterType="string" resultMap="MemberMap">
+        select
+            member_id, phone, role
+        from member where phone = #{phone}
+    </select>
+
+    <!-- 신규 연락처 저장 -->
+    <insert id="insertMember" parameterType="com.petcoin.domain.MemberVO" useGeneratedKeys="true" keyProperty="memberId">
+        insert into member(phone, role)
+        values (#{phone}, #{role})
+    </insert>
+</mapper>
