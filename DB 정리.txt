@@ -1,0 +1,79 @@
+-- 데이터베이스 생성
+CREATE DATABASE petcoin;
+-- 프로젝트 DB (petcoin) 선택
+use petcoin;
+
+-- 회원 가입 테이블
+create table member (
+	member_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 회원 고유변호(기본키)
+    phone VARCHAR(13) NOT NULL UNIQUE, -- 연락처(중복불가)
+    role ENUM('USER','ADMIN') NOT NULL DEFAULT 'USER' -- 권한
+);
+
+-- 안내사항 테이블
+create table notice (
+	notice_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 게시글 고유변호(기본키)
+    member_id BIGINT NOT NULL, -- 작성자 ID(외래키)
+    title VARCHAR(255) NOT NULL, -- 게시글 제목
+    content VARCHAR(5000) NOT NULL, -- 게시글 내용
+    view_count INT NOT NULL DEFAULT 0, -- 조회수(초기값 0)
+    created_at DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP), -- 게시글 등록일
+    updated_at DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP), -- 게시글 수정일
+    FOREIGN KEY (member_id) REFERENCES member(member_id)
+);
+
+-- 포인트 내역 테이블
+create table point_history (
+	history_id BIGINT AUTO_INCREMENT PRIMARY KEY,		-- 포인트 내역 고유번호(PK)
+    member_id BIGINT NOT NULL,			-- 회원 고유번호(FK)
+    point_change INT NOT NULL DEFAULT 0,		-- 포인트 변화량
+    point_balance INT NOT NULL DEFAULT 0, 		-- 포인트 잔액
+    action_type ENUM('EARN', 'USE', 'ADJUST') NOT NULL, 		-- 거래 유형
+    decription VARCHAR(255) DEFAULT NULL, 		-- 거래 상세 설명
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,		-- 거래 일자
+    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
+);
+
+-- 포인트 환급 요청 테이블
+create table point_request (
+	request_id BIGINT AUTO_INCREMENT PRIMARY KEY,		-- 포인트 환급 요청 고유번호(PK)
+    member_id BIGINT NOT NULL,		-- 회원 고유번호(FK)
+    request_amount INT NOT NULL,		-- 환급 요청 금액
+    bank_name VARCHAR(50) NOT NULL,		-- 은행명
+    account_number VARCHAR(50) NOT NULL,		-- 계좌번호
+    account_holder VARCHAR(50) NOT NULL,		-- 예금주명
+    request_status ENUM('PENDING', 'APPROVED', 'COMPLETED', 'REJECTED') NOT NULL DEFAULT 'PENDING',			-- 진행 상태
+    request_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,		-- 요청 시각
+    processed_at DATETIME DEFAULT NULL,		-- 요청 처리 완료 시각
+    note VARCHAR(255) DEFAULT NULL,		-- 요청 처리 사유
+    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE RESTRICT
+);
+
+-- Kiosk (키오스크) 테이블
+CREATE TABLE IF NOT EXISTS kiosk (
+  kiosk_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100)  NOT NULL, -- 표기명
+  location VARCHAR(255)  NOT NULL, -- 설치 장소
+  lat DECIMAL(10,7) NULL,
+  lng DECIMAL(10,7) NULL,
+  status ENUM('ONLINE','OFFLINE','MAINT') NOT NULL DEFAULT 'OFFLINE',
+  sw_version VARCHAR(50)   NULL,
+  last_seen_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Kiosk Heartbeat (헬스로그) 테이블
+CREATE TABLE IF NOT EXISTS kiosk_heartbeat (
+  heartbeat_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  kiosk_id BIGINT NOT NULL,
+  camera_ok TINYINT(1) NOT NULL DEFAULT 1,  -- 1=정상, 0=이상
+  is_online TINYINT(1) NOT NULL DEFAULT 1, -- 1=온라인, 0=오프라인
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_hb_kiosk
+    FOREIGN KEY (kiosk_id) REFERENCES kiosk(kiosk_id)
+    ON DELETE CASCADE
+);
+
+-- 장치별 최근 순 조회 인덱스
+CREATE INDEX idx_hb_kiosk_created ON kiosk_heartbeat(kiosk_id, created_at);
