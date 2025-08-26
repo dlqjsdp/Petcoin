@@ -3,6 +3,8 @@
 # @since : 250825
 # @history
 # - 250826 | heekyung | username: petcoin로 수정 / mybatis 위치 변경 / DB 컬럼명과 Java 필드명 자동 매핑 코드 추가
+# - 250826 | yukyeong  | MyBatis 설정 추가(컬럼명-필드명 자동 매핑,자동 PK 처리, Enum 매핑), MyBatis SQL 로그 출력 설정 추가
+
 server:
   port: 8080
 
@@ -32,9 +34,11 @@ mybatis:
   # DB 컬럼명과 Java 필드명 자동 매핑 (snake_case → camelCase)
   configuration:
     map-underscore-to-camel-case: true
-    use-generated-keys: true    #자동으로 생성된 키 처리하기 위한 설정
+    use-generated-keys: true #자동으로 생성된 키 처리하기 위한 설정
     default-enum-type-handler: org.apache.ibatis.type.EnumTypeHandler # enum 타입 매핑
 
 logging:
   level:
-    org.hibernate.type.descriptor.sql: trace
+    root: info
+    com.petcoin.mapper: debug
+    org.apache.ibatis: debug
