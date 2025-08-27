@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    포인트 Mapper.xml
+    @author : sehui
+    @fileName : PointMapper.xml
+    @since : 250827
+    @history
+     - 250827 | sehui | 회원별 포인트 전체 내역 조회 기능 추가
+-->
+
+<mapper namespace="com.petcoin.mapper.PointMapper">
+
+    <resultMap id="pointHisMap" type="com.petcoin.domain.PointHistoryVO">
+        <id property="historyId" column="history_id" />
+        <result property="memberId" column="member_id" />
+        <result property="pointChange" column="point_change" />
+        <result property="pointBalance" column="point_balance" />
+        <result property="actionType" column="action_type" />
+        <result property="description" column="description" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <!-- 회원별 포인트 전체 내역 조회 -->
+    <select id="findPointHistoryById" resultMap="pointHisMap">
+        SELECT
+            history_id,
+            member_id,
+            point_change,
+            point_balance,
+            action_type,
+            description,
+            created_at
+        FROM point_history
+        WHERE member_id = #{memberId}
+    </select>
+
+</mapper>

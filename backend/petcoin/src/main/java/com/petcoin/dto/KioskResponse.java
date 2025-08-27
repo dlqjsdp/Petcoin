@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
  * @since   : 250826
  * @history
  *   - 250826 | yukyeong | DTO 최초 생성
+ *   - 250827 | yukyeong | updatedAt 필드 추가
  */
 
 @Getter @Setter
@@ -39,4 +40,5 @@ public class KioskResponse {
     private KioskStatus status;
     private String swVersion;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

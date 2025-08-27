@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+ * 키오스크 실행 세션 Mapper XML
+ * kiosk_run 테이블과 연동되는 MyBatis SQL 매핑 파일
+ *
+ * 주요 기능:
+ *  - 실행 세션 생성 (insertRun)
+ *  - 실행 완료 처리 (completeRun)
+ *  - 실행 취소 처리 (cancelRun)
+ *  - 단건 조회 (readRun: 회원 phone 포함)
+ *  - 목록 조회 (getRunListWithPaging: 페이징 + 조건)
+ *  - 총 개수 조회 (getTotalRunCount: 페이징 + 조건)
+ *  - 특정 키오스크 RUNNING 세션 중복 실행 여부 확인 (getRunningCountByKioskId)
+ *
+ * @author  : yukyeong
+ * @fileName: KioskRunMapper.xml
+ * @since   : 250827
+ * @history
+ *   - 250827 | yukyeong | Mapper XML 최초 생성 (insertRun, completeRun, cancelRun, readRun, getRunListWithPaging, getTotalRunCount, getRunningCountByKioskId 정의)
+ *   - 250827 | yukyeong | readRun 쿼리에서 member 테이블 LEFT JOIN 추가, phone 컬럼 매핑
+ *   - 250827 | yukyeong | 공통 WHERE 조건(kioskRunWhere) SQL 분리하여 목록/카운트 재사용
+-->
+
+
+<mapper namespace="com.petcoin.mapper.KioskRunMapper">
+
+    <resultMap id="kioskRunMap" type="com.petcoin.domain.KioskRunVO">
+        <id property="runId" column="run_id" />
+        <result property="kioskId" column="kiosk_id" />
+        <result property="memberId" column="member_id" />
+        <result property="status" column="status" />
+        <result property="startedAt" column="started_at"/>
+        <result property="endedAt" column="ended_at"/>
+    </resultMap>
+
+    <!-- 1) 실행 세션 생성 (RUNNING 상태로 시작) -->
+    <insert id="insertRun" useGeneratedKeys="true" keyProperty="runId">
+        insert into kiosk_run (
+                               kiosk_id,
+                               member_id,
+                               status,
+                               started_at,
+                               ended_at
+        ) values (
+                  #{kioskId},
+                  #{memberId},
+                  #{status},
+                  #{startedAt},
+                  #{endedAt}
+                         )
+    </insert>
+
+    <!-- 2) 실행 완료 처리 (RUNNING -> COMPLETED) -->
+    <update id="completeRun">
+        UPDATE kiosk_run
+        SET status = 'COMPLETED',
+            ended_at = #{endedAt}
+        WHERE run_id = #{runId}
+          AND status = 'RUNNING'
+    </update>
+
+    <!-- 3) 실행 취소 처리 (RUNNING -> CANCELLED) -->
+    <update id="cancelRun">
+        UPDATE kiosk_run
+        SET status = 'CANCELLED',
+            ended_at = #{endedAt}
+        WHERE run_id = #{runId}
+          AND status = 'RUNNING'
+    </update>
+
+    <!-- 4) 실행 세션 단건 조회 -->
+    <select id="readRun" resultType="com.petcoin.dto.KioskRunResponse">
+        SELECT
+            kr.run_id AS runId,
+            kr.kiosk_id AS kioskId,
+            kr.member_id AS memberId,
+            m.phone AS phone,
+            kr.status AS status,
+            kr.started_at AS startedAt,
+            kr.ended_at AS endedAt
+        FROM kiosk_run kr
+                 LEFT JOIN member m ON kr.member_id = m.member_id
+        WHERE kr.run_id = #{runId}
+    </select>
+
+    <!-- 공통 검색 조건 SQL 분리 -->
+    <sql id="kioskRunWhere">
+        <where>
+            <if test="kioskId != null"> AND kiosk_id = #{kioskId}</if>
+            <if test="status != null"> AND status = #{status}</if>
+            <if test="memberId != null"> AND member_id = #{memberId}</if>
+            <if test="startedFrom != null"> AND started_at &gt;= #{startedFrom}</if>
+            <if test="startedTo != null"> AND started_at &lt;= #{startedTo}</if>
+        </where>
+    </sql>
+
+    <!-- 5) 실행 세션 목록 조회 (페이징 + 조건) -->
+    <select id="getRunListWithPaging" parameterType="com.petcoin.dto.KioskRunCriteria" resultMap="kioskRunMap">
+        SELECT run_id, kiosk_id, member_id, status, started_at, ended_at
+        FROM kiosk_run
+        <include refid="kioskRunWhere"/>
+        ORDER BY started_at DESC
+        LIMIT #{amount} OFFSET #{offset}
+    </select>
+
+    <!-- 6) 실행 세션 총 개수 조회 -->
+    <select id="getTotalRunCount" parameterType="com.petcoin.dto.KioskRunCriteria" resultType="int">
+        SELECT COUNT(*)
+        FROM kiosk_run
+        <include refid="kioskRunWhere"/>
+    </select>
+
+    <!-- 7) 특정 키오스크 RUNNING 세션 중복 실행 여부 확인 -->
+    <select id="getRunningCountByKioskId" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM kiosk_run
+        WHERE kiosk_id = #{kioskId}
+          AND status   = 'RUNNING'
+    </select>
+
+
+</mapper>
