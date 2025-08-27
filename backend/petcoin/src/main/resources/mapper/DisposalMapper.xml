@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petcoin.mapper.DisposalMapper">
+
+    <sql id="disposal_where">
+        WHERE d.member_id = #{memberId}
+        <if test="from != null">AND d.created_at &gt;= #{from}</if>
+        <if test="to != null">AND d.created_at &lt; DATE_ADD(#{to}, INTERVAL 1 DAY)</if>
+        <if test="region1 != null and region1 != ''">AND d.region1 = #{region1}</if>
+        <if test="region2 != null and region2 != ''">AND d.region2 = #{region2}</if>
+        <if test="itemName != null and itemName != ''">AND d.item_name LIKE CONCAT('%', #{itemName}, '%')</if>
+        <if test="status != null and status != ''">AND d.status = #{status}</if>
+    </sql>
+
+    <select id="selectList" resultType="com.petcoin.dto.DisposalListRowDto">
+        SELECT
+        d.disposal_id AS disposalId,
+        d.item_name   AS itemName,
+        d.confidence,
+        d.fee,
+        d.region1,
+        d.region2,
+        ( SELECT di.img_url
+        FROM disposal_history_img di
+        WHERE di.disposal_id = d.disposal_id
+        AND di.rep_img_yn = 'Y'
+        ORDER BY di.created_at ASC
+        LIMIT 1 ) AS repImgUrl,
+        d.created_at  AS createdAt,
+        d.status
+        FROM disposal_history d
+        <include refid="disposal_where"/>
+        ORDER BY d.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countList" resultType="long">
+        SELECT COUNT(*) FROM disposal_history d
+        <include refid="disposal_where"/>
+    </select>
+
+    <select id="selectDetail" resultType="com.petcoin.dto.DisposalDetailDto">
+        SELECT
+            d.disposal_id AS disposalId,
+            ( SELECT di.img_url
+              FROM disposal_history_img di
+              WHERE di.disposal_id = d.disposal_id
+                AND di.rep_img_yn = 'Y'
+              ORDER BY di.created_at ASC
+                             LIMIT 1 ) AS repImgUrl,
+      d.item_name   AS itemName,
+      d.confidence,
+      d.fee,
+      d.region1,
+      d.region2,
+      d.width_cm    AS widthCm,
+      d.height_cm   AS heightCm,
+      d.status
+        FROM disposal_history d
+        WHERE d.disposal_id = #{disposalId}
+          AND d.member_id = #{memberId}
+            LIMIT 1
+    </select>
+
+</mapper>

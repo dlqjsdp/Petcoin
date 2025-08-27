@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.petcoin.mapper.RefundMapper">
+
+    <!-- 대기/승인 중 요청 존재 여부 -->
+    <select id="existsPending" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM point_refund_request
+            WHERE member_id = #{memberId}
+              AND status IN ('REQUESTED','APPROVED')
+            LIMIT 1
+        )
+    </select>
+
+    <!-- 멱등키 저장 -->
+    <insert id="insertIdempotency">
+        INSERT INTO refund_idempotency(member_id, idem_key)
+        VALUES(#{memberId}, #{idemKey})
+    </insert>
+
+    <!-- 멱등키 ↔ 환급ID 링크 -->
+    <update id="linkIdemToRefund">
+        UPDATE refund_idempotency
+        SET refund_id = #{refundId}
+        WHERE member_id = #{memberId} AND idem_key = #{idemKey}
+    </update>
+
+    <!-- 환급 요청 저장 -->
+    <insert id="insertRefund">
+        INSERT INTO point_refund_request(member_id, points, account_holder, bank_code, account_number)
+        VALUES(#{memberId}, #{points}, #{accountHolder}, #{bankCode}, #{accountNumber})
+    </insert>
+
+    <!-- 목록 -->
+    <select id="selectRefunds" resultType="com.petcoin.dto.RefundRowDto">
+        SELECT
+        refund_id     AS refundId,
+        points,
+        points        AS cashAmount,
+        status,
+        reject_reason AS rejectReason,
+        created_at    AS createdAt
+        FROM point_refund_request
+        WHERE member_id = #{memberId}
+        <if test="status != null">AND status = #{status}</if>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 총 건수 -->
+    <select id="countRefunds" resultType="long">
+        SELECT COUNT(*)
+        FROM point_refund_request
+        WHERE member_id = #{memberId}
+        <if test="status != null">AND status = #{status}</if>
+    </select>
+
+    <!-- 마지막 AUTO_INCREMENT -->
+    <select id="selectLastInsertId" resultType="long">
+        SELECT LAST_INSERT_ID()
+    </select>
+
+</mapper>

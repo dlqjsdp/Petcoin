@@ -10,6 +10,7 @@
     @since : 250827
     @history
      - 250827 | sehui | 회원별 포인트 전체 내역 조회 기능 추가
+     - 250827 | 민병흠 | 마이페이지 포인트 조회 기능 추가
 -->
 
 <mapper namespace="com.petcoin.mapper.PointMapper">
@@ -36,6 +37,62 @@
             created_at
         FROM point_history
         WHERE member_id = #{memberId}
+    </select>
+
+    <select id="sumByType" resultType="long">
+        SELECT COALESCE(SUM(amount),0)
+        FROM point_history
+        WHERE member_id = #{memberId}
+          AND type = #{type}
+    </select>
+
+    <select id="sumRefundHold" resultType="long">
+        SELECT COALESCE(SUM(points),0)
+        FROM point_refund_request
+        WHERE member_id = #{memberId}
+          AND status IN ('REQUESTED','APPROVED')
+    </select>
+
+    <sql id="history_where">
+        WHERE ph.member_id = #{memberId}
+        <if test="from != null">AND ph.created_at &gt;= #{from}</if>
+        <if test="to != null">AND ph.created_at &lt; DATE_ADD(#{to}, INTERVAL 1 DAY)</if>
+        <if test="type != null">AND ph.type = #{type}</if>
+    </sql>
+
+    <select id="selectHistoryPaged" resultType="com.petcoin.dto.PointHistoryDto">
+        SELECT ph.point_id AS pointId,
+        ph.type,
+        ph.amount,
+        ph.reason,
+        ph.created_at AS createdAt
+        FROM point_history ph
+        <include refid="history_where"/>
+        ORDER BY ph.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countHistory" resultType="long">
+        SELECT COUNT(*) FROM point_history ph
+        <include refid="history_where"/>
+    </select>
+
+    <select id="sumEarnByFilter" resultType="long">
+        SELECT COALESCE(SUM(amount),0)
+        FROM point_history ph
+        WHERE ph.member_id = #{memberId}
+        AND ph.type = 'EARN'
+        <if test="from != null">AND ph.created_at &gt;= #{from}</if>
+        <if test="to != null">AND ph.created_at &lt; DATE_ADD(#{to}, INTERVAL 1 DAY)</if>
+    </select>
+
+    <select id="sumUseByFilter" resultType="long">
+        SELECT COALESCE(SUM(amount),0)
+        FROM point_history ph
+        WHERE ph.member_id = #{memberId}
+        AND ph.type = 'USE'
+        <if test="from != null">AND ph.created_at &gt;= #{from}</if>
+        <if test="to != null">AND ph.created_at &lt; DATE_ADD(#{to}, INTERVAL 1 DAY)</if>
     </select>
 
 </mapper>
