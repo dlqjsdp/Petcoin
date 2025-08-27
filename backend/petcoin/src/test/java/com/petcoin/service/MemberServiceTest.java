@@ -1,11 +1,18 @@
 package com.petcoin.service;
 
 import com.petcoin.domain.MemberVO;
+import com.petcoin.dto.Criteria;
+import com.petcoin.dto.MemberDetailDto;
+import com.petcoin.dto.MemberListDto;
 import com.petcoin.mapper.MemberMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,9 +23,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since : 250826
  * @history
  * - 250826 | heekyung | 회원가입 테스트 작성
+ * - 250827 | sehui | 전체 회원 조회 Test
+ * - 250827 | sehui | 회원 정보 단건 조회 Test
  */
 
 @SpringBootTest
+@Transactional
 @Slf4j
 class MemberServiceTest {
 
@@ -50,5 +60,60 @@ class MemberServiceTest {
         
         MemberVO found = memberService.getMemberByPhone(phone);
         log.info("기존회원조회" + found);
+    }
+
+    @Test
+    @DisplayName("전체 회원 조회 - 검색 조건 없이")
+    void testGetList() {
+
+        //given : 페이징 조건 설정
+        Criteria cri = new Criteria();
+
+        //when : 전체 상품 조회
+        List<MemberListDto> memberList = memberService.getMemberList(cri);
+
+        //then : 결과 검증
+        assertNotNull(memberList, "전체 회원 목록이 null입니다.");
+        assertFalse(memberList.isEmpty(), "회원 목록이 비어있습니다.");
+
+        for(MemberListDto ListDto : memberList){
+            log.info("Member >> {}", ListDto);
+        }
+    }
+
+    @Test
+    @DisplayName("전체 회원 조회 - 휴대폰 번호 조건 검색")
+    void testGetListWithPhone() {
+
+        //given : 페이징 조건 설정
+        Criteria cri = new Criteria();
+        cri.setPhone("5");
+
+        //when : 전체 상품 조회
+        List<MemberListDto> memberList = memberService.getMemberList(cri);
+
+        //then : 결과 검증
+        assertNotNull(memberList, "전체 회원 목록이 null입니다.");
+        assertFalse(memberList.isEmpty(), "회원 목록이 비어있습니다.");
+
+        for(MemberListDto ListDto : memberList){
+            log.info("Member >> {}", ListDto);
+        }
+    }
+
+    @Test
+    @DisplayName("회원 정보 단건 조회")
+    void testGetMemberById() {
+
+        //given : 회원ID 설정
+        Long memberId = 1L;
+
+        //when : 회원 정보 단건 조회
+        MemberDetailDto memberDto = memberService.getMemberById(memberId);
+
+        //then : 결과 검증
+        assertNotNull(memberDto, "해당ID로 조회되는 회원 정보가 없습니다.");
+
+        log.info("Member >> {}", memberDto);
     }
 }
