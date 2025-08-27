@@ -17,12 +17,15 @@ import java.time.LocalDateTime;
  * - status : 장치 상태(ONLINE/OFFLINE/MAINT) - Enum 매핑
  * - swVersion : 소프트웨어 버전
  * - createdAt : 등록일시
+ * - updatedAt : 수정일시
+ * - isDeleted : 소프트 삭제 여부 (0=정상, 1=삭제)
  *
  * @author  : yukyeong
  * @fileName: KioskVO
  * @since   : 250826
  * @history
  *     - 250826 | yukyeong | VO 최초 생성
+ *     - 250826 | yukyeong | updatedAt, isDeleted 필드 추가
  */
 
 @Getter @Setter
@@ -39,4 +42,6 @@ public class KioskVO {
     private KioskStatus status;
     private String swVersion;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Boolean isDeleted;
 }
