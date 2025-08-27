@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
  * @since   : 250826
  * @history
  *     - 250826 | yukyeong | VO 최초 생성
+ *     - 250827 | yukyeong | startedAt, endedAt 필드명 수정
  */
 
 @Getter @Setter
@@ -29,11 +30,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class KioskRunVO {
+
     private Long runId;
     private Long kioskId;
     private Long memberId;
     private RunStatus status;
-    private LocalDateTime startAt;
-    private LocalDateTime endAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime endedAt;
 
 }

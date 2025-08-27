@@ -49,31 +49,28 @@ create table point_request (
     FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE RESTRICT
 );
 
--- Kiosk (키오스크) 테이블
+-- 키오스크 장치 정보(kiosk)
 CREATE TABLE IF NOT EXISTS kiosk (
-  kiosk_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100)  NOT NULL, -- 표기명
-  location VARCHAR(255)  NOT NULL, -- 설치 장소
-  lat DECIMAL(10,7) NULL,
-  lng DECIMAL(10,7) NULL,
+  kiosk_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 장치 PK
+  name VARCHAR(100)  NOT NULL, -- 표시명
+  location VARCHAR(255)  NOT NULL, -- 설치 매장/주소
+  lat DECIMAL(10,7) NULL, -- 위도
+  lng DECIMAL(10,7) NULL, -- 경도
   status ENUM('ONLINE','OFFLINE','MAINT') NOT NULL DEFAULT 'OFFLINE',
   sw_version VARCHAR(50)   NULL,
-  last_seen_at DATETIME NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 생성 시각
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 마지막 수정 시각
+  is_deleted TINYINT(1) NOT NULL DEFAULT 0 -- 소프트 삭제 (0=정상, 1=삭제)
 );
 
-
--- Kiosk Heartbeat (헬스로그) 테이블
-CREATE TABLE IF NOT EXISTS kiosk_heartbeat (
-  heartbeat_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  kiosk_id BIGINT NOT NULL,
-  camera_ok TINYINT(1) NOT NULL DEFAULT 1,  -- 1=정상, 0=이상
-  is_online TINYINT(1) NOT NULL DEFAULT 1, -- 1=온라인, 0=오프라인
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_hb_kiosk
-    FOREIGN KEY (kiosk_id) REFERENCES kiosk(kiosk_id)
-    ON DELETE CASCADE
+-- 키오스크 가동 이력(kiosk_run)
+CREATE TABLE IF NOT EXISTS kiosk_run (
+  run_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 세션 PK
+  kiosk_id BIGINT NOT NULL, -- FK
+  member_id BIGINT NULL, -- FK
+  status ENUM('RUNNING','COMPLETED','CANCELLED') NOT NULL DEFAULT 'RUNNING',
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ended_at  DATETIME NULL,
+  FOREIGN KEY (kiosk_id) REFERENCES kiosk(kiosk_id),
+  FOREIGN KEY (member_id) REFERENCES member(member_id)
 );
-
--- 장치별 최근 순 조회 인덱스
-CREATE INDEX idx_hb_kiosk_created ON kiosk_heartbeat(kiosk_id, created_at);

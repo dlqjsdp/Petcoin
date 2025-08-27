@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
  * - runId : 실행 세션 PK
  * - kioskId : 키오스크 FK
  * - memberId : 사용자 FK(null 가능)
+ * - phone : 회원 연락처 (비회원일 경우 null)
  * - status : RUNNING / COMPLETED / CANCELLED
  * - startedAt : 시작 시각
  * - endedAt : 종료 시각(null 가능)
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
  * @since   : 250826
  * @history
  *   - 250826 | yukyeong | DTO 최초 생성
+ *   - 250827 | yukyeong | 단건조회에서 핸드폰번호 조회를 위해 phone 추가
  */
 
 @Getter @Setter
@@ -34,6 +36,7 @@ public class KioskRunResponse {
     private Long runId;
     private Long kioskId;
     private Long memberId;
+    private String phone;
     private RunStatus status;
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;
