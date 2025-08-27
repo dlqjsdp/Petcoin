@@ -7,9 +7,16 @@ package com.petcoin.service;
  * @since : 250826
  * @history
  * - 250826 | heekyung | MemberService 생성 / 연락처로 회원 조회 코드 작성
+ * - 250827 | sehui | 전체 회원 조회 기능 추가
+ * - 250827 | sehui | 회원 정보 단건 조회 기능 추가
  */
 
 import com.petcoin.domain.MemberVO;
+import com.petcoin.dto.Criteria;
+import com.petcoin.dto.MemberDetailDto;
+import com.petcoin.dto.MemberListDto;
+
+import java.util.List;
 
 public interface MemberService {
 
@@ -19,4 +26,9 @@ public interface MemberService {
     //휴대폰 번호로 회원 가입 (이미 존재 시 기존 회원 반환)
     public MemberVO registerMember(String phone);
 
+    //전체 회원 조회
+    public List<MemberListDto> getMemberList(Criteria cri);
+
+    //회원 정보 단건 조회
+    public MemberDetailDto getMemberById(Long memberId);
 }

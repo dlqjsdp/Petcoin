@@ -2,11 +2,19 @@ package com.petcoin.mapper;
 
 import com.petcoin.constant.Role;
 import com.petcoin.domain.MemberVO;
+import com.petcoin.dto.Criteria;
+import com.petcoin.dto.MemberListDto;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.List;
 
 /*
  * @fileName : MemberMapperTest
@@ -15,9 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
  * @since : 250826
  * @history
  * - 250826 | heekyung | 회원가입 테스트 작성
+ * - 250827 | sehui | 전체 회원 목록 조회 테스트 작성
+ * - 250827 | sehui | 회원 정보 단건 조희 테스트 작성
  */
 
 @SpringBootTest
+@Transactional
 @Slf4j
 class MemberMapperTest {
 
@@ -56,6 +67,83 @@ class MemberMapperTest {
         
         MemberVO findByPhone = memberMapper.findByPhone(phone);
         log.info("기존 등록 회원", findByPhone.getMemberId());
+    }
+
+    @Test
+    @DisplayName("전체 회원 조회 - 검색 조건 없이")
+    void testMemberList() {
+
+        //given : 페이징 처리, 검색 조건 설정
+        Criteria cri = new Criteria(1, 10);
+
+        //when : 전체 상품 조회
+        List<MemberListDto> memberList = memberMapper.findMemberListWithPaging(cri);
+
+        //then : 결과 검증
+        assertNotNull(memberList, "조회된 회원 목록이 null입니다.");
+        assertFalse(memberList.isEmpty(), "조회된 상품 목록이 비어있습니다.");
+
+        for(MemberListDto ListDto : memberList){
+            log.info("MemberList >> {}", ListDto);
+        }
+    }
+
+    @Test
+    @DisplayName("전체 회원 조회 - 핸드폰 번호 조건 검색")
+    void testMemberListWithPhone() {
+
+        //given : 페이징 처리, 검색 조건(핸드폰 번호) 설정
+        Criteria cri = new Criteria(1, 10);
+        cri.setPhone("010-1");
+
+        //when : 검색 조건 포함된 회원 목록 조회
+        List<MemberListDto> memberList = memberMapper.findMemberListWithPaging(cri);
+
+        //then : 결과 검증
+        assertNotNull(memberList, "조회된 회원 목록이 null입니다.");
+        assertFalse(memberList.isEmpty(), "조회된 상품 목록이 비어있습니다.");
+
+        for(MemberListDto ListDto : memberList){
+            log.info("MemberList >> {}", ListDto);
+        }
+    }
+
+    @Test
+    @DisplayName("전체 회원 조회 - 포인트 조건 검색")
+    void testMemberListWithPointRange() {
+
+        //given : 페이징 처리, 검색 조건(포인트 최소/최대) 설정
+        Criteria cri = new Criteria(1, 10);
+        cri.setMinPoint(50);
+        cri.setMaxPoint(150);
+
+        //when : 검색 조건 포함된 회원 목록 조회
+        List<MemberListDto> memberList = memberMapper.findMemberListWithPaging(cri);
+
+        //then : 결과 검증
+        assertNotNull(memberList, "조회된 회원 목록이 null입니다.");
+        assertFalse(memberList.isEmpty(), "조회된 상품 목록이 비어있습니다.");
+
+        for(MemberListDto ListDto : memberList){
+            log.info("MemberList >> {}", ListDto);
+        }
+    }
+
+    @Test
+    @DisplayName("회원 정보 단건 조회")
+    void testMemberById() {
+
+        //given : 회원Id 설정
+        Long memberId = 1L;
+
+        //when : 회원 정보 단건 조회
+        MemberVO member = memberMapper.findMemberById(memberId);
+
+        //then : 결과 검증
+        assertNotNull(member, "해당 ID로 조회된 회원이 null입니다.");
+        assertEquals(memberId, member.getMemberId());
+
+        log.info("Member >> {}", member);
     }
 
 }
