@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+ * KioskMapper.xml
+ * kiosk 테이블과 연동되는 MyBatis SQL 매핑 파일
+ *
+ * 주요 기능:
+ * [관리자 페이지용]
+ *  - 단건 조회 (read)
+ *  - 전체 조회 (getListWithPaging, getTotalCount)
+ *  - 등록 (insert)
+ *  - 수정 (update)
+ *  - 소프트삭제 (softDelete)
+ *
+ * [키오스크 실행용]
+ *  - 상태 전이 (transitionStatus) : 현재 상태가 from일 때만 to로 변경
+ *
+ * @author  : yukyeong
+ * @fileName: KioskMapper.xml
+ * @since   : 250828
+ * @history
+ *   - 250828 | yukyeong | 최초 생성 (resultMap, 공통 WHERE, read, getListWithPaging, getTotalCount, insert, update, softDelete, transitionStatus 정의)
+ *   - 250828 | yukyeong | insert/update에서 status 컬럼 제거 (DB 기본값/전용 전이 쿼리로 일원화)
+ *
+-->
+
+
+<mapper namespace="com.petcoin.mapper.KioskMapper">
+    <resultMap id="kioskMap" type="com.petcoin.domain.KioskVO">
+        <id property="kioskId" column="kiosk_id"/>
+        <result property="name" column="name"/>
+        <result property="location" column="location"/>
+        <result property="lat" column="lat"/>
+        <result property="lng" column="lng"/>
+        <result property="status" column="status"/>
+        <result property="swVersion" column="sw_version"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="isDeleted" column="is_deleted"/>
+    </resultMap>
+
+
+
+    <!-- 1-1) 단건 조회 -->
+    <select id="read" resultMap="kioskMap">
+        SELECT kiosk_id, name, location, lat, lng, status, sw_version, created_at, updated_at, is_deleted
+        FROM kiosk
+        WHERE kiosk_id = #{kioskId}
+          AND is_deleted = 0
+    </select>
+
+    <!-- 공통 조건 SQL 분리-->
+    <sql id="kioskWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%')
+                OR location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="includeDeleted == null or includeDeleted == false">AND is_deleted = 0</if>
+            <if test="updatedFrom != null">AND updated_at &gt;= #{updatedFrom}</if>
+            <if test="updatedTo != null">AND updated_at &lt;= #{updatedTo}</if>
+        </where>
+    </sql>
+
+    <!-- 1-2) 전체 조회 (페이징 + 검색) -->
+    <select id="getListWithPaging" parameterType="com.petcoin.dto.KioskCriteria" resultMap="kioskMap">
+        SELECT kiosk_id, name, location, lat, lng, status, sw_version, created_at, updated_at, is_deleted
+        FROM kiosk
+        <include refid="kioskWhere"/>
+        ORDER BY updated_at DESC
+        LIMIT #{amount} OFFSET #{offset}
+    </select>
+
+
+    <!-- 1-3) 총 개수 조회 -->
+    <select id="getTotalCount" parameterType="com.petcoin.dto.KioskCriteria" resultType="int">
+        SELECT COUNT(*)
+        FROM kiosk
+        <include refid="kioskWhere"/>
+    </select>
+
+
+    <!-- 2-1) 등록 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="kioskId">
+        INSERT INTO kiosk (name, location, lat, lng, sw_version, created_at, updated_at, is_deleted)
+        VALUES (#{name}, #{location}, #{lat}, #{lng}, #{swVersion}, NOW(), NOW(), 0)
+    </insert>
+
+
+    <!-- 2-2) 수정 -->
+    <update id="update">
+        UPDATE kiosk
+        SET name = #{name},
+            location = #{location},
+            lat = #{lat},
+            lng = #{lng},
+            sw_version = #{swVersion},
+            updated_at = NOW()
+        WHERE kiosk_id = #{kioskId}
+          AND is_deleted = 0
+    </update>
+
+
+    <!-- 2-3) 소프트 삭제 -->
+    <update id="softDelete">
+        UPDATE kiosk
+        SET is_deleted = 1,
+            updated_at = NOW()
+        WHERE kiosk_id = #{kioskId}
+          AND is_deleted = 0
+    </update>
+
+
+    <!-- 3-1) 상태 전이 -->
+    <update id="transitionStatus">
+        UPDATE kiosk
+        SET status = #{to},
+            updated_at = NOW()
+        WHERE kiosk_id = #{kioskId}
+          AND status = #{from}
+          AND is_deleted = 0
+    </update>
+
+</mapper>
