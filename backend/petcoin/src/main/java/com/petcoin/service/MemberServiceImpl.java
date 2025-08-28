@@ -30,7 +30,7 @@ import java.util.List;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberMapper memberMapper;
-    private final PointService pointService;
+    private final PointHisService pointHisService;
 
     //DB에서 핸드폰 번호 조회(없으면 null)
     @Override
@@ -86,7 +86,7 @@ public class MemberServiceImpl implements MemberService {
                 .build();
         
         //3. 포인트 내역 조회
-        List<PointHistoryDto> pointHistoryList = pointService.getPointHistoryById(memberId);
+        List<PointHistoryDto> pointHistoryList = pointHisService.getPointHistoryById(memberId);
 
         //4. DTO에 포인트 내역 추가
         memberDto.setPointHistory(pointHistoryList);

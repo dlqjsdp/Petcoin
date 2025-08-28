@@ -4,15 +4,17 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--
-    포인트 Mapper.xml
+    포인트 내역 Mapper.xml
     @author : sehui
-    @fileName : PointMapper.xml
+    @fileName : PointHisMapper.xml
     @since : 250827
     @history
      - 250827 | sehui | 회원별 포인트 전체 내역 조회 기능 추가
+     - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
+     - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
 -->
 
-<mapper namespace="com.petcoin.mapper.PointMapper">
+<mapper namespace="com.petcoin.mapper.PointHisMapper">
 
     <resultMap id="pointHisMap" type="com.petcoin.domain.PointHistoryVO">
         <id property="historyId" column="history_id" />
@@ -38,4 +40,25 @@
         WHERE member_id = #{memberId}
     </select>
 
+    <!-- 현재 포인트 잔액 조회 -->
+    <select id="findLatestPointBalance" resultType="int">
+        SELECT point_balance
+        FROM point_history
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <!-- 포인트 내역 추가 (환급 시 포인트 차감) -->
+    <insert id="insertPointHistory">
+        INSERT INTO point_history (member_id, point_change, point_balance, action_type, description, created_at)
+        VALUES (
+                #{memberId},
+                -#{requestAmount},
+                #{latestPointBalance} - #{requestAmount},
+                #{actionType},
+                '포인트 환급 신청',
+                NOW()
+        )
+    </insert>
 </mapper>
