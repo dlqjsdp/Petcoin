@@ -24,4 +24,5 @@ public class AdminViewController {
     public String memberListPage(){
         return "admin/list";
     }
+
 }
