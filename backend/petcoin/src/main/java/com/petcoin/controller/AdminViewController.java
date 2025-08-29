@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @since : 250827
  * @history
  *  - 250827 | sehui | 전체 회원 목록 페이지 요청
+ *  - 250829 | sehui | 전체 포인트 환급 목록 페이지 요청
  */
 
 @Controller
@@ -20,9 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminViewController {
 
     //전체 회원 목록 페이지
-    @GetMapping("/list")
+    @GetMapping("/member/list")
     public String memberListPage(){
-        return "admin/list";
+        return "admin/memberlist";
     }
 
+    //전체 포인트 환급 요청 목록 페이지
+    @GetMapping("/point/list")
+    public String pointListPage(){
+        return "admin/pointList";
+    }
 }
