@@ -5,9 +5,10 @@ use petcoin;
 
 -- 회원 가입 테이블
 create table member (
-	member_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 회원 고유변호(기본키)
+    member_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 회원 고유변호(기본키)
     phone VARCHAR(13) NOT NULL UNIQUE, -- 연락처(중복불가)
-    role ENUM('USER','ADMIN') NOT NULL DEFAULT 'USER' -- 권한
+    role ENUM('USER','ADMIN') NOT NULL DEFAULT 'USER', -- 권한
+    password VARCHAR(255) NOT NULL, -- 비밀번호
 );
 
 -- 안내사항 테이블
