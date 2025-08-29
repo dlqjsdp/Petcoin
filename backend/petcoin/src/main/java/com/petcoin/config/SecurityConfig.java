@@ -7,8 +7,11 @@ package com.petcoin.config;
  * @since : 250828
  * @history
  * - 250828 | heekyung | phone 기반 폼 로그인 + BCrypt + 권한정책 적용
+ * - 250828 | heekyung | 세션 끄고, 관리자 URL 보호 & JWT 필터 등록
  */
 
+import com.petcoin.security.jwt.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,25 +20,32 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 @Slf4j
 public class SecurityConfig {
+
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // 프론트(다른 포트) 연동을 고려해 CORS 기본 허용
                 .cors(Customizer.withDefaults())
-                // SPA/JSON 기반이면 보통 CSRF 비활성
+                // REST API에서는 보통 CSRF 비활성화
                 .csrf(csrf -> csrf.disable())
+                // 서버 세션을 전혀 사용하지 않음(JWT로만 인증 유지)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // URL 접근 권한 매핑
                 .authorizeHttpRequests(auth -> auth
-                        // 회원 관리 중 공개 API
+                        // 공개 API (로그인/토큰 발급/회원확인 등)
                         .requestMatchers(
                                 "/api/member/check", "/api/member/register", "/api/auth/**", "/login", "/logout",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/public/**"
@@ -45,22 +55,13 @@ public class SecurityConfig {
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
-                // 폼 로그인 (임시) 설정: username=phone, password=password 로 받음
-                .formLogin(form -> form
-                        .loginPage("/login")                // 커스텀 로그인 페이지 이동
-                        .usernameParameter("phone")         // 기본 username -> phone으로
-                        .passwordParameter("password")
-                        .defaultSuccessUrl("/", true)       // 성공 후 이동 경로
-                        .permitAll()
-
-                )
-                // 로그아웃
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                )
-                // HTTP Basic은 사용 안 함 선언 -> 폼 로그인이나 JWT를 쓰기 때문에 기본 Basic은 꺼버림
+                // 폼 로그인/로그아웃/HTTP Basic 전부 비활성화 (JWT만 사용)
+                .formLogin(f -> f.disable())
+                .logout(l -> l.disable())
                 .httpBasic(b -> b.disable());
+
+        // JwtFilter가 먼저 실행되도록 등록
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

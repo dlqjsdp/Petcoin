@@ -35,7 +35,6 @@ import java.util.List;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberMapper memberMapper;
-    private final PointService pointService;
     private final PasswordEncoder passwordEncoder;
     private final PointHisService pointHisService;
 
