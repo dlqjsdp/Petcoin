@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    포인트 환급 요청 Mapper.xml
+    @author : sehui
+    @fileName : PointReqMapper.xml
+    @since : 250828
+    @history
+     - 250828 | sehui | 포인트 환급 요청 목록 조회 기능 추가
+     - 250828 | sehui | 포인트 환급 요청 단건 조회 기능 추가
+     - 250828 | sehui | 포인트 환급 요청 상태 변경 기능 추가
+-->
+
+<mapper namespace="com.petcoin.mapper.PointReqMapper">
+
+    <resultMap id="pointReqMap" type="com.petcoin.dto.PointRequestDto">
+        <id property="requestId" column="request_id" />
+        <result property="memberId" column="member_id" />
+        <result property="phone" column="phone" />
+        <result property="requestAmount" column="request_amount" />
+        <result property="bankName" column="bank_name" />
+        <result property="accountNumber" column="account_number" />
+        <result property="accountHolder" column="account_holder" />
+        <result property="requestStatus" column="request_status" />
+        <result property="requestAt" column="request_at" />
+        <result property="processedAt" column="processed_at" />
+        <result property="note" column="note" />
+    </resultMap>
+
+    <!-- 포인트 환급 요청 목록 조회 -->
+    <select id="findAllPointRequests" resultMap="pointReqMap">
+        SELECT
+            pr.request_id,
+            pr.member_id,
+            m.phone,
+            pr.request_amount,
+            pr.bank_name,
+            pr.account_number,
+            pr.account_holder,
+            pr.request_status,
+            pr.request_at,
+            pr.processed_at,
+            pr.note
+        FROM point_request pr
+        LEFT JOIN member m ON pr.member_id = m.member_id
+        ORDER BY pr.request_at DESC
+    </select>
+
+    <!-- 포인트 환급 요청 단건 조회 -->
+    <select id="findPointRequestById" resultMap="pointReqMap">
+        SELECT
+            pr.request_id,
+            pr.member_id,
+            m.phone,
+            pr.request_amount,
+            pr.bank_name,
+            pr.account_number,
+            pr.account_holder,
+            pr.request_status,
+            pr.request_at,
+            pr.processed_at,
+            pr.note
+        FROM point_request pr
+        LEFT JOIN member m ON pr.member_id = m.member_id
+        WHERE pr.request_id = #{requestId}
+    </select>
+
+    <!-- 포인트 환급 요청 상태 변경 -->
+    <update id="updatePointRequestStatus">
+        UPDATE point_request
+        SET
+            request_status = #{requestStatus},
+            processed_at = NOW(),
+            note = #{note}
+        WHERE request_id = #{requestId}
+    </update>
+
+</mapper>

@@ -113,14 +113,15 @@ class AdminApiControllerTest {
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-
         //when : MockMvc 호출
-        String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/member/list"))
+        String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/member/1"))
                 .andExpect(status().isOk())     //HTTP 상태 코드 200 OK
                 .andDo(print())
                 .andReturn()        //응답 결과 반환
                 .getResponse()      //응답 객체
                 .getContentAsString();          //응답 본문을 문자열로 반환
 
+        //then : 결과 검증
+        log.info("MemberDetails >> {}", responseContent);
     }
 }
