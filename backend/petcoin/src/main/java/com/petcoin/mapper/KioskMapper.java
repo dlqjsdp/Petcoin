@@ -27,12 +27,14 @@ import java.util.List;
  *
  * [키오스크 실행용]
  *  - 상태 전이 (updateStatusIfCurrent) : 현재 상태가 from일 때만 to로 변경
+ *  - 현재 상태 단건 조회 (findStatusById) : 온라인 여부 확인용
  *
  * @author  : yukyeong
  * @fileName: KioskMapper
  * @since   : 250828
  * @history
  *   - 250828 | yukyeong | Mapper 최초 생성 (read, getListWithPaging, getTotalCount, insert, update, softDelete, transitionStatus 정의)
+ *   - 250829 | yukyeong | findStatusById 추가 (키오스크 ONLINE 여부 확인용), lockKioskRow 추가 (행 잠금: startRun 시 동시 실행 방지용)
  */
 
 @Mapper
@@ -62,8 +64,15 @@ public interface KioskMapper {
 
     // 키오스크 버튼 클릭시 상태 변경
     // 3-1) 키오스크 상태 전이 : 현재 상태가 from(현재 상태)일 때만 to(바꾸려는 목표 상태)로 변경
-    int transitionStatus(@Param("kioskId") Long kioskId,
+    public int transitionStatus(@Param("kioskId") Long kioskId,
                               @Param("from") KioskStatus from,
                               @Param("to") KioskStatus to);
 
+
+    // 3-2) 키오스크 현재 상태 조회 (ONLINE 여부 확인용)
+    public KioskStatus findStatusById(Long kioskId);
+
+
+    // 3-3) 행 잠금: 시작 동시성 제어용
+    public KioskVO lockKioskRow(Long kioskId);
 }

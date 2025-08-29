@@ -32,6 +32,9 @@ import static org.junit.jupiter.api.Assertions.*;
  *   - 250828 | yukyeong | transitionStatus_fail2 작성
  *                        - 소프트삭제된 키오스크에 대해 전이 시도
  *                        - updated=0, read 결과 null 확인
+ *   - 250829 | yukyeong | findStatusByIdTest 작성
+ *                        - 사전 등록된 kioskId로 현재 상태 조회
+ *                        - enum 매핑 정상 확인 및 ONLINE 여부 검증
  */
 
 @SpringBootTest
@@ -40,6 +43,23 @@ class KioskMapperTest {
 
     @Autowired
     private KioskMapper kioskMapper;
+
+    @Test
+    @DisplayName("키오스크 상태 조회 테스트 - ONLINE 여부 확인")
+    public void findStatusByIdTest() {
+        // Given
+        Long kioskId = 1L; // 테스트용 PK (사전에 DB에 데이터 있어야 함)
+
+        // When
+        KioskStatus status = kioskMapper.findStatusById(kioskId);
+
+        // Then
+        assertNotNull(status, "조회 결과는 null이면 안 됨");
+        log.info("kioskId={} 의 상태 = {}", kioskId, status);
+
+        // ONLINE 여부 확인
+        assertEquals(KioskStatus.ONLINE, status);
+    }
 
     @Test
     @Transactional

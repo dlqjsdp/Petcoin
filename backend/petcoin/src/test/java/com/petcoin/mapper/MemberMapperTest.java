@@ -23,8 +23,9 @@ import java.util.List;
  * @since : 250826
  * @history
  * - 250826 | heekyung | 회원가입 테스트 작성
- * - 250827 | sehui | 전체 회원 목록 조회 테스트 작성
- * - 250827 | sehui | 회원 정보 단건 조희 테스트 작성
+ * - 250827 | sehui | 전체 회원 목록 조회 Test
+ * - 250827 | sehui | 회원 정보 단건 조희 Test
+ * - 250829 | sehui | 전체 회원 수 조회 Test
  */
 
 @SpringBootTest
@@ -73,7 +74,7 @@ class MemberMapperTest {
     @DisplayName("전체 회원 조회 - 검색 조건 없이")
     void testMemberList() {
 
-        //given : 페이징 처리, 검색 조건 설정
+        //given : 페이징 처리, 검색 조건 없이 설정
         Criteria cri = new Criteria(1, 10);
 
         //when : 전체 상품 조회
@@ -144,6 +145,20 @@ class MemberMapperTest {
         assertEquals(memberId, member.getMemberId());
 
         log.info("Member >> {}", member);
+    }
+
+    @Test
+    @DisplayName("전체 회원 수 조회")
+    void testTotalMember() {
+
+        //when : 전체 회원 수 조회
+        int totalMember = memberMapper.getTotalMember();
+
+        //then : 결과 검증
+        assertNotNull(totalMember, "조회된 전체 회원의 수가 null입니다.");
+        assertFalse(totalMember == 0, "조회된 전체 회원의 수가 0입니다.");
+
+        log.info("Total Member >> {}", totalMember);
     }
 
 }

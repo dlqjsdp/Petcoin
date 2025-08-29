@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250826 | heekyung | 회원가입 테스트 작성
  * - 250827 | sehui | 전체 회원 조회 Test
  * - 250827 | sehui | 회원 정보 단건 조회 Test
+ * - 250829 | sehui | 전체 회원 수 조회 Test
  */
 
 @SpringBootTest
@@ -115,5 +116,18 @@ class MemberServiceTest {
         assertNotNull(memberDto, "해당ID로 조회되는 회원 정보가 없습니다.");
 
         log.info("Member >> {}", memberDto);
+    }
+
+    @Test
+    @DisplayName("전체 회원 수 조회")
+    void testTotalMember() {
+
+        //when : 전체 회원 수 조회
+        int totalMember = memberService.getTotalMember();
+
+        //then : 결과 검증
+        assertNotNull(totalMember, "전체 회원 수가 null입니다.");
+
+        log.info("Total Member >> {}", totalMember);
     }
 }

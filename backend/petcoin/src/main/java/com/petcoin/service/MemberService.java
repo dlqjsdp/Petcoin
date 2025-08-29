@@ -9,6 +9,7 @@ package com.petcoin.service;
  * - 250826 | heekyung | MemberService 생성 / 연락처로 회원 조회 코드 작성
  * - 250827 | sehui | 전체 회원 조회 기능 추가
  * - 250827 | sehui | 회원 정보 단건 조회 기능 추가
+ * - 250829 | sehui | 페이징 처리를 위한 전체 회원 수 조회 기능 추가
  */
 
 import com.petcoin.domain.MemberVO;
@@ -31,4 +32,7 @@ public interface MemberService {
 
     //회원 정보 단건 조회
     public MemberDetailDto getMemberById(Long memberId);
+
+    //전체 회원 수 조회
+    public int getTotalMember();
 }

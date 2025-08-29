@@ -24,6 +24,7 @@
  * @history
  *   - 250828 | yukyeong | 최초 생성 (resultMap, 공통 WHERE, read, getListWithPaging, getTotalCount, insert, update, softDelete, transitionStatus 정의)
  *   - 250828 | yukyeong | insert/update에서 status 컬럼 제거 (DB 기본값/전용 전이 쿼리로 일원화)
+ *   - 250829 | yukyeong | findStatusById 추가 (키오스크 ONLINE 여부 확인용), lockKioskRow 추가 (행 잠금: startRun 시 동시 실행 방지용)
  *
 -->
 
@@ -124,5 +125,22 @@
           AND status = #{from}
           AND is_deleted = 0
     </update>
+
+    <!-- 3-2) 키오스크 온라인 여부 조회 -->
+    <select id="findStatusById" resultType="com.petcoin.constant.KioskStatus">
+        SELECT status
+        FROM kiosk
+        WHERE kiosk_id = #{kioskId}
+          AND is_deleted = 0
+    </select>
+
+    <!-- 3-3) 행 잠금: 시작 동시성 제어용 -->
+    <select id="lockKioskRow">
+        SELECT kiosk_id, status
+        FROM kiosk
+        WHERE kiosk_id = #{kioskId}
+            FOR UPDATE
+    </select>
+
 
 </mapper>
