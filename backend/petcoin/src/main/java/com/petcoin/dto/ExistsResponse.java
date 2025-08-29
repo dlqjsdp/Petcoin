@@ -6,7 +6,7 @@ package com.petcoin.dto;
  * @author : heekyung
  * @since : 250827
  * @history
- * - 250827 | heekyung | ExistsResponse 생성 /
+ * - 250827 | heekyung | ExistsResponse 생성
  */
 
 import lombok.AllArgsConstructor;

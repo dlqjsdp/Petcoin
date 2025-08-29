@@ -7,12 +7,14 @@ package com.petcoin.controller;
  * @since : 250827
  * @history
  * - 250827 | heekyung | MemberController 생성 / 연락처로 회원 조회 코드 작성
+ * - 250828 | heekyung | 로그인 시 비밀번호 반드시 필요하여 비밀번호 관련 코드 추가
  */
 
 import com.petcoin.domain.MemberVO;
 import com.petcoin.dto.ExistsResponse;
 import com.petcoin.dto.PhoneRequest;
 import com.petcoin.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +37,7 @@ public class MemberController {
     //연락처 DB에 존재 여부 확인(조회)
     //exists 값이 true면 프론트에서 성공 처리
     @PostMapping("/check")
-    public ResponseEntity<ExistsResponse> check(@RequestBody PhoneRequest req) {
+    public ResponseEntity<ExistsResponse> check(@Valid @RequestBody PhoneRequest req) {
         String phone = sanitize(req.getPhone()); //숫자만 추출(하이픈 제거)
         boolean exists = (memberService.getMemberByPhone(phone) != null);
         return ResponseEntity.ok(new ExistsResponse(exists));
@@ -43,7 +45,7 @@ public class MemberController {
 
     //모달에서 연락처 기재 시 없는 번호면 회원가입, 있으면 반환
     @PostMapping("/register")
-    public ResponseEntity<MemberVO> register(@RequestBody PhoneRequest req) {
+    public ResponseEntity<MemberVO> register(@Valid @RequestBody PhoneRequest req) {
         String phone = sanitize(req.getPhone());
         MemberVO memberVO = memberService.registerMember(phone); //없으면 등록, 있으면 반환
         return ResponseEntity.ok(memberVO);

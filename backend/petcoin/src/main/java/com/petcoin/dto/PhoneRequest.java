@@ -6,7 +6,7 @@ package com.petcoin.dto;
  * @author : heekyung
  * @since : 250827
  * @history
- * - 250827 | heekyung | PhoneRequest 생성 /
+ * - 250827 | heekyung | PhoneRequest 생성 / 비밀번호는 통신하면 안되니끼 기재 X
  */
 
 import jakarta.validation.constraints.NotBlank;
