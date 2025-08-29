@@ -1,0 +1,1000 @@
+/* ========== 전체 레이아웃 ========== */
+
+/* App 전체 구조 */
+.App {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== 헤더 스타일 ========== */
+.header {
+  background: linear-gradient(135deg, #ff8c42, #ff6b1a) !important;
+  height: 100px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 30px !important;
+  position: relative !important;
+  z-index: 100 !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  min-height: 100px !important;
+  max-height: 100px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  gap: 15px !important;
+}
+
+.logo-image {
+  height: 60px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+}
+
+.logo-icon {
+  width: 50px !important;
+  height: 50px !important;
+  background: white !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #ff6b1a !important;
+  font-weight: bold !important;
+  font-size: 24px !important;
+}
+
+.logo-text {
+  color: white !important;
+  font-size: 28px !important;
+  font-weight: bold !important;
+  margin-left: 10px !important;
+}
+
+/* ========== 공지사항 마퀴 스타일 (검은색 배경) ========== */
+.notice-marquee {
+  width: 100% !important;
+  background: #000000 !important;
+  color: white !important;
+  padding: 0 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+  z-index: 99 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.marquee-container {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  max-width: 100%;
+  position: relative;
+}
+
+.notice-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.1);
+  height: 100%;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.notice-icon .icon {
+  font-size: 20px;
+  animation: pulse 2s ease-in-out infinite;
+  color: white;
+}
+
+.notice-icon .label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.marquee-content {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.marquee-text {
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
+  padding-left: 100%;
+  animation: marquee linear infinite;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: white;
+}
+
+.notice-indicator {
+  padding: 0 15px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  color: white;
+}
+
+/* 마퀴 애니메이션 */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ========== 메인 스크린 컨테이너 ========== */
+.main-screen-container {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.main-screen-container .content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+}
+
+/* ========== 화면 공통 스타일 ========== */
+.screen {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+}
+
+.content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  background: #f5f5f5 !important;
+  padding: 40px 30px !important;
+  overflow-y: auto !important;
+}
+
+/* ========== 제목 스타일 ========== */
+.title {
+  font-size: 42px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 50px;
+  text-align: center;
+  white-space: pre-line;
+  margin-top: 20px;
+}
+
+/* ========== 버튼 공통 스타일 ========== */
+button {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: 3px solid #ff8c42;
+  outline-offset: 2px;
+}
+
+/* 버튼 그룹 */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 30px;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* 메인 버튼 */
+.main-button {
+  padding: 25px 40px;
+  border: none;
+  border-radius: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+  text-align: center;
+  width: 100%;
+  min-height: 100px;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.main-button:active {
+  transform: translateY(-1px);
+  transition: all 0.1s;
+}
+
+.member-button {
+  background: #ff8c42;
+}
+
+.member-button:hover {
+  background: #ff6b1a;
+}
+
+.non-member-button {
+  background: #ff4444;
+}
+
+.non-member-button:hover {
+  background: #dd3333;
+}
+
+.button-subtitle {
+  font-size: 16px;
+  margin-top: 8px;
+  opacity: 0.9;
+}
+
+/* ========== 네비게이션 버튼 ========== */
+.back-button {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  background: #ff8c42;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  min-height: 60px;
+}
+
+.back-button:hover {
+  background: #ff6b1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 140, 66, 0.3);
+}
+
+.next-button {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  min-height: 60px;
+}
+
+.next-button:not(:disabled):hover {
+  background: #dd3333 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(221, 51, 51, 0.3);
+}
+
+.next-button:disabled {
+  background: #cccccc !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.6;
+}
+
+/* ========== MainScreen 스타일 ========== */
+.service-intro {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.main-title {
+  font-size: 38px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 50px;
+  line-height: 1.3;
+}
+
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  padding: 18px 25px;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.benefit-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.benefit-icon {
+  color: #4CAF50;
+  font-size: 22px;
+  font-weight: bold;
+  min-width: 22px;
+}
+
+.benefit-text {
+  font-size: 17px;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+  text-align: left;
+}
+
+/* 버튼 그룹 - 가로 배치 강제 적용 */
+.content .button-group {
+  flex-direction: row !important;
+  gap: 25px !important;
+  max-width: 500px !important;
+  margin: 30px auto 0 auto !important;
+  justify-content: center !important;
+}
+
+.content .main-button {
+  padding: 25px 30px !important;
+  font-size: 20px !important;
+  min-height: 100px !important;
+  flex: 1 !important;
+  max-width: 180px !important;
+}
+
+/* ========== PhoneInputScreen 스타일 ========== */
+.phone-input {
+  width: 450px;
+  height: 70px;
+  border: 3px solid #ddd;
+  border-radius: 15px;
+  background: white;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 40px;
+  color: #333;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.number-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  margin: 0;
+  width: 100%;
+  max-width: 350px;
+}
+
+.number-button {
+  width: 100px;
+  height: 100px;
+  border: 3px solid #ddd;
+  border-radius: 15px;
+  background: white;
+  font-size: 32px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.number-button:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: #ff8c42;
+  transform: scale(1.05);
+}
+
+.number-button:active {
+  transform: scale(0.95);
+}
+
+.number-button:disabled {
+  background: #f0f0f0 !important;
+  color: #ccc !important;
+  border-color: #e0e0e0 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  opacity: 0.6;
+}
+
+.delete-key {
+  background: #666 !important;
+  color: white !important;
+  font-size: 16px !important;
+  border: 3px solid #666 !important;
+}
+
+.delete-key:hover:not(:disabled) {
+  background: #555 !important;
+  border-color: #555 !important;
+  transform: scale(1.05) !important;
+}
+
+/* ========== InsertBottleScreen 스타일 ========== */
+.bottle-illustration {
+  width: 150px;
+  height: 200px;
+  margin: 40px auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottle-graphic {
+  width: 100px;
+  height: 140px;
+  background: #87CEEB;
+  border-radius: 50px 50px 20px 20px;
+  position: relative;
+  opacity: 0.8;
+}
+
+.bottle-cap {
+  width: 40px;
+  height: 30px;
+  background: #333;
+  border-radius: 50%;
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottle-lines {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 20px;
+}
+
+.bottle-line {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.7);
+  margin: 2px 0;
+  border-radius: 2px;
+}
+
+.arrow-down {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #666;
+  font-size: 24px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { 
+    transform: translateX(-50%) translateY(0); 
+  }
+  40% { 
+    transform: translateX(-50%) translateY(-10px); 
+  }
+  60% { 
+    transform: translateX(-50%) translateY(-5px); 
+  }
+}
+
+.start-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 20px 40px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 20px 0;
+  transition: all 0.2s;
+  min-height: 60px;
+  display: block;
+  width: auto;
+}
+
+.start-button:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.start-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.start-button.starting {
+  background: #45a049 !important;
+  cursor: not-allowed !important;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 팝업 스타일 */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.instruction-popup {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  z-index: 1001;
+}
+
+.instruction-popup .title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.instruction-content {
+  text-align: left;
+  margin: 0 auto 20px auto;
+  max-width: 320px;
+}
+
+.instruction-step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ff6b35;
+  color: #fff;
+  font-weight: bold;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 16px;
+  color: #444;
+  line-height: 1.4;
+}
+
+.confirm-button {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 50px;
+  font-weight: bold;
+}
+
+.confirm-button:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* ========== ProcessingScreen 스타일 ========== */
+.processing-text {
+  margin-top: 50px;
+  font-size: 22px;
+  color: #666;
+  text-align: center;
+  line-height: 1.7;
+  max-width: 400px;
+}
+
+.loading-spinner {
+  width: 80px;
+  height: 80px;
+  border: 6px solid #f0f0f0;
+  border-top: 6px solid #ff8c42;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 60px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.processing-screen .content {
+  justify-content: center;
+  padding: 80px 40px;
+}
+
+.processing-screen .title {
+  margin-bottom: 40px;
+  font-size: 40px;
+}
+
+.processing-screen .loading-spinner {
+  width: 100px;
+  height: 100px;
+  border: 8px solid #f0f0f0;
+  border-top: 8px solid #ff8c42;
+  margin: 60px auto;
+}
+
+/* ========== CompletionScreen 스타일 ========== */
+.success-icon {
+  width: 100px;
+  height: 100px;
+  background: #4CAF50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto;
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.result-card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin: 20px 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  min-width: 400px;
+}
+
+.pet-count-badge {
+  background: #4CAF50;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  margin: 10px 0;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.points-display {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.points-earned {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.heart-icon {
+  margin: 20px 0;
+  color: #ff69b4;
+  font-size: 18px;
+}
+
+/* ========== 반응형 디자인 ========== */
+
+/* 터치 디바이스 최적화 */
+@media (pointer: coarse) {
+  .number-button {
+    min-height: 80px;
+    min-width: 80px;
+    font-size: 28px;
+  }
+  
+  .start-button {
+    min-height: 70px;
+    padding: 25px 45px;
+    font-size: 22px;
+  }
+  
+  .main-button {
+    min-height: 110px;
+    padding: 30px 45px;
+    font-size: 24px;
+  }
+  
+  .next-button,
+  .back-button {
+    min-height: 70px;
+    padding: 20px 35px;
+    font-size: 20px;
+  }
+}
+
+/* 아이패드 세로 모드 */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .header {
+    height: 90px !important;
+    min-height: 90px !important;
+    max-height: 90px !important;
+    padding: 0 25px !important;
+  }
+  
+  .logo-image {
+    height: 55px;
+  }
+
+  .marquee-container {
+    height: 70px;
+  }
+  
+  .marquee-text {
+    font-size: 18px;
+  }
+  
+  .notice-icon {
+    padding: 0 25px;
+  }
+  
+  .notice-icon .icon {
+    font-size: 22px;
+  }
+  
+  .notice-icon .label {
+    font-size: 16px;
+  }
+
+  .main-title {
+    font-size: 42px;
+    margin-bottom: 60px;
+  }
+  
+  .benefits-list {
+    gap: 25px;
+    max-width: 450px;
+  }
+  
+  .benefit-item {
+    padding: 22px 30px;
+  }
+  
+  .benefit-icon {
+    font-size: 26px;
+  }
+  
+  .benefit-text {
+    font-size: 19px;
+  }
+  
+  .content .main-button {
+    padding: 28px 35px !important;
+    font-size: 22px !important;
+    min-height: 110px !important;
+    max-width: 200px !important;
+  }
+  
+  .content .button-group {
+    gap: 30px !important;
+  }
+
+  .phone-input {
+    width: 500px;
+    height: 80px;
+    font-size: 32px;
+  }
+  
+  .number-button {
+    width: 110px;
+    height: 110px;
+    font-size: 36px;
+  }
+  
+  .delete-key {
+    font-size: 18px !important;
+  }
+  
+  .number-pad {
+    max-width: 400px;
+    gap: 30px;
+  }
+
+  .processing-text {
+    font-size: 24px;
+    max-width: 450px;
+    margin-top: 60px;
+  }
+  
+  .processing-screen .title {
+    font-size: 44px;
+    margin-bottom: 50px;
+  }
+  
+  .processing-screen .loading-spinner {
+    width: 120px;
+    height: 120px;
+    border: 10px solid #f0f0f0;
+    border-top: 10px solid #ff8c42;
+    margin: 80px auto;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .header {
+    height: 80px !important;
+    min-height: 80px !important;
+    max-height: 80px !important;
+    padding: 0 20px !important;
+  }
+  
+  .logo-image {
+    height: 50px;
+  }
+
+  .marquee-container {
+    height: 50px;
+  }
+  
+  .marquee-text {
+    font-size: 14px;
+  }
+  
+  .notice-icon {
+    padding: 0 15px;
+  }
+  
+  .notice-icon .icon {
+    font-size: 18px;
+  }
+  
+  .notice-icon .label {
+    font-size: 12px;
+  }
+
+  .main-title {
+    font-size: 30px;
+    margin-bottom: 40px;
+  }
+  
+  .benefits-list {
+    gap: 15px;
+    max-width: 350px;
+  }
+  
+  .benefit-item {
+    padding: 15px 20px;
+  }
+  
+  .benefit-icon {
+    font-size: 18px;
+  }
+  
+  .benefit-text {
+    font-size: 15px;
+  }
+  
+  .content .main-button {
+    padding: 20px 25px !important;
+    font-size: 18px !important;
+    min-height: 90px !important;
+    max-width: 160px !important;
+  }
+  
+  .content .button-group {
+    gap: 20px !important;
+  }
+
+  .phone-input {
+    width: 350px;
+    height: 60px;
+    font-size: 24px;
+  }
+  
+  .number-button {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+  }
+  
+  .delete-key {
+    font-size: 14px !important;
+  }
+  
+  .number-pad {
+    gap: 20px;
+    max-width: 300px;
+  }
+
+  .result-card {
+    min-width: 300px;
+    padding: 20px;
+  }
+  
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 36px;
+  }
+}
+
+/* ========== 유틸리티 클래스 ========== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
