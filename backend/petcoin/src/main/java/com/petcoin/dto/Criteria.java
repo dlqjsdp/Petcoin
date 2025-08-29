@@ -1,5 +1,6 @@
 package com.petcoin.dto;
 
+import com.petcoin.constant.RequestStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -26,6 +27,9 @@ public class Criteria {
     private String phone;       //휴대폰 번호
     private Integer minPoint;   //최소 포인트
     private Integer maxPoint;   //최대 포인트
+
+    //전체 포인트 환급 요청 조회의 검색 조건 (요청 상태)
+    private String requestStatus;
 
     //pageNum과 amount 지정하지 않으면 기본값: 1페이지, 10개씩 조회
     public Criteria() {

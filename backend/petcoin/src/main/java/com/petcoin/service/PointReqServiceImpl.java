@@ -1,7 +1,9 @@
 package com.petcoin.service;
 
 import com.petcoin.constant.RequestStatus;
+import com.petcoin.dto.Criteria;
 import com.petcoin.dto.PointRequestDto;
+import com.petcoin.dto.PointRequestProcessDto;
 import com.petcoin.mapper.PointReqMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,8 @@ import java.util.List;
  * - 250828 | sehui | 포인트 환급 요청 목록 조회 기능 추가
  * - 250828 | sehui | 포인트 환급 요청 단건 조회 기능 추가
  * - 250828 | sehui | 포인트 환급 요청 상태 변경 기능 추가
+ * - 250829 | sehui | 페이징 처리를 위한 전체 포인트 환급 요청의 수 조회 기능 추가
+ * - 250829 | sehui | 포인트 환급 요청 상태 변경의 매개변수 변경
  */
 
 @Service
@@ -29,8 +33,8 @@ public class PointReqServiceImpl implements PointReqService {
 
     //포인트 환급 요청 목록 조회
     @Override
-    public List<PointRequestDto> getAllPointRequests() {
-        List<PointRequestDto> pointRequestDtoList = pointReqMapper.findAllPointRequests();
+    public List<PointRequestDto> getPointRequestsWithPaging(Criteria cri) {
+        List<PointRequestDto> pointRequestDtoList = pointReqMapper.findPointRequestsWithPaging(cri);
 
         if(pointRequestDtoList.isEmpty()){
             throw new IllegalArgumentException("포인트 환급 요청 목록 조회 오류 발생");
@@ -52,13 +56,25 @@ public class PointReqServiceImpl implements PointReqService {
 
     //포인트 환급 요청 상태 변경 기능
     @Override
-    public int updatePointRequestStatus(Long requestId, RequestStatus requestStatus, String note) {
-        int result = pointReqMapper.updatePointRequestStatus(requestId, requestStatus, note);
+    public int updatePointRequestStatus(PointRequestProcessDto pointRequestDto) {
+        int result = pointReqMapper.updatePointRequestStatus(pointRequestDto);
 
         if(result != 1){
             throw new IllegalArgumentException("환급 요청 상태 변경 오류 발생");
         }
 
         return result;
+    }
+
+    //전체 포인트 환급 요청의 수
+    @Override
+    public int getTotalPointRequests() {
+        int TotalPointRequests = pointReqMapper.getTotalPointRequests();
+
+        if(TotalPointRequests == 0){
+            throw new IllegalArgumentException("전체 환급 요청의 수가 null입니다.");
+        }
+
+        return TotalPointRequests;
     }
 }

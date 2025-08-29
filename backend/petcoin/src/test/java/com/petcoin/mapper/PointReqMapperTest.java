@@ -1,10 +1,13 @@
 package com.petcoin.mapper;
 
 import com.petcoin.constant.RequestStatus;
+import com.petcoin.dto.Criteria;
 import com.petcoin.dto.PointRequestDto;
+import com.petcoin.dto.PointRequestProcessDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250828 | sehui | 포인트 환급 요청 목록 조회 기능 Test
  * - 250828 | sehui | 포인트 환급 요청 단건 조회 기능 Test
  * - 250828 | sehui | 포인트 환급 요청 상태 변경 기능 Test
+ * - 250829 | sehui | 전체 포인트 환급 요청의 수 조회 Test
+ * - 250829 | sehiu | 목록 조회에 검색 조건 없는 페이징 처리로 변경 후 Test
+ * - 250829 | sehui | 목록 조회에서 검색 조건(휴대폰 번호, 요청 처리 상태) Test
+ * - 250829 | sehui | 포인트 환급 요청 상태 변경 기능의 매개변수 변경 후 Test
  */
 
 @SpringBootTest
@@ -33,11 +40,70 @@ class PointReqMapperTest {
     private PointReqMapper pointReqMapper;
 
     @Test
-    @DisplayName("포인트 환급 요청 목록 조회")
-    void testAllPointReq() {
+    @DisplayName("포인트 환급 요청 목록 조회 - 검색 조건 없이")
+    void testpointReqList() {
+
+        //given : 페이징 처리, 검색 조건 없이 설정
+        Criteria cri = new Criteria(1, 10);
 
         //when : 포인트 환급 요청 목록 조회
-        List<PointRequestDto> requestList = pointReqMapper.findAllPointRequests();
+        List<PointRequestDto> requestList = pointReqMapper.findPointRequestsWithPaging(cri);
+
+        //then : 결과 검증
+        assertNotNull(requestList, "포인트 환급 요청 목록이 null입니다.");
+        log.info("환급 요청 건수: {}", requestList.size());
+
+        for(PointRequestDto dto : requestList) {
+            log.info("요청 ID : {}, 회원 연락처 : {}, 금액 : {}, 상태 : {}",
+                    dto.getRequestId(),
+                    dto.getPhone(),
+                    dto.getRequestAmount(),
+                    dto.getRequestStatus()
+            );
+
+            assertNotNull(dto.getMemberId(), "회원 ID가 null입니다.");
+            assertNotNull(dto.getRequestStatus(), "요청 진행 상태가 null입니다.");
+        }
+    }
+
+    @Test
+    @DisplayName("포인트 환급 요청 목록 조회 - 핸드폰 번호 조건 검색")
+    void testpointReqListWithPhone() {
+
+        //given : 페이징 처리, 검색 조건 없이 설정
+        Criteria cri = new Criteria(1, 10);
+        cri.setPhone("2222");
+
+        //when : 포인트 환급 요청 목록 조회
+        List<PointRequestDto> requestList = pointReqMapper.findPointRequestsWithPaging(cri);
+
+        //then : 결과 검증
+        assertNotNull(requestList, "포인트 환급 요청 목록이 null입니다.");
+        log.info("환급 요청 건수: {}", requestList.size());
+
+        for(PointRequestDto dto : requestList) {
+            log.info("요청 ID : {}, 회원 연락처 : {}, 금액 : {}, 상태 : {}",
+                    dto.getRequestId(),
+                    dto.getPhone(),
+                    dto.getRequestAmount(),
+                    dto.getRequestStatus()
+            );
+
+            assertNotNull(dto.getMemberId(), "회원 ID가 null입니다.");
+            assertNotNull(dto.getRequestStatus(), "요청 진행 상태가 null입니다.");
+        }
+    }
+
+    @Test
+    @DisplayName("포인트 환급 요청 목록 조회 - 요청 처리 상태 조건 검색")
+    void testpointReqListWithStatus() {
+
+        //given : 페이징 처리, 검색 조건 없이 설정
+        Criteria cri = new Criteria(1, 10);
+        cri.setRequestStatus(RequestStatus.PENDING.name());
+
+        //when : 포인트 환급 요청 목록 조회
+        List<PointRequestDto> requestList = pointReqMapper.findPointRequestsWithPaging(cri);
 
         //then : 결과 검증
         assertNotNull(requestList, "포인트 환급 요청 목록이 null입니다.");
@@ -77,18 +143,32 @@ class PointReqMapperTest {
     void testUpdatePointReqStatus() {
 
         //given : 요청 ID, 요청 상태, 요청 처리 사유 설정
-        Long requestId = 1L;
-        RequestStatus requestStatus = RequestStatus.APPROVED;
-        String note = "환급 요청 정상 승인";
+        PointRequestProcessDto pointRequestDto = PointRequestProcessDto.builder()
+                .requestId(1L)
+                .requestStatus(RequestStatus.APPROVED)
+                .note("환급 요청 정상 승인")
+                .build();
 
         //when : 포인트 환급 요청 상태 변경
-        int result = pointReqMapper.updatePointRequestStatus(requestId, requestStatus, note);
+        int result = pointReqMapper.updatePointRequestStatus(pointRequestDto);
 
         //then : 결과 검증
         assertEquals(result, 1, "1개의 환급 요청만 처리되어야 합니다.");
 
-        PointRequestDto requestDto = pointReqMapper.findPointRequestById(requestId);
+        PointRequestDto requestDto = pointReqMapper.findPointRequestById(pointRequestDto.getRequestId());
         log.info("상태 변경된 요청 정보 >> {}", requestDto);
     }
 
+    @Test
+    @DisplayName("전체 포인트 환급 요청의 수")
+    void testTotalPointReq() {
+
+        //when : 전체 포인트 환급 요청의 수
+        int TotalPointRequests = pointReqMapper.getTotalPointRequests();
+
+        //then : 결과 검증
+        assertNotNull(TotalPointRequests, "전체 포인트 환급 요청의 수가 null입니다.");
+
+        log.info("Total Point Requests: {}", TotalPointRequests);
+    }
 }
