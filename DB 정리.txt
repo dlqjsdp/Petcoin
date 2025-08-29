@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS kiosk (
   location VARCHAR(255)  NOT NULL, -- 설치 매장/주소
   lat DECIMAL(10,7) NULL, -- 위도
   lng DECIMAL(10,7) NULL, -- 경도
-  status ENUM('ONLINE','OFFLINE','MAINT') NOT NULL DEFAULT 'OFFLINE',
+  status ENUM('ONLINE','OFFLINE','MAINT') NOT NULL DEFAULT 'ONLINE',
   sw_version VARCHAR(50)   NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 생성 시각
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 마지막 수정 시각
@@ -86,3 +86,11 @@ CREATE TABLE IF NOT EXISTS kiosk_run (
   FOREIGN KEY (kiosk_id) REFERENCES kiosk(kiosk_id),
   FOREIGN KEY (member_id) REFERENCES member(member_id)
 );
+
+CREATE INDEX idx_kiosk_run_kiosk_id ON kiosk_run(kiosk_id);
+
+-- RUNNING 여부 체크/범위잠금 정확도 ↑
+CREATE INDEX idx_kiosk_run_kiosk_status ON kiosk_run (kiosk_id, status);
+
+-- 목록 조회에서 최근순 정렬도 자주 쓰면 같이(선택)
+CREATE INDEX idx_kiosk_run_kiosk_status_started ON kiosk_run (kiosk_id, status, started_at DESC);
