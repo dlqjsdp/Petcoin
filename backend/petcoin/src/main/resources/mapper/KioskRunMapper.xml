@@ -23,6 +23,7 @@
  *   - 250827 | yukyeong | Mapper XML 최초 생성 (insertRun, completeRun, cancelRun, readRun, getRunListWithPaging, getTotalRunCount, getRunningCountByKioskId 정의)
  *   - 250827 | yukyeong | readRun 쿼리에서 member 테이블 LEFT JOIN 추가, phone 컬럼 매핑
  *   - 250827 | yukyeong | 공통 WHERE 조건(kioskRunWhere) SQL 분리하여 목록/카운트 재사용
+ *   - 250829 | yukyeong | lockRunRow 추가 (행 잠금: endRun/cancelRun 시 동시성 제어), readRunAsVO 추가 (실행 로직용 VO 재조회: DB DEFAULT/트리거 값 반영)
 -->
 
 
@@ -78,6 +79,21 @@
         FROM kiosk_run
         WHERE kiosk_id = #{kioskId}
           AND status   = 'RUNNING'
+    </select>
+
+    <!-- 1-5) 실행 세션 행 잠금 (종료/취소 시 동시성 제어) -->
+    <select id="lockRunRow">
+        SELECT run_id, status
+        FROM kiosk_run
+        WHERE run_id = #{runId}
+            FOR UPDATE
+    </select>
+
+    <!-- 1-6) 실행 세션 단건 조회 (실행 로직용: VO 반환, DB DEFAULT/트리거 반영값 확인용) -->
+    <select id="readRunAsVO" resultMap="kioskRunMap">
+        SELECT run_id, kiosk_id, member_id, status, started_at, ended_at
+        FROM kiosk_run
+        WHERE run_id = #{runId}
     </select>
 
     <!-- 2-1) 실행 세션 단건 조회 -->

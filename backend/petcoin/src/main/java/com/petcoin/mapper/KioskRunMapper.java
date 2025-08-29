@@ -34,6 +34,7 @@ import java.util.List;
  * @since   : 250827
  * @history
  *   - 250827 | yukyeong | Mapper 최초 생성 (insertRun, completeRun, cancelRun, readRun, getRunListWithPaging, getTotalRunCount, getRunningCountByKioskId 메서드 정의)
+ *   - 250829 | yukyeong | lockRunRow 추가 (행 잠금: endRun/cancelRun 시 동시성 제어), readRunAsVO 추가 (실행 로직용 VO 반환, DB DEFAULT/트리거 값 반영 확인용)
  */
 
 @Mapper
@@ -52,7 +53,13 @@ public interface KioskRunMapper {
                          @Param("endedAt") LocalDateTime endedAt);
 
     // 1-4) 특정 키오스크 RUNNING 세션 중복 실행 여부 확인
-    public int getRunningCountByKioskId(@Param("kioskId") Long kioskId);
+    public int getRunningCountByKioskId(Long kioskId);
+
+    // 1-5) 실행 세션 행 잠금 (종료/취소 시 동시성 제어)
+    public KioskRunVO lockRunRow(Long runId);
+
+    // 1-6) 실행 세션 단건 조회 (실행 로직용: VO 반환, DB DEFAULT/트리거 반영값 확인용)
+    public KioskRunVO readRunAsVO(Long runId);
 
     // 관리자 페이지용
     // 2-1) 실행 세션 단건 조회 (단건 조회는 phone 포함 DTO로 반환)
