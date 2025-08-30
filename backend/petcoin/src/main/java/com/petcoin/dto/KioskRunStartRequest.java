@@ -25,7 +25,7 @@ import lombok.*;
 @Builder
 public class KioskRunStartRequest {
 
-    @NotNull
+    @NotNull(message = "kioskId는 필수입니다.")
     private Long kioskId;
 
     // 비회원 허용
