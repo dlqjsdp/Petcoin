@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /*
@@ -66,6 +67,11 @@ public class JwtTokenProvider {
 
     //다른 클래스에서 JwtTokenProvider가 가진 secret을 안전하게 가져다가 쓰도록 도와줌
     public byte[] getSecretBytes() {
-        return secret.getBytes();
+        return secret.getBytes(StandardCharsets.UTF_8);
+    }
+
+    //만료시간(초) 노출
+    public long getValiditySeconds() {
+        return validitySeconds;
     }
 }
