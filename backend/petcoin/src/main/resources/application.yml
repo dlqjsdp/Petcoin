@@ -34,7 +34,7 @@ spring:
 
 mybatis:
   #config-location: classpath:mybatis-config.xml
-  mapper-locations: classpath:mapper/*.xml
+  mapper-locations: classpath:mapper/**/*.xml
 
   # DB 컬럼명과 Java 필드명 자동 매핑 (snake_case → camelCase)
   configuration:
@@ -49,5 +49,5 @@ logging:
     org.apache.ibatis: debug
 
 jwt:
-  secret: "교체필수_32바이트이상랜덤문자열_예)ZLwm3bq7wB43G2J8f2p5dJz1xD8m0x9K"
+  secret: "change_this_to_a_random_32+_byte_string________________"
   access-validity-seconds: 3600

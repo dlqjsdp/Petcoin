@@ -3,6 +3,7 @@ package com.petcoin.controller;
 import com.petcoin.constant.Role;
 import com.petcoin.domain.MemberVO;
 import com.petcoin.dto.PhoneRequest;
+import com.petcoin.dto.TokenResponse;
 import com.petcoin.mapper.MemberMapper;
 import com.petcoin.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -50,36 +51,44 @@ public class AuthController {
 
     // 로그인 + 자동가입
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody PhoneRequest req,
+    public ResponseEntity<?> login(@RequestBody PhoneRequest req, //프론트에서 JSON body로 넘어온 phone 값을 PhoneRequest DTO로 매핑
                                    @RequestParam(defaultValue = "true") boolean allowAutoRegister) {
         //1. 전화번호 정규화(숫자만)
         String phone = sanitize(req.getPhone());
         if (phone.length() < 10 || phone.length() > 11) {
-            return ResponseEntity.badRequest().body("전화번호 형식 오류");
-    }
+            return ResponseEntity.badRequest().build();
+        }
         //2. 회원 조회
         MemberVO member = memberMapper.findByPhone(phone);
-        
+
         //3. 회원이 없으면 자동 가입
         if (member == null) {
             if (!allowAutoRegister) {
-                return ResponseEntity.badRequest().body("회원 없음");
+                return ResponseEntity.badRequest().build();
             }
-            //자동가입(랜덤 비밀번호 생성 + 기본 권한 user로 저장
+            //자동가입(랜덤 비밀번호 생성 후 암호화)
             String enc = passwordEncoder.encode(generateSecret(24));
-            MemberVO newMember = MemberVO.builder()
+
+            //새 회원 객체 생성 (권한은 USER, 전화번호+암호화된 비밀번호 저장)
+            member = MemberVO.builder()
                     .phone(phone)
                     .role(Role.USER)
                     .password(enc)
                     .build();
-            memberMapper.insertMember(newMember);
-            member = newMember;
-        }
-        //4. 토큰 생성
-        String token = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name());
 
-        //5. JSON 응답
-        return ResponseEntity.ok(Map.of("token", token));
+            //DB에 새 회원 정보 저장
+            memberMapper.insertMember(member);
+        }
+        // 5. (신규든 기존이든) JWT 토큰 생성 (phone=주체, role=권한)
+        String jwt = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name());
+
+        // 7. 응답 DTO(TokenResponse)로 토큰 관련 정보를 JSON 으로 반환
+        return ResponseEntity.ok(
+                TokenResponse.builder()
+                        .token("Bearer")        // 토큰 타입(프론트에서 Authorization 헤더 붙일 때 prefix로 사용)
+                        .accessToken(jwt)       // 실제 JWT 문자열
+                        .build()
+        );
     }
 
 }

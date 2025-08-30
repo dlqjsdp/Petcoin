@@ -25,13 +25,15 @@ create table notice (
 
 -- 페트병 무인회수기 위치 테이블
 create table pet_recycle (
-	recycle_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 회수기 고유번호(기본키)
+    recycle_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 회수기 고유번호(기본키)
     recycle_name VARCHAR(200) NOT NULL, -- 회수기 위치 명칭
     address VARCHAR(255) NOT NULL, -- 설치 주소
     latitude DECIMAL(10,7) NOT NULL, -- 위도
     longitude DECIMAL(10,7) NOT NULL, -- 경도
     recycle_tel VARCHAR(13), -- 설치된 장소 연락처
-    region_name VARCHAR(50) -- 지역 / 동
+    sido VARCHAR(20), -- 시
+    sigungu VARCHAR(30), -- 구
+    dong VARCHAR(40) -- 동
 );
 
 -- 포인트 내역 테이블
