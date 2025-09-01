@@ -1,3 +1,23 @@
+/*
+ * KioskApp.js
+ * - 키오스크 실행 전용 화면 컴포넌트
+ * - 단계별 화면 전환을 useState로 관리
+ *   (Main → PhoneInput → InsertBottle → Processing → Completion)
+ *
+ * 주요 기능:
+ *   - currentStep 상태값에 따라 화면 전환
+ *   - 각 단계 컴포넌트에 onNext/onBack/onComplete/onHome 콜백 전달
+ *   - 헤더 영역에는 로고 고정 표시
+ *
+ * @fileName: KioskApp.js
+ * @author  : yukyeong
+ * @since   : 250901
+ * @history
+ *   - 250901 | yukyeong | 파일명 App.js → KioskApp.js 로 변경
+ *                        - 함수명 App → KioskApp 으로 수정
+ *                        - export default KioskApp 적용
+ */
+
 import React, { useState } from 'react';
 import MainScreen from './components/MainScreen';
 import PhoneInputScreen from './components/PhoneInputScreen';
@@ -8,7 +28,7 @@ import logoImage from './img/logo.png';
 import './App.css';
 import './styles/common.css';
 
-function App() {
+function KioskApp() {
   const [currentStep, setCurrentStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [petBottleCount, setPetBottleCount] = useState(3);
@@ -87,4 +107,4 @@ function App() {
   );
 }
 
-export default App;
+export default KioskApp;
