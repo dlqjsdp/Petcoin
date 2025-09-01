@@ -56,6 +56,8 @@ public class SecurityConfig {
                                 "/api/member/check", "/api/member/register", "/api/auth/**", "/login", "/logout",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/public/**"
                         ).permitAll()
+                        //포인트 적립 테스트용
+                        //.requestMatchers("/api/point/add").permitAll()
                         // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 나머지는 인증 필요

@@ -2,7 +2,20 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!--
+/*
+ * 페트병 불량 정보 mapper
+ * @author : leejihye
+ * @fileName : PetRejectionMapper
+ * @since : 250830
+ * @history
+ *  - 250830 | leejihye | 페트병 불량 정보 mapper 생성
+ */
+-->
 <mapper namespace="com.petcoin.mapper.PetRejectionMapper">
-
+    <select id="selectPetRejectionById" parameterType="com.petcoin.dto.PetRejectionDto">
+        select *
+        from pet_rejection
+        where pet_rejection_id=#{petRejectionId}
+    </select>
 </mapper>

@@ -43,7 +43,7 @@ create table point_history (
     point_change INT NOT NULL DEFAULT 0,		-- 포인트 변화량
     point_balance INT NOT NULL DEFAULT 0, 		-- 포인트 잔액
     action_type ENUM('EARN', 'USE', 'ADJUST') NOT NULL, 		-- 거래 유형
-    decription VARCHAR(255) DEFAULT NULL, 		-- 거래 상세 설명
+    description VARCHAR(255) DEFAULT NULL, 		-- 거래 상세 설명
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,		-- 거래 일자
     FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 );

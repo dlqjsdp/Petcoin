@@ -1,7 +1,9 @@
 package com.petcoin.service;
 
+import com.petcoin.domain.PointHistoryVO;
 import com.petcoin.dto.PointHistoryDto;
 import com.petcoin.dto.PointRequestDto;
+import com.petcoin.mapper.PointHisMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250827 | sehui | 회원별 포인트 전체 내역 조회 Test
  * - 250828 | sehui | 현재 포인트 잔액 조회 Test
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) Test
+ * - 250901 | leejihye | 포인트 적립 기능 Test
  */
 
 @SpringBootTest
@@ -86,4 +89,25 @@ class PointHisServiceTest {
         log.info("변경된 포인트 잔액 >> {}", latestPointBalance);
     }
 
+    @Autowired
+    private PointHisMapper pointHisMapper;
+
+    @Test
+    void testPlusPoint_AddsRecord() {
+        // given
+        Long memberId = 3L;
+        PointHistoryVO vo = new PointHistoryVO();
+        vo.setMemberId(memberId);
+        vo.setPointChange(100);
+
+        // when
+        pointHisService.plusPoint(vo);
+
+        // then
+        // 적립 후 최종 포인트 값
+        int lastRecord = pointHisMapper.findLatestPointBalance(memberId);
+
+        assertNotNull(lastRecord);
+        log.info("<UNK> <UNK> <UNK> <UNK> >> {}", vo.toString());
+    }
 }

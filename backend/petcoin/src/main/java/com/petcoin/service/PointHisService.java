@@ -1,5 +1,6 @@
 package com.petcoin.service;
 
+import com.petcoin.domain.PointHistoryVO;
 import com.petcoin.dto.PointHistoryDto;
 import com.petcoin.dto.PointRequestDto;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * - 250827 | sehui | 회원별 포인트 내역 조회 기능 추가
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
+ * - 250901 | leejihye | 포인트 적립 기능 추가
  */
 
 public interface PointHisService {
@@ -26,4 +28,7 @@ public interface PointHisService {
 
     //포인트 내역 추가 (환급 시 포인트 차감)
     public int addPointHistory(PointRequestDto pointRequestDto);
+
+    //포인트 적립 내역 추가
+    public void plusPoint(PointHistoryVO pointHistoryVO);
 }
