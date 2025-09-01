@@ -2,7 +2,19 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!--
+/*
+ * 페트병 회수 기록 VO
+ * @author : leejihye
+ * @fileName : PetCollectionLogMapper
+ * @since : 250830
+ * @history
+ *  - 250830 | leejihye | 페트병 회수 기록 mapper 생성
+ */
+-->
 <mapper namespace="com.petcoin.mapper.PetCollectionLogMapper">
-
+    <insert id="insertPetCollectionLog" parameterType="com.petcoin.domain.PetCollectionLogVO"  useGeneratedKeys="true" keyProperty="petCollectionId">
+        insert into pet_collection_log (run_id, member_id, pet_rejection_id, ai_confidence, is_collected, img_path)
+        values (#{runId}, #{memberId}, #{petRejectionId}, #{aiConfidence}, #{isCollected}, #{imgPath})
+    </insert>
 </mapper>

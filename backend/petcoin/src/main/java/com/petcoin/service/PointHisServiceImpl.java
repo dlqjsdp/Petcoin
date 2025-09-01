@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
  * - 250827 | sehui | 회원별 포인트 내역 조회 기능 추가
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
+ * - 250901 | leejihye | 포인트 적립 기능 추가
  */
 
 @Service
@@ -97,5 +98,30 @@ public class PointHisServiceImpl implements PointHisService {
         }
 
         return resultAdd;
+    }
+
+    //포인트 적립 내역 추가
+    @Override
+    public void plusPoint(PointHistoryVO pointHistoryVO) {
+        Long memberId = pointHistoryVO.getMemberId();
+        int pointChange = pointHistoryVO.getPointChange();
+
+        //1. 현재 포인트 잔액 조회
+        int latestPointBalance = getLatestPointBalance(memberId);
+
+        //2. 누적 포인트 계산
+        int newBalance = latestPointBalance + pointChange;
+
+        // 3. VO에 세팅
+        pointHistoryVO.setPointBalance(newBalance);
+        pointHistoryVO.setActionType(ActionType.EARN);
+        pointHistoryVO.setDescription("페트병 무인 회수기 포인트 적립");
+
+        //4. mapper 호출
+        int result = pointHisMapper.plusPoint(pointHistoryVO);
+        if (result != 1) {
+            throw new IllegalArgumentException("포인트 적립 내역 추가 오류 발생");
+        }
+        log.info("plusPoint 서비스 진입: {}", pointHistoryVO);
     }
 }

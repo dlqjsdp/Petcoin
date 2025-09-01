@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250827 | sehui | 회원별 포인트 전체 내역 조회 기능 Test
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 Test
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 Test
+ * - 250901 | leejihye | 포인트 적립 기능 Test
  */
 
 @SpringBootTest
@@ -87,6 +88,22 @@ class PointHisMapperTest {
         for (PointHistoryVO vo : pointHistory) {
             log.info("포인트 내역 >> {}", vo);
         }
+    }
+    
+    @Test
+    @DisplayName("포인트 적립 내역 추가")
+    void plusPointTest() {
+        PointHistoryVO pointHistoryVO = PointHistoryVO.builder()
+                .memberId(3L)
+                .pointChange(10)
+                .pointBalance(10)
+                .actionType(ActionType.EARN)
+                .build();
+        pointHisMapper.plusPoint(pointHistoryVO);
+
+        int result = pointHisMapper.plusPoint(pointHistoryVO);
+
+        log.info(String.valueOf(result));
     }
 
 }
