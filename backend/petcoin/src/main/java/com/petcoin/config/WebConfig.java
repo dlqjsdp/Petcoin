@@ -38,7 +38,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                         "http://localhost:3000",
-                        "http://192.168.10.72:3000" // ← 아이패드가 보는 프론트 주소
+                        "http://192.168.10.72:3000", // ← 아이패드가 보는 프론트 주소
+                        "http://192.168.10.245:5000" // ← 플라스크 서버 주소
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*") // 모든 요청 헤더 허용

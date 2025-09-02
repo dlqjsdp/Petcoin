@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 /*
- * 포인트 내역 Controller
+ * 페트병 불량 정보 Controller
  * @author : leejihye
  * @fileName : PetRejectionApiController
  * @since : 250901

@@ -96,3 +96,25 @@ CREATE INDEX idx_kiosk_run_kiosk_status ON kiosk_run (kiosk_id, status);
 
 -- 목록 조회에서 최근순 정렬도 자주 쓰면 같이(선택)
 CREATE INDEX idx_kiosk_run_kiosk_status_started ON kiosk_run (kiosk_id, status, started_at DESC);
+
+-- 불량 사유 및 안내 메시지(pet_rejection)
+create table pet_rejection (
+pet_rejection_id bigint primary key,
+pet_rejection_reason varchar(1000) not null,
+pet_rejection_info varchar(1000) not null
+);
+
+-- 페트병 회수 기록 내역(pet_collection_log)
+create table pet_collection_log (
+pet_collection_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+run_id bigint not null,
+member_id bigint not null,
+pet_rejection_id bigint not null,
+ai_confidence double not null,
+created_at datetime default CURRENT_TIMESTAMP not null,
+is_collected boolean not null,
+img_path varchar(1000),
+FOREIGN KEY (run_id) REFERENCES kiosk_run(run_id),
+FOREIGN KEY (pet_rejection_id) REFERENCES pet_rejection(pet_rejection_id),
+FOREIGN KEY (member_id) REFERENCES member(member_id)
+);
