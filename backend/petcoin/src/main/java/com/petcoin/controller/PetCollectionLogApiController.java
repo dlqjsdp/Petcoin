@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.channels.MulticastChannel;
 /*
- * 포인트 내역 Controller
+ * 페트병 회수 기록 Controller
  * @author : leejihye
  * @fileName : PetCollectionLogApiController
  * @since : 250901
