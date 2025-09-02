@@ -84,8 +84,6 @@ function App() {
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/kiosk/*" element={<KioskApp />} />
 
-          {/* 잘못된 경로 → 메인으로 */}
-          <Route path="*" element={<MainPage />} />
         </Routes>
       </main>
     </div>
