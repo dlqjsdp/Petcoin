@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
  * @history
  *     - 250826 | yukyeong | VO 최초 생성
  *     - 250827 | yukyeong | startedAt, endedAt 필드명 수정
+ *     - 250902 | leejihye | totalPet 필드 추가
  */
 
 @Getter @Setter
@@ -37,5 +38,6 @@ public class KioskRunVO {
     private RunStatus status;
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;
+    private int totalPet;
 
 }

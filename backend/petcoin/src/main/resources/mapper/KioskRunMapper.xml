@@ -36,6 +36,7 @@
         <result property="status" column="status" />
         <result property="startedAt" column="started_at"/>
         <result property="endedAt" column="ended_at"/>
+        <result property="totalPet" column="total_pet"/>
     </resultMap>
 
     <!-- 1-1) 실행 세션 생성 (RUNNING 상태로 시작) -->
@@ -59,7 +60,8 @@
     <update id="completeRun">
         UPDATE kiosk_run
         SET status = 'COMPLETED',
-            ended_at = #{endedAt}
+            ended_at = #{endedAt},
+            total_pet = #{totalPet}
         WHERE run_id = #{runId}
           AND status = 'RUNNING'
     </update>
@@ -68,7 +70,8 @@
     <update id="cancelRun">
         UPDATE kiosk_run
         SET status = 'CANCELLED',
-            ended_at = #{endedAt}
+            ended_at = #{endedAt},
+            total_pet = #{totalPet}
         WHERE run_id = #{runId}
           AND status = 'RUNNING'
     </update>
@@ -83,7 +86,7 @@
 
     <!-- 1-5) 실행 세션 행 잠금 (종료/취소 시 동시성 제어) -->
     <select id="lockRunRow">
-        SELECT run_id, status
+        SELECT run_id, status, member_id
         FROM kiosk_run
         WHERE run_id = #{runId}
             FOR UPDATE
@@ -91,7 +94,7 @@
 
     <!-- 1-6) 실행 세션 단건 조회 (실행 로직용: VO 반환, DB DEFAULT/트리거 반영값 확인용) -->
     <select id="readRunAsVO" resultMap="kioskRunMap">
-        SELECT run_id, kiosk_id, member_id, status, started_at, ended_at
+        SELECT run_id, kiosk_id, member_id, status, started_at, ended_at, total_pet
         FROM kiosk_run
         WHERE run_id = #{runId}
     </select>
@@ -105,7 +108,8 @@
             m.phone AS phone,
             kr.status AS status,
             kr.started_at AS startedAt,
-            kr.ended_at AS endedAt
+            kr.ended_at AS endedAt,
+            kr.total_pet AS totalPet
         FROM kiosk_run kr
                  LEFT JOIN member m ON kr.member_id = m.member_id
         WHERE kr.run_id = #{runId}
@@ -124,7 +128,7 @@
 
     <!-- 2-2) 실행 세션 목록 조회 (페이징 + 조건) -->
     <select id="getRunListWithPaging" parameterType="com.petcoin.dto.KioskRunCriteria" resultMap="kioskRunMap">
-        SELECT run_id, kiosk_id, member_id, status, started_at, ended_at
+        SELECT run_id, kiosk_id, member_id, status, started_at, ended_at, total_pet
         FROM kiosk_run
         <include refid="kioskRunWhere"/>
         ORDER BY started_at DESC

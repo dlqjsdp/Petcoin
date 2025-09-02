@@ -76,14 +76,15 @@ class KioskRunMapperTest {
         // Given
         KioskRunVO run = new KioskRunVO();
         run.setKioskId(1L);
-        run.setMemberId(1L);
+        run.setMemberId(3L);
         run.setStatus(RunStatus.RUNNING);
         run.setStartedAt(LocalDateTime.now());
         kioskRunMapper.insertRun(run); // DB에 INSERT → runId가 자동 생성됨
 
         // When
         run.setEndedAt(LocalDateTime.now());
-        int update = kioskRunMapper.completeRun(run.getRunId(), run.getEndedAt());
+        run.setTotalPet(2);
+        int update = kioskRunMapper.completeRun(run.getRunId(), run.getEndedAt(), run.getTotalPet());
 
         // Then
         assertEquals(1, update);
@@ -100,14 +101,15 @@ class KioskRunMapperTest {
         // Given
         KioskRunVO run = new KioskRunVO();
         run.setKioskId(1L);
-        run.setMemberId(1L);
+        run.setMemberId(3L);
         run.setStatus(RunStatus.RUNNING);
         run.setStartedAt(LocalDateTime.now());
         kioskRunMapper.insertRun(run); // DB에 INSERT → runId가 자동 생성됨
 
         // When
         run.setEndedAt(LocalDateTime.now());
-        int update = kioskRunMapper.cancelRun(run.getRunId(), run.getEndedAt());
+        run.setTotalPet(3);
+        int update = kioskRunMapper.cancelRun(run.getRunId(), run.getEndedAt(), run.getTotalPet());
 
         // Then
         assertEquals(1, update);

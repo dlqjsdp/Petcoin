@@ -95,13 +95,13 @@ class PointHisServiceTest {
     @Test
     void testPlusPoint_AddsRecord() {
         // given
-        Long memberId = 3L;
+        Long memberId = 4L;
+        int totalPet = 5;
         PointHistoryVO vo = new PointHistoryVO();
         vo.setMemberId(memberId);
-        vo.setPointChange(100);
 
         // when
-        pointHisService.plusPoint(vo);
+        pointHisService.plusPoint(memberId, totalPet);
 
         // then
         // 적립 후 최종 포인트 값

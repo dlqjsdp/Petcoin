@@ -42,13 +42,13 @@ class KioskRunServiceTest {
     private KioskRunService kioskRunService;
 
     @Test
-    @Transactional
+    //@Transactional
     @DisplayName("실행 시작부터 종료까지 테스트")
     public void testRun(){
         // Given : 실행 시작 요청
         KioskRunStartRequest startReq = new KioskRunStartRequest();
         startReq.setKioskId(1L); // 실제 DB에 있는 키오스크 ID
-        startReq.setMemberId(1L); // 실제 DB에 있는 회원 ID
+        startReq.setMemberId(4L); // 실제 DB에 있는 회원 ID
         log.info("StartReq 생성 -> kioskId={}, memberId={}", startReq.getKioskId(), startReq.getMemberId());
 
         // When : 실행 시작
@@ -63,8 +63,11 @@ class KioskRunServiceTest {
 
         // When : 실행 종료
         KioskRunEndRequest endReq = new KioskRunEndRequest();
+
         endReq.setRunId(started.getRunId());
+        endReq.setTotalPet(7);
         log.info("EndReq 생성 -> runId={}", endReq.getRunId());
+
 
         KioskRunResponse ended = kioskRunService.endRun(endReq);
         log.info("실행 종료 결과 -> runId={}, status={}, endedAt={}",
