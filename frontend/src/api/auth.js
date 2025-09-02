@@ -49,5 +49,6 @@ export const register = (phone) => {
 // 로그아웃 (클라이언트 토큰 삭제)
 export const logout = () => {
     localStorage.removeItem('accessToken');
+    delete api.defaults.headers.common.Authorization; // 즉시 반영
     // navigate('/login')는 컴포넌트에서 실행
 };

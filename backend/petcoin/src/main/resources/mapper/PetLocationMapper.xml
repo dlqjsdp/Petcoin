@@ -63,14 +63,27 @@
         WHERE sido = #{sido}
           AND sigungu = #{sigungu}
           AND dong IS NOT NULL AND dong != ''
-        ORDER BY sigungu
+        ORDER BY dong
     </select>
 
     <!-- 지역 조건별 조회 -->
     <select id="findByRegion" resultMap="PetLocationVOMap">
         select recycle_id, recycle_name, address, latitude, longitude, recycle_tel, sido, sigungu, dong
         from pet_recycle
+        <where>
+            <if test="sido != null and sido != ''">and sido = #{sido}</if>
+            <if test="sigungu != null and sigungu != ''">and sigungu = #{sigungu}</if>
+            <if test="dong != null and dong != ''">and dong = #{dong}</if>
+        </where>
+        ORDER BY recycle_name ASC, recycle_id ASC
+        LIMIT 300
+    </select>
 
+    <!-- 단건 상세 -->
+    <select id="findById" resultMap="PetLocationVOMap">
+        SELECT recycle_id, recycle_name, address, latitude, longitude, recycle_tel, sido, sigungu, dong
+        FROM pet_recycle
+        WHERE recycle_id = #{recycleId}
     </select>
 
 </mapper>

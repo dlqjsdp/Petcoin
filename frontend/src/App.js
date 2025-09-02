@@ -17,6 +17,7 @@
  *   - 250902 | yukyeong | Header 레이아웃 추가 (main, guide 경로에서만 표시)
  *   - 250902 | yukyeong | Header 컴포넌트 추가 - "/" 및 "/guide" 경로에서만 표시되도록 조건부 렌더링 구현
  *   - 250902 | yukyeong | MainPage, LoginPage, SignupPage, NoticePage 라우트 추가 - 사용자 메인/안내사항/인증 페이지 분리
+ *   - 250902 | heekyung | 회원가입 js 삭제로 관련 코드 삭제 
  */
 
 import React from "react";
@@ -27,7 +28,6 @@ import KioskApp from "./kiosk/KioskApp";
 
 import MainPage from "./components/pages/MainPage";
 import LoginPage from "./components/pages/LoginPage";
-import SignupPage from "./components/pages/SignupPage";
 import NoticePage from "./components/pages/NoticePage";
 
 import "./App.css";
@@ -50,17 +50,16 @@ function Header() {
           </div>
 
           <nav className="main-nav">
-            <Link
+            {/* <Link
               to="/guide"
               className={`nav-btn ${location.pathname === "/guide" ? "active" : ""}`}
             >
               안내사항
-            </Link>
+            </Link> */}
           </nav>
 
           <div className="auth-buttons">
             <Link to="/login" className="btn btn-secondary small">로그인</Link>
-            <Link to="/signup" className="btn btn-primary small">회원가입</Link>
           </div>
         </div>
       </div>
@@ -77,7 +76,6 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/guide" element={<NoticePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
 
           {/* 영역별 라우트 */}
           <Route path="/user/*" element={<UserApp />} />
