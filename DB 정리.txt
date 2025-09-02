@@ -118,3 +118,6 @@ FOREIGN KEY (run_id) REFERENCES kiosk_run(run_id),
 FOREIGN KEY (pet_rejection_id) REFERENCES pet_rejection(pet_rejection_id),
 FOREIGN KEY (member_id) REFERENCES member(member_id)
 );
+
+-- 정상 회수 페트병 개수 컬럼 추가
+alter table kiosk_run add column total_pet int;

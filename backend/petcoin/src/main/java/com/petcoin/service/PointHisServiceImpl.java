@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /*
@@ -100,28 +101,32 @@ public class PointHisServiceImpl implements PointHisService {
         return resultAdd;
     }
 
+    private static final int POINT_PER_PET = 10; // 페트병당 적립 포인트
+
     //포인트 적립 내역 추가
     @Override
-    public void plusPoint(PointHistoryVO pointHistoryVO) {
-        Long memberId = pointHistoryVO.getMemberId();
-        int pointChange = pointHistoryVO.getPointChange();
+    public void plusPoint(Long memberId, int totalPet) {
+        int pointChange = totalPet * POINT_PER_PET; // 규칙에 따라 계산
 
-        //1. 현재 포인트 잔액 조회
-        int latestPointBalance = getLatestPointBalance(memberId);
+        //1. 현재 포인트 잔액 조회(null일 경우 정수 0으로 변환)
+        int latestPointBalance = Optional.ofNullable(getLatestPointBalance(memberId)).orElse(0);
 
         //2. 누적 포인트 계산
         int newBalance = latestPointBalance + pointChange;
 
         // 3. VO에 세팅
-        pointHistoryVO.setPointBalance(newBalance);
-        pointHistoryVO.setActionType(ActionType.EARN);
-        pointHistoryVO.setDescription("페트병 무인 회수기 포인트 적립");
+        PointHistoryVO vo = new PointHistoryVO();
+        vo.setMemberId(memberId);
+        vo.setPointChange(pointChange);
+        vo.setPointBalance(newBalance);
+        vo.setActionType(ActionType.EARN);
+        vo.setDescription("페트병 회수 포인트 적립 (" + totalPet + "개)");
 
         //4. mapper 호출
-        int result = pointHisMapper.plusPoint(pointHistoryVO);
+        int result = pointHisMapper.plusPoint(vo);
         if (result != 1) {
             throw new IllegalArgumentException("포인트 적립 내역 추가 오류 발생");
         }
-        log.info("plusPoint 서비스 진입: {}", pointHistoryVO);
+        log.info("plusPoint 서비스 진입: {}", result);
     }
 }

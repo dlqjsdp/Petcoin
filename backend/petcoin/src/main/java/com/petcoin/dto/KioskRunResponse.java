@@ -40,4 +40,6 @@ public class KioskRunResponse {
     private RunStatus status;
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;
+    private int totalPet;//이지혜 totalPet 추가
+
 }

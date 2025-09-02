@@ -30,5 +30,5 @@ public interface PointHisService {
     public int addPointHistory(PointRequestDto pointRequestDto);
 
     //포인트 적립 내역 추가
-    public void plusPoint(PointHistoryVO pointHistoryVO);
+    public void plusPoint(Long memberId, int totalPet);
 }

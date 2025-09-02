@@ -45,6 +45,7 @@ public class KioskRunServiceImpl implements KioskRunService{
 
     private final KioskMapper kioskMapper; // 키오스크 상태 조회용 (ONLINE 여부)
     private final KioskRunMapper kioskRunMapper; // 실행 세션 insert/update
+    private final PointHisService pointHisService;
 
     // DTO <-> VO 매핑
     private KioskRunVO dtoToVo(KioskRunStartRequest dto) {
@@ -65,6 +66,7 @@ public class KioskRunServiceImpl implements KioskRunService{
         dto.setStatus(vo.getStatus());
         dto.setStartedAt(vo.getStartedAt());
         dto.setEndedAt(vo.getEndedAt());
+        dto.setTotalPet(vo.getTotalPet());//이지혜 totalPet 추가
         return dto;
     }
 
@@ -107,7 +109,8 @@ public class KioskRunServiceImpl implements KioskRunService{
     @Transactional
     public KioskRunResponse endRun(KioskRunEndRequest req){
         Long runId = req.getRunId();
-
+        int totalPet = req.getTotalPet();  //이지혜 totalPet 추가
+        
         // 1) 해당 세션 행 잠금 (동시 종료/취소 경쟁 방지)
         KioskRunVO cur = kioskRunMapper.lockRunRow(runId);
         if (cur == null) {
@@ -122,10 +125,14 @@ public class KioskRunServiceImpl implements KioskRunService{
         }
 
         // 3) 상태 전이: RUNNING -> COMPLETED
-        int updated = kioskRunMapper.completeRun(runId, LocalDateTime.now());
+        int updated = kioskRunMapper.completeRun(runId, LocalDateTime.now(), totalPet);//이지혜 totalPet 추가
         if (updated != 1) {
             throw new IllegalStateException("실행 종료(update) 실패");
         }
+
+        //이지혜 포인트 적립 메소드 추가
+        Long memberId = cur.getMemberId();
+        pointHisService.plusPoint(memberId, totalPet);
 
         // 4) 최신값 재조회 후 반환
         KioskRunVO saved = kioskRunMapper.readRunAsVO(runId);
@@ -136,6 +143,7 @@ public class KioskRunServiceImpl implements KioskRunService{
     @Transactional
     public KioskRunResponse cancelRun(KioskRunEndRequest req){
         Long runId = req.getRunId();
+        int totalPet = req.getTotalPet();//이지혜 totalPet 추가
 
         // 1) 해당 세션 행 잠금
         KioskRunVO cur = kioskRunMapper.lockRunRow(runId);
@@ -150,10 +158,14 @@ public class KioskRunServiceImpl implements KioskRunService{
         }
 
         // 3) 상태 전이: RUNNING -> CANCELLED
-        int updated = kioskRunMapper.cancelRun(runId, LocalDateTime.now());
+        int updated = kioskRunMapper.cancelRun(runId, LocalDateTime.now(), totalPet);//이지혜 totalPet 추가
         if (updated != 1) {
             throw new IllegalStateException("실행 취소(update) 실패");
         }
+
+        //이지혜 포인트 적립 메소드 추가
+        Long memberId = cur.getMemberId();
+        pointHisService.plusPoint(memberId, totalPet);
 
         // 4) 최신값 재조회 후 반환
         KioskRunVO saved = kioskRunMapper.readRunAsVO(runId);

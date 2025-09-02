@@ -35,7 +35,7 @@ public class MyPageApiController {
     private final PointHisService pointHisService;
 
     @GetMapping("/pointhistory/{memberId}")
-    public ResponseEntity<Map<String, Object>> getPointHistory(@PathVariable("memberId") Long memberId, @AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<Map<String, Object>> getPointHistory(@PathVariable("memberId") Long memberId) {
         List<PointHistoryDto> pointHistory = pointHisService.getPointHistoryById(memberId);
         int pointBalance = pointHisService.getLatestPointBalance(memberId);
 
@@ -45,5 +45,4 @@ public class MyPageApiController {
 
         return ResponseEntity.ok(pointList);
     }
-
 }
