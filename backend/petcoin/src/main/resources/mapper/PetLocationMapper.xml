@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    @fileName : PetLocationMapper.xml
+    - com.petcoin.mapper.PetLocationMapper 인터페이스와 연결되는 MyBatis 매퍼 XML 파일
+    @author : heekyung
+    @history
+    - 250902 | heekyung | PetLocationMapper 생성 / 구, 시, 동 기준으로 검색 기능 코드 작성
+-->
+<mapper namespace="com.petcoin.mapper.PetLocationMapper">
+    <!-- DB 컬럼 ↔ VO 매핑 -->
+    <resultMap id="PetLocationVOMap" type="com.petcoin.domain.PetLocationVO">
+        <id property="recycleId" column="recycle_id"/>
+        <result property="recycleName" column="recycle_name"/>
+        <result property="address" column="address"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="recycleTel" column="recycle_tel"/>
+        <result property="sido" column="sido"/>
+        <result property="sigungu" column="sigungu"/>
+        <result property="dong" column="dong"/>
+    </resultMap>
+
+    <!-- DB 컬럼 ↔ DTO 매핑 -->
+    <resultMap id="PetLocationDtoMap" type="com.petcoin.dto.PetLocationDto">
+        <id property="recycleId" column="recycle_id"/>
+        <result property="recycleName" column="recycle_name"/>
+        <result property="address" column="address"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="recycleTel" column="recycle_tel"/>
+        <result property="sido" column="sido"/>
+        <result property="sigungu" column="sigungu"/>
+        <result property="dong" column="dong"/>
+        <result property="distanceMeters" column="distance_m"/>
+    </resultMap>
+
+    <!-- 전체 "시" 목록 조회(중복 제거) -->
+    <select id="listSido" resultType="string">
+        SELECT DISTINCT sido
+        FROM pet_recycle
+        WHERE sido IS NOT NULL
+        AND sido != ''
+        ORDER BY sido
+    </select>
+
+    <!-- 특정 시에 해당하는 "구" 목록 조회 -->
+    <select id="listSigungu" resultType="string">
+        SELECT DISTINCT sigungu
+        FROM pet_recycle
+        WHERE sido = #{sido}
+        AND sigungu IS NOT NULL AND sigungu != ''
+        ORDER BY sigungu
+    </select>
+
+    <!-- 특정 구에 해당하는 "동" 목록 조회 -->
+    <select id="listDong" resultType="string">
+        SELECT DISTINCT dong
+        FROM pet_recycle
+        WHERE sido = #{sido}
+          AND sigungu = #{sigungu}
+          AND dong IS NOT NULL AND dong != ''
+        ORDER BY sigungu
+    </select>
+
+    <!-- 지역 조건별 조회 -->
+    <select id="findByRegion" resultMap="PetLocationVOMap">
+        select recycle_id, recycle_name, address, latitude, longitude, recycle_tel, sido, sigungu, dong
+        from pet_recycle
+
+    </select>
+
+</mapper>
