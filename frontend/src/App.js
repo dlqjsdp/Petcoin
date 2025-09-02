@@ -1,38 +1,80 @@
-/*
- * App.js
- * - 프로젝트 최상위 라우팅 설정
- * - React Router v6 기준으로 작성
- *
- * 주요 기능:
- *   - "/" → 사용자용 메인 홈페이지(UserApp)
- *   - "/admin/*" → 관리자 전용(AdminApp)
- *   - "/kiosk/*" → 키오스크 전용(KioskApp, iPad 접속용)
- *
- * @fileName : App.js
- * @author : yukyeong
- * @since : 250901
- * @history
- *   - 250901 | yukyeong | 최초 생성 및 라우팅 구조 설정 - UserApp, AdminApp, KioskApp 경로 분리
- *   - 250901 | yukyeong | 관리자 경로에 path="/admin/*" 와일드카드 추가 - 하위 라우트 처리 가능하도록 수정
- *   - 250901 | yukyeong | 키오스크 전용 경로(/kiosk/*) 추가 - iPad 접속 시 별도 화면 렌더링 지원
- */
+import React, { useState } from 'react';
+import MainPage from './components/pages/MainPage';
+import LoginPage from './components/pages/LoginPage';
+import SignupPage from './components/pages/SignupPage';
+import NoticePage from './components/pages/NoticePage';
+import './App.css';
+import logo from './img/logo.png';
 
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-
-// 영역별 App (각 하위 라우트를 내부에서 관리)
-import UserApp from "./user/UserApp";
-import AdminApp from "./admin/AdminApp";
-import KioskApp from "./kiosk/KioskApp";
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('main');
+  
+  const navigateTo = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPage = () => {
+    switch(currentPage) {
+      case 'main':
+        return <MainPage navigateTo={navigateTo} />;
+      case 'login':
+        return <LoginPage navigateTo={navigateTo} />;
+      case 'signup':
+        return <SignupPage navigateTo={navigateTo} />;
+      case 'guide':
+        return <NoticePage navigateTo={navigateTo} />;
+      case 'admin':
+        return <div>관리자 페이지 (준비중)</div>;
+      case 'user':
+        return <div>사용자 페이지 (준비중)</div>;
+      default:
+        return <MainPage navigateTo={navigateTo} />;
+    }
+  };
 
   return (
-    <Routes>
-      <Route path="/" element={<UserApp />} /> {/* "/" → 사용자용 메인 홈페이지 */}
-      <Route path="/admin/*" element={<AdminApp />} /> {/* "/admin/*" → 관리자 페이지 */}
-      <Route path="/kiosk/*" element={<KioskApp />} /> {/* "/kiosk/*" → 키오스크 전용 영역 */}
-    </Routes>
+    <div className="App">
+      {/* 헤더는 메인페이지와 안내사항에서만 표시 */}
+      {(currentPage === 'main' || currentPage === 'guide') && (
+        <header className="app-header">
+          <div className="container">
+            <div className="header-content">
+              <div className="logo-section" onClick={() => navigateTo('main')}>
+                <img src={logo} alt="에코포인트" className="logo-image" />
+              </div>
+
+              <nav className="main-nav">
+                <button
+                  onClick={() => navigateTo('guide')}
+                  className={`nav-btn ${currentPage === 'guide' ? 'active' : ''}`}
+                >
+                  안내사항
+                </button>
+              </nav>
+              <div className="auth-buttons">
+                <button
+                  onClick={() => navigateTo('login')}
+                  className="btn-secondary small"
+                >
+                  로그인
+                </button>
+                <button
+                  onClick={() => navigateTo('signup')}
+                  className="btn-primary small"
+                >
+                  회원가입
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+      )}
+
+      <main className="app-main">
+        {renderPage()}
+      </main>
+    </div>
   );
 }
 

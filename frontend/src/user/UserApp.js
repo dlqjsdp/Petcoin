@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserMyPage from './components/UserMyPage';
-import '../App.css';
+import './App.css';
 
 // 커스텀 훅 정의
 function useCoupon() {
