@@ -8,7 +8,7 @@ import logoImage from './img/logo.png';
 import './App.css';
 import './styles/common.css';
 
-function App() {
+function KioskApp() {
   const [currentStep, setCurrentStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [petBottleCount, setPetBottleCount] = useState(3);
@@ -87,4 +87,4 @@ function App() {
   );
 }
 
-export default App;
+export default KioskApp;

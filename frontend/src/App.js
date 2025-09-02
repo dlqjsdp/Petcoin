@@ -1,78 +1,92 @@
-import React, { useState } from 'react';
-import MainPage from './components/pages/MainPage';
-import LoginPage from './components/pages/LoginPage';
-import SignupPage from './components/pages/SignupPage';
-import NoticePage from './components/pages/NoticePage';
-import './App.css';
-import logo from './img/logo.png';
+/*
+ * App.js
+ * - React Router v6 기반 최상위 라우팅 + 공통 레이아웃(Header)
+ *
+ * 주요 기능:
+ *   - "/" → 사용자 메인 페이지(UserApp)
+ *   - "/admin/*" → 관리자 페이지(AdminApp)
+ *   - "/kiosk/*" → 키오스크 전용 페이지(KioskApp)
+ *   - "/guide" → 안내사항 페이지
+ *   - "/login", "/signup" → 로그인/회원가입 페이지
+ *
+ * @fileName : App.js
+ * @author : yukyeong
+ * @since : 250901
+ * @history
+ *   - 250901 | yukyeong | 최초 생성 - React Router v6 구조
+ *   - 250902 | yukyeong | Header 레이아웃 추가 (main, guide 경로에서만 표시)
+ *   - 250902 | yukyeong | Header 컴포넌트 추가 - "/" 및 "/guide" 경로에서만 표시되도록 조건부 렌더링 구현
+ *   - 250902 | yukyeong | MainPage, LoginPage, SignupPage, NoticePage 라우트 추가 - 사용자 메인/안내사항/인증 페이지 분리
+ */
 
+import React from "react";
+import { Routes, Route, useLocation, Link } from "react-router-dom";
+import UserApp from "./user/UserApp";
+import AdminApp from "./admin/AdminApp";
+import KioskApp from "./kiosk/KioskApp";
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('main');
-  
-  const navigateTo = (page) => {
-    setCurrentPage(page);
-  };
+import MainPage from "./components/pages/MainPage";
+import LoginPage from "./components/pages/LoginPage";
+import SignupPage from "./components/pages/SignupPage";
+import NoticePage from "./components/pages/NoticePage";
 
-  const renderPage = () => {
-    switch(currentPage) {
-      case 'main':
-        return <MainPage navigateTo={navigateTo} />;
-      case 'login':
-        return <LoginPage navigateTo={navigateTo} />;
-      case 'signup':
-        return <SignupPage navigateTo={navigateTo} />;
-      case 'guide':
-        return <NoticePage navigateTo={navigateTo} />;
-      case 'admin':
-        return <div>관리자 페이지 (준비중)</div>;
-      case 'user':
-        return <div>사용자 페이지 (준비중)</div>;
-      default:
-        return <MainPage navigateTo={navigateTo} />;
-    }
-  };
+import "./App.css";
+import logo from "./img/logo.png";
+
+function Header() {
+  const location = useLocation();
+  const showHeader = location.pathname === "/" || location.pathname.startsWith("/guide");
+
+  if (!showHeader) return null;
 
   return (
-    <div className="App">
-      {/* 헤더는 메인페이지와 안내사항에서만 표시 */}
-      {(currentPage === 'main' || currentPage === 'guide') && (
-        <header className="app-header">
-          <div className="container">
-            <div className="header-content">
-              <div className="logo-section" onClick={() => navigateTo('main')}>
-                <img src={logo} alt="에코포인트" className="logo-image" />
-              </div>
-
-              <nav className="main-nav">
-                <button
-                  onClick={() => navigateTo('guide')}
-                  className={`nav-btn ${currentPage === 'guide' ? 'active' : ''}`}
-                >
-                  안내사항
-                </button>
-              </nav>
-              <div className="auth-buttons">
-                <button
-                  onClick={() => navigateTo('login')}
-                  className="btn-secondary small"
-                >
-                  로그인
-                </button>
-                <button
-                  onClick={() => navigateTo('signup')}
-                  className="btn-primary small"
-                >
-                  회원가입
-                </button>
-              </div>
-            </div>
+    <header className="app-header">
+      <div className="container">
+        <div className="header-content">
+          <div className="logo-section">
+            <Link to="/">
+              <img src={logo} alt="에코포인트" className="logo-image" />
+            </Link>
           </div>
-        </header>
-      )}
 
+          <nav className="main-nav">
+            <Link
+              to="/guide"
+              className={`nav-btn ${location.pathname === "/guide" ? "active" : ""}`}
+            >
+              안내사항
+            </Link>
+          </nav>
+
+          <div className="auth-buttons">
+            <Link to="/login" className="btn btn-secondary small">로그인</Link>
+            <Link to="/signup" className="btn btn-primary small">회원가입</Link>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function App() {
+  return (
+    <div className="App">
+      <Header /> {/* 공통 Header (조건부 표시) */}
       <main className="app-main">
-        {renderPage()}
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/guide" element={<NoticePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+
+          {/* 영역별 라우트 */}
+          <Route path="/user/*" element={<UserApp />} />
+          <Route path="/admin/*" element={<AdminApp />} />
+          <Route path="/kiosk/*" element={<KioskApp />} />
+
+          {/* 잘못된 경로 → 메인으로 */}
+          <Route path="*" element={<MainPage />} />
+        </Routes>
       </main>
     </div>
   );

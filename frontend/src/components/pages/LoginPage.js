@@ -2,86 +2,48 @@ import React, { useState } from 'react';
 import '../styles/LoginPage.css';
 import '../../img/logo.png';
 import logo from "../../img/logo.png";
+import { login, normalizePhone } from '../../api/auth';
+import api from '../../api/axios';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = ({ navigateTo }) => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
+  const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // 임시 사용자 데이터 (실제로는 서버에서 관리)
-  const users = {
-    'admin': { password: 'admin123', role: 'admin' },
-    'user1': { password: 'user123', role: 'user' },
-    'test': { password: 'test123', role: 'user' }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // 에러 메시지 제거
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  const validateForm = () => {
+  const validate = () => {
+    const p = normalizePhone(phone);
     const newErrors = {};
-    
-    if (!formData.username.trim()) {
-      newErrors.username = '아이디를 입력해주세요';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요';
-    }
-    
+    if (!p) newErrors.phone = '전화번호를 입력해주세요';
+    else if (p.length < 10 || p.length > 11) newErrors.phone = '올바른 전화번호 형식이 아닙니다';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
-    
+    if (!validate()) return;
+
     setIsLoading(true);
-    
-    // 로그인 시뮬레이션 (실제로는 API 호출)
-    setTimeout(() => {
-      const user = users[formData.username];
+    try {
+      const res = await login(phone, true); // allowAutoRegister = true
+      const token = res.data?.accessToken;
+      if (token) {
+        localStorage.setItem('accessToken', token);
+        api.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+        console.log("발급된 토큰:", localStorage.getItem('accessToken'));
       
-      if (user && user.password === formData.password) {
-        // 로그인 성공
-        localStorage.setItem('user', JSON.stringify({
-          username: formData.username,
-          role: user.role
-        }));
-        
-        // 역할에 따른 페이지 이동
-        if (user.role === 'admin') {
-          navigateTo('admin');
-        } else {
-          navigateTo('user');
-        }
-      } else {
-        // 로그인 실패
-        setErrors({
-          general: '아이디 또는 비밀번호가 올바르지 않습니다'
-        });
       }
-      
+      alert('로그인 성공');
+      navigate('/user'); // 필요 시 'main' 등으로 변경
+    } catch (err) {
+      console.error(err);
+      setErrors({ general: '로그인 실패. 전화번호를 확인해주세요.' });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -98,11 +60,11 @@ const LoginPage = ({ navigateTo }) => {
         <div className="login-card">
           <div className="login-header">
             <div className="login-logo">
-              <div className="logo-icon">♻️</div>
+              <img src={logo} alt="PetCoin" className="logo-image" />
               <h1>PetCoin</h1>
             </div>
             <h2 className="login-title">로그인</h2>
-            <p className="login-subtitle">계정에 로그인하여 서비스를 이용해보세요</p>
+            <p className="login-subtitle">전화번호로 간편하게 로그인하세요</p>
           </div>
 
           {errors.general && (
@@ -114,39 +76,21 @@ const LoginPage = ({ navigateTo }) => {
 
           <form onSubmit={handleLogin} className="login-form">
             <div className="form-group">
-              <label className="form-label">아이디</label>
+              <label className="form-label">전화번호</label>
               <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={`form-input ${errors.username ? 'error' : ''}`}
-                placeholder="아이디를 입력하세요"
+                type="tel"
+                name="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className={`form-input ${errors.phone ? 'error' : ''}`}
+                placeholder="010-1234-5678"
                 disabled={isLoading}
               />
-              {errors.username && (
-                <div className="error-message">{errors.username}</div>
-              )}
+              {errors.phone && <div className="error-message">{errors.phone}</div>}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">비밀번호</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className={`form-input ${errors.password ? 'error' : ''}`}
-                placeholder="비밀번호를 입력하세요"
-                disabled={isLoading}
-              />
-              {errors.password && (
-                <div className="error-message">{errors.password}</div>
-              )}
-            </div>
-
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={`login-btn ${isLoading ? 'loading' : ''}`}
               disabled={isLoading}
             >
@@ -163,19 +107,17 @@ const LoginPage = ({ navigateTo }) => {
 
           <div className="login-footer">
             <p>계정이 없으신가요?</p>
-            <button 
-              className="link-btn" 
+            <button
+              className="link-btn"
               onClick={() => navigateTo('signup')}
               disabled={isLoading}
             >
               회원가입
             </button>
           </div>
-
-          
         </div>
 
-        <button 
+        <button
           className="back-btn"
           onClick={() => navigateTo('main')}
           disabled={isLoading}

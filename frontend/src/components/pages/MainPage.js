@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import '../styles/MainPage.css';
+import { useNavigate } from 'react-router-dom';
 
-const MainPage = ({ navigateTo }) => {
+
+const MainPage = () => {
+  const navigate = useNavigate();
+
+  // "이용방법" 섹션으로 스크롤
+  const howItWorksRef = useRef(null);
+  const scrollToHow = () => {
+    howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const kioskLocations = [
     { name: '홍대입구역 1번 출구', address: '서울시 마포구 홍대입구역', distance: '0.5km' },
     { name: '강남역 2번 출구', address: '서울시 강남구 강남역', distance: '1.2km' },
@@ -54,25 +64,22 @@ const MainPage = ({ navigateTo }) => {
               <span>🎉 신규 회원 1,000P 지급!</span>
             </div>
             <h1 className="hero-title">
-              페트병 재활용하고<br/>
+              페트병 재활용하고<br />
               <span className="highlight-text">현금 포인트</span> 받아가세요!
             </h1>
             <p className="hero-description">
-              키오스크에 페트병을 넣으면 즉시 포인트가 적립되고,<br/>
+              키오스크에 페트병을 넣으면 즉시 포인트가 적립되고,<br />
               현금으로 전환할 수 있습니다. 지구환경도 보호하고 용돈도 벌어보세요!
             </p>
             <div className="hero-buttons">
-              <button 
+              <button
                 className="btn-primary glow"
-                onClick={() => navigateTo('signup')}
+                onClick={() => navigate('/signup')}
               >
                 <span>지금 시작하기</span>
                 <div className="btn-shine"></div>
               </button>
-              <button 
-                className="btn-secondary glass"
-                onClick={() => navigateTo('guide')}
-              >
+              <button className="btn-secondary glass" onClick={scrollToHow}>
                 이용방법 보기
               </button>
             </div>
@@ -106,7 +113,7 @@ const MainPage = ({ navigateTo }) => {
       </section>
 
       {/* How it works Section */}
-      <section className="how-it-works">
+      <section className="how-it-works" id="how-it-works" ref={howItWorksRef}>
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">어떻게 사용하나요?</h2>
@@ -196,7 +203,7 @@ const MainPage = ({ navigateTo }) => {
           </div>
           <div className="benefits-grid">
             {benefits.map((benefit, index) => (
-              <div key={index} className="benefit-card" style={{'--delay': `${index * 0.1}s`}}>
+              <div key={index} className="benefit-card" style={{ '--delay': `${index * 0.1}s` }}>
                 <div className={`benefit-gradient bg-gradient-to-br ${benefit.gradient}`}></div>
                 <div className="benefit-icon">{benefit.icon}</div>
                 <h3 className="benefit-title">{benefit.title}</h3>
@@ -218,20 +225,20 @@ const MainPage = ({ navigateTo }) => {
             <div className="cta-icon">🚀</div>
             <h2 className="cta-title">지금 바로 시작해보세요!</h2>
             <p className="cta-description">
-              회원가입하고 첫 번째 페트병 재활용으로<br/>
+              회원가입하고 첫 번째 페트병 재활용으로<br />
               <strong>보너스 1,000 포인트</strong>를 받아가세요
             </p>
             <div className="cta-buttons">
-              <button 
+              <button
                 className="btn-primary large glow"
-                onClick={() => navigateTo('signup')}
+                onClick={() => navigate('/signup')}
               >
                 <span>무료 회원가입</span>
                 <div className="btn-shine"></div>
               </button>
-              <button 
+              <button
                 className="btn-secondary large glass"
-                onClick={() => navigateTo('guide')}
+                onClick={() => navigate('/guide')}
               >
                 자세히 알아보기
               </button>
