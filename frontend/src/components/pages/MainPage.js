@@ -1,16 +1,31 @@
-import React, { useRef } from 'react';
-import '../styles/MainPage.css';
+/*
+ * MainPage.js
+ * - 랜딩 메인 화면(히어로/이용방법/지도/혜택/CTA)
+ *
+ * 주요 기능:
+ *   - 히어로: 가입/이용방법 CTA, 키오스크 모형 애니메이션
+ *   - 이용방법: 4단계 카드 + 연결 화살표
+ *   - 지도: 주변 키오스크 목록/마커 플레이스홀더
+ *   - 혜택: 그라데이션 카드(—delay 인라인 변수로 순차 등장)
+ *   - CTA: 가입/안내 버튼, 신뢰 배지
+ *
+ * @fileName : MainPage.js
+ * @author  : yukyeong
+ * @since   : 250902
+ * @history
+ *   - 250902 | yukyeong | 라우팅 리팩토링: props.navigateTo 제거 → react-router-dom useNavigate() 도입
+ *                       - CTA onClick을 navigate('/signup'), navigate('/guide')로 변경
+ *                       - 컴포넌트 시그니처 MainPage({ navigateTo }) → MainPage()로 단순화
+ *
+ */
+
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/MainPage.css';
 
 
 const MainPage = () => {
   const navigate = useNavigate();
-
-  // "이용방법" 섹션으로 스크롤
-  const howItWorksRef = useRef(null);
-  const scrollToHow = () => {
-    howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const kioskLocations = [
     { name: '홍대입구역 1번 출구', address: '서울시 마포구 홍대입구역', distance: '0.5km' },
@@ -20,30 +35,10 @@ const MainPage = () => {
   ];
 
   const benefits = [
-    {
-      icon: '⚡',
-      title: '즉시 포인트 적립',
-      description: '페트병을 넣는 순간 바로 포인트가 적립되어 실시간으로 확인 가능합니다',
-      gradient: 'from-yellow-400 to-orange-500'
-    },
-    {
-      icon: '💳',
-      title: '현금 전환 가능',
-      description: '적립된 포인트를 언제든지 현금으로 출금하여 바로 사용할 수 있습니다',
-      gradient: 'from-green-400 to-blue-500'
-    },
-    {
-      icon: '🌍',
-      title: '지구 환경 보호',
-      description: '재활용을 통해 환경을 보호하고 지속가능한 미래를 함께 만들어갑니다',
-      gradient: 'from-green-400 to-green-600'
-    },
-    {
-      icon: '🎯',
-      title: '간편한 이용',
-      description: '복잡한 절차 없이 페트병만 넣으면 끝! 누구나 쉽게 이용 가능합니다',
-      gradient: 'from-purple-400 to-pink-500'
-    }
+    { icon: '⚡', title: '즉시 포인트 적립', description: '페트병을 넣는 순간 바로 포인트가 적립되어 실시간으로 확인 가능합니다', gradient: 'from-yellow-400 to-orange-500' },
+    { icon: '💳', title: '현금 전환 가능', description: '적립된 포인트를 언제든지 현금으로 출금하여 바로 사용할 수 있습니다', gradient: 'from-green-400 to-blue-500' },
+    { icon: '🌍', title: '지구 환경 보호', description: '재활용을 통해 환경을 보호하고 지속가능한 미래를 함께 만들어갑니다', gradient: 'from-green-400 to-green-600' },
+    { icon: '🎯', title: '간편한 이용', description: '복잡한 절차 없이 페트병만 넣으면 끝! 누구나 쉽게 이용 가능합니다', gradient: 'from-purple-400 to-pink-500' }
   ];
 
   return (
@@ -79,7 +74,10 @@ const MainPage = () => {
                 <span>지금 시작하기</span>
                 <div className="btn-shine"></div>
               </button>
-              <button className="btn-secondary glass" onClick={scrollToHow}>
+              <button
+                className="btn-secondary glass"
+                onClick={() => navigate('/guide')}
+              >
                 이용방법 보기
               </button>
             </div>
@@ -113,7 +111,7 @@ const MainPage = () => {
       </section>
 
       {/* How it works Section */}
-      <section className="how-it-works" id="how-it-works" ref={howItWorksRef}>
+      <section className="how-it-works">
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">어떻게 사용하나요?</h2>
@@ -201,7 +199,7 @@ const MainPage = () => {
             <h2 className="section-title">PETCOIN의 특별한 장점</h2>
             <p className="section-subtitle">왜 PETCOIN를 선택해야 할까요?</p>
           </div>
-          <div className="benefits-grid">
+        <div className="benefits-grid">
             {benefits.map((benefit, index) => (
               <div key={index} className="benefit-card" style={{ '--delay': `${index * 0.1}s` }}>
                 <div className={`benefit-gradient bg-gradient-to-br ${benefit.gradient}`}></div>

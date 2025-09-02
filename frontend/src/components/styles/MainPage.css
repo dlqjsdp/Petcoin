@@ -120,7 +120,7 @@
   align-items: center;
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 25%, #fed7aa 50%, #fdba74 75%, #fb923c 100%);
   overflow: hidden;
-  padding-top: 80px; /* Header height compensation */
+  padding-top: 0; /* Header height compensation */
 }
 
 .hero-background {
