@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    무인 회수기의 페트병 수거 내역 Mapper.xml
+    @author : sehui
+    @fileName : RecycleStatsMapper.xml
+    @since : 250902
+    @history
+     - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 기능 추가
+     - 250902 | sehui | 전체 무인 회수기 수 조회 기능 추가
+-->
+
+<mapper namespace="com.petcoin.mapper.RecycleStatsMapper">
+
+    <!-- 전체 무인 회수기 수거 내역 조회 + 페이징 -->
+    <select id="findRecycleStatsWithPaging" resultType="com.petcoin.dto.RecycleStatsDto">
+        SELECT
+            pr.recycle_id AS recycleId,
+            pr.recycle_name AS recycleName,
+            pr.address AS address,
+            k.status AS status,
+            kr.total_pet AS totalCount,
+            MAX(pcl.created_at) AS lastCollection
+        FROM pet_recycle pr
+        JOIN kiosk k ON pr.recycle_id = k.recycle_id
+        LEFT JOIN kiosk_run kr ON k.kiosk_id = kr.kiosk_id
+        LEFT JOIN pet_collection_log pcl ON kr.run_id = pcl.run_id
+        GROUP BY pr.recycle_id, pr.recycle_name, pr.address, k.status, kr.total_pet
+        ORDER BY pr.recycle_name
+        LIMIT #{amount} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 무인 회수기 수 조회 -->
+    <select id="getTotalRecycle" resultType="int">
+        SELECT count(*)
+        FROM pet_recycle
+    </select>
+
+</mapper>
