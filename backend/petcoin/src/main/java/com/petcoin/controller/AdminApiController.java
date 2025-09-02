@@ -6,6 +6,7 @@ import com.petcoin.security.CustomUserDetails;
 import com.petcoin.service.MemberService;
 import com.petcoin.service.PointHisService;
 import com.petcoin.service.PointReqService;
+import com.petcoin.service.RecycleStatsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -30,6 +31,7 @@ import java.util.Map;
  *  - 250829 | sehui | 포인트 환급 목록 조회 요청 메서드 생성
  *  - 250829 | sehui | 포인트 환급 단건 조회 요청 메서드 생성
  *  - 250829 | sehui | 포인트 환급 처리 요청 메서드 생성
+ *  - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 요청 메서드 생성
  */
 
 @RestController
@@ -41,6 +43,7 @@ public class AdminApiController {
     private final MemberService memberService;
     private final PointHisService pointHisService;
     private final PointReqService pointReqService;
+    private final RecycleStatsService recycleStatsService;
 
     //전체 회원 조회 요청
     @GetMapping("/member/list")
@@ -212,6 +215,41 @@ public class AdminApiController {
         }catch (IllegalArgumentException e) {
             response.put("errorMessage", "포인트 환급 요청 처리 실패");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    //전체 무인 회수기 수거 내역 조회 요청
+    @GetMapping("/recycle/stats")
+    public ResponseEntity<Map<String, Object>> getAllRecycleStats(Authentication auth, Criteria cri) {
+
+        //로그인한 사용자의 연락처 가져오기
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        String userPhone = userDetails.getPhone();
+
+        //관리자 권한 확인
+        Role role = memberService.getMemberByPhone(userPhone).getRole();
+
+        if(role != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            //전체 무인 회수기 수거 내역 조회
+            List<RecycleStatsDto> statsList = recycleStatsService.getRecycleStatsWithPaging(cri);
+
+            int totalRecycle = recycleStatsService.getTotalRecycle();        //전체 무인 회수기 수 조회
+            PageDto pageInfo = new PageDto(cri, totalRecycle);              //페이지 정보 생성
+
+            response.put("statsList", statsList);
+            response.put("pageInfo", pageInfo);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e) {
+            response.put("errorMessage", "전체 무인 회수기를 조회할 수 없습니다.");
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 

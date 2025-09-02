@@ -31,12 +31,6 @@ public class Criteria {
     //전체 포인트 환급 요청 조회의 검색 조건 (요청 상태)
     private String requestStatus;
 
-    //전체 무인 회수기 조회의 검색 조건
-    private String sido;        //지역(시)
-    private String sigungu;     //지역(구)
-    private String dong;        //지역(동)
-    private Boolean remainAvailable;    //잔여 수용량
-
     //pageNum과 amount 지정하지 않으면 기본값: 1페이지, 10개씩 조회
     public Criteria() {
         this(1, 10);
