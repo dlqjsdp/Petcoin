@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 /*
  * @fileName : TokenResponse
- * 로그인 진행 시 프론트로 내려줄 액세스 토큰 응답 DTO
+ * 로그인, 키오스크 연락처 기재 진행 시 프론트로 내려줄 액세스 토큰 응답 DTO
  * @author : heekyung
  * @since : 250829
  * @history

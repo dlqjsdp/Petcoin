@@ -23,6 +23,7 @@ import java.util.Map;
  * @since : 250829
  * @history
  * - 250827 | heekyung | AuthController 생성 / JWT토큰으로 로그인 가능
+ * - 250827 | heekyung | kioskphone API 추가(자동가입 없이 존재 확인 전용)
  */
 
 @RestController
@@ -91,4 +92,30 @@ public class AuthController {
         );
     }
 
+    // 키오스크 전용: 자동가입 없이 회원 확인
+    @PostMapping("/kioskphone")
+    public ResponseEntity<?> kioskPhone(@RequestBody PhoneRequest req) {
+        // 1. 전화번호 정규화
+        String phone = sanitize(req.getPhone());
+        if (phone.length() < 10 || phone.length() > 11) {
+            return ResponseEntity.badRequest().body("INVALID_PHONE");
+        }
+        // 2. 회원 조회
+        MemberVO member = memberMapper.findByPhone(phone);
+        
+        // 3. 없으면 에러 발생
+        if (member == null) {
+            return ResponseEntity.status(404).body("NO_SUCH_MEMBER");
+        }
+        // 4. 있으면 토큰 발급
+        String jwt = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name());
+
+        // 5. 응답 반환
+        return ResponseEntity.ok(
+                TokenResponse.builder()
+                .token("Bearer")
+                .accessToken(jwt)
+                .build()
+        );
+    }
 }

@@ -18,29 +18,40 @@
  *   - 250903 | yukyeong | 숫자 키패드 UI 및 포맷팅 기능 추가
  *   - 250903 | yukyeong | 인증 성공 시 토큰 저장 및 다음 단계 전환 처리
  *   - 250903 | yukyeong | UX 개선 - 입력 자리 수 안내 및 버튼 활성화 제어
+ *   - 250903 | heekyung | 키오스크 회원 연락처 기재 시 있는 연락처인지 확인, 없는 회원이라면 모달로 존재하지 않는 회원임을 표시
  */
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/common.css';
 import api from '../../api/axios';
-
 
 // 전화번호에서 숫자 이외 문자를 제거
 const sanitizePhone = (raw) => raw.replace(/[^0-9]/g, '');
 
 const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAccessToken }) => {
-  
+  const [modalOpen, setModalOpen] = useState(false);      // 모달 on/off
+  const [modalTitle, setModalTitle] = useState('');       // 모달 제목
+  const [modalMessage, setModalMessage] = useState('');   // 모달 본문
+  const [submitting, setSubmitting] = useState(false);    // 통신 중 버튼 잠금
+
+  // 모달 열기
+  const openModal = (title, message) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalOpen(true);
+  };
+
   // 숫자 입력 처리 함수
   const handleNumberClick = (num) => {
     if (phoneNumber.length < 11) {
-      setPhoneNumber(prev => prev + num);
+      setPhoneNumber((prev) => prev + num);
     }
   };
 
   // 지우기: 마지막 자리 제거
   const handleDelete = () => {
-    setPhoneNumber(prev => prev.slice(0, -1));
+    setPhoneNumber((prev) => prev.slice(0, -1));
   };
 
   // 전체삭제: 전화번호 전체 초기화
@@ -55,29 +66,63 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
     return `${number.slice(0, 3)}-${number.slice(3, 7)}-${number.slice(7)}`;
   };
 
-  // 전화번호 유효성 검사 개선 (10자리 또는 11자리일 때만 다음 버튼 활성화)
+  // 전화번호 유효성: 10~11자리
   const isValidPhoneNumber = phoneNumber.length >= 10 && phoneNumber.length <= 11;
 
   // 인증 요청 처리
   const handleNextClick = async () => {
     try {
-      const response = await api.post('/api/auth/login', { // POST 요청으로 /api/auth/login 호출
-        phone: sanitizePhone(phoneNumber) // 전화번호는 숫자만 서버에 전달
+      setSubmitting(true); // 중복 클릭 방지
+
+      // 필요 시 '/api/auth/login' 으로 변경 가능
+      const response = await api.post('/api/auth/kioskphone', {
+        phone: sanitizePhone(phoneNumber), // 숫자만 서버에 전달
       });
 
-      const tokenData = response.data;
-      console.log("인증 성공:", tokenData);
+      // 백엔드가 accessToken 또는 token 중 어떤 키로 내려줘도 처리
+      const tokenData = response.data || {};
+      const accessToken = tokenData.accessToken || tokenData.token;
 
-    // ⭐ 토큰 로컬 저장
-    localStorage.setItem('accessToken', tokenData.accessToken);
+      if (!accessToken) {
+        openModal('로그인 응답 오류', '서버 응답에 토큰이 없습니다.\n관리자에게 문의해주세요.');
+        return;
+      }
 
-      setAccessToken(tokenData.accessToken); // 성공 시 accessToken을 KioskApp에 전달
-      onNext(); // 다음 단계 이동
+      // 토큰 저장 (로컬 + 상위로 전달)
+      localStorage.setItem('accessToken', accessToken);
+      setAccessToken(accessToken);
+
+      // 다음 단계 이동
+      onNext();
     } catch (error) {
-      console.error("인증 실패:", error); // 실패 시 alert 표시
-      alert("등록되지 않은 번호거나 서버 오류입니다.");
+      const status = error?.response?.status;
+
+      if (status === 404) {
+        // 없는 회원
+        openModal(
+          '등록되지 않은 회원입니다.',
+          '해당 번호로 등록된 회원이 없습니다.\n회원으로 적립하려면 회원가입 후 이용해주세요.'
+        );
+      } else if (status === 400) {
+        // 형식 오류
+        openModal(
+          '전화번호 형식 오류',
+          '전화번호는 숫자 10~11자리여야 합니다.\n하이픈(-) 없이 입력해주세요.'
+        );
+      } else {
+        // 서버/네트워크 오류
+        openModal('서버 오류', '일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.');
+      }
+
+      // 디버깅 로그
+      // eslint-disable-next-line no-console
+      console.error(error?.response || error);
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  const remaining = Math.max(10 - phoneNumber.length, 0);
 
   return (
     <div className="screen">
@@ -92,18 +137,19 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
           placeholder="휴대폰 번호를 입력하세요"
         />
 
-        {/* 입력 상태 표시 추가 */}
+        {/* 입력 상태 표시 */}
         <div style={{ marginBottom: '20px', color: '#666', fontSize: '16px' }}>
           {phoneNumber.length}/11 자리 입력됨
         </div>
 
         <div className="number-pad">
-          {[7, 8, 9, 4, 5, 6, 1, 2, 3].map(num => (
+          {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
             <button
               key={num}
               className="number-button"
               onClick={() => handleNumberClick(num.toString())}
               type="button"
+              disabled={submitting}
             >
               {num}
             </button>
@@ -113,7 +159,7 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
             className="number-button delete-key"
             onClick={handleDelete}
             type="button"
-            disabled={phoneNumber.length === 0}
+            disabled={phoneNumber.length === 0 || submitting}
           >
             지우기
           </button>
@@ -122,6 +168,7 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
             className="number-button"
             onClick={() => handleNumberClick('0')}
             type="button"
+            disabled={submitting}
           >
             0
           </button>
@@ -130,7 +177,7 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
             className="number-button delete-key"
             onClick={handleClear}
             type="button"
-            disabled={phoneNumber.length === 0}
+            disabled={phoneNumber.length === 0 || submitting}
           >
             전체삭제
           </button>
@@ -144,17 +191,42 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
       <button
         className="next-button"
         onClick={handleNextClick}
-        disabled={!isValidPhoneNumber}
+        disabled={!isValidPhoneNumber || submitting}
         type="button"
         style={{
           background: isValidPhoneNumber ? '#ff4444' : '#cccccc',
-          cursor: isValidPhoneNumber ? 'pointer' : 'not-allowed'
+          cursor: isValidPhoneNumber ? 'pointer' : 'not-allowed',
+          opacity: submitting ? 0.8 : 1,
         }}
       >
-        다음→ {!isValidPhoneNumber && `(${10 - phoneNumber.length}자리 더 입력)`}
+        다음→ {!isValidPhoneNumber && `( ${remaining}자리 더 입력 )`}
       </button>
+
+      <BasicModal
+        open={modalOpen}
+        title={modalTitle}
+        message={modalMessage}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 };
+
+function BasicModal({ open, title, message, onClose, confirmText = '확인' }) {
+  if (!open) return null;
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true">
+      <div className="modal-card">
+        <h2 className="modal-title">{title}</h2>
+        <p className="modal-text" style={{ whiteSpace: 'pre-line' }}>{message}</p>
+        <div className="modal-actions">
+          <button className="btn-primary" onClick={onClose} type="button">
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default PhoneInputScreen;
