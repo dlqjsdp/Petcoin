@@ -68,6 +68,9 @@ const PhoneInputScreen = ({ phoneNumber, setPhoneNumber, onNext, onBack, setAcce
       const tokenData = response.data;
       console.log("인증 성공:", tokenData);
 
+    // ⭐ 토큰 로컬 저장
+    localStorage.setItem('accessToken', tokenData.accessToken);
+
       setAccessToken(tokenData.accessToken); // 성공 시 accessToken을 KioskApp에 전달
       onNext(); // 다음 단계 이동
     } catch (error) {
