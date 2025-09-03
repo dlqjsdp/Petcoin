@@ -46,13 +46,15 @@
                                member_id,
                                status,
                                started_at,
-                               ended_at
+                               ended_at,
+                               total_pet
         ) values (
                   #{kioskId},
                   #{memberId},
                   #{status},
                   #{startedAt},
-                  #{endedAt}
+                  #{endedAt},
+                  0
                          )
     </insert>
 

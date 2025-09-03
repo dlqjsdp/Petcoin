@@ -8,6 +8,7 @@ import com.petcoin.mapper.PointReqMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
  * - 250828 | sehui | 포인트 환급 요청 상태 변경 기능 추가
  * - 250829 | sehui | 페이징 처리를 위한 전체 포인트 환급 요청의 수 조회 기능 추가
  * - 250829 | sehui | 포인트 환급 요청 상태 변경의 매개변수 변경
+ * - 250903 | leejihye | 포인트 환급 요청 및 포인트 삭감 기능 추가
  */
 
 @Service
@@ -30,6 +32,7 @@ import java.util.List;
 public class PointReqServiceImpl implements PointReqService {
 
     private final PointReqMapper pointReqMapper;
+    private final PointHisService pointHisService;
 
     //포인트 환급 요청 목록 조회
     @Override
@@ -76,5 +79,15 @@ public class PointReqServiceImpl implements PointReqService {
         }
 
         return TotalPointRequests;
+    }
+
+    //포인트 확급 요청 및 포인트 차감
+    @Override
+    @Transactional
+    public void requestRefund(PointRequestDto pointRequestDto) {
+
+        pointHisService.addPointHistory(pointRequestDto);
+        pointReqMapper.requestRefund(pointRequestDto);
+
     }
 }
