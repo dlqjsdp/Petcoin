@@ -1,3 +1,21 @@
+/*
+ * MainScreen.js
+ * - 메인 키오스크 화면 구성 컴포넌트
+ * - 회원/비회원 선택 버튼 및 공지사항 마퀴 표시
+ *
+ * 주요 기능:
+ *   - mock 공지사항 데이터 렌더링 및 NoticeMarquee 컴포넌트 전달
+ *   - "회원" 버튼 클릭 시 onNext('member') 호출
+ *   - "비회원" 버튼 클릭 시 onNext('nonMember') 호출
+ *
+ * @fileName : MainScreen.js
+ * @author   : yukyeong
+ * @since    : 250903
+ * @history
+ *   - 250903 | yukyeong | 최초 생성 - mock 데이터 기반 공지사항 마퀴 + 회원/비회원 선택 버튼 구현
+ *   - 250903 | yukyeong | 버튼 클릭 시 onNext 콜백으로 다음 화면 전환 처리
+ */
+
 import React, { useState, useEffect } from 'react';
 import NoticeMarquee from './NoticeMarquee';
 import '../styles/common.css';
@@ -29,12 +47,12 @@ const MainScreen = ({ onNext }) => {
 
   const handleMemberClick = () => {
     console.log('회원 버튼 클릭됨');
-    onNext();
+    onNext('member');
   };
 
   const handleNonMemberClick = () => {
     console.log('비회원 버튼 클릭됨');
-    onNext();
+    onNext('nonMember');
   };
 
   return (
