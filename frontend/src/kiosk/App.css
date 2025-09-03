@@ -27,7 +27,7 @@
   width: auto !important;
 }/* ========== App.css - 키오스크 전용 스타일 ========== */
 
-.App {
+.KioskApp {
   width: 100%;
   height: 100vh;
   display: flex;
@@ -154,3 +154,4 @@
   border: 2px solid blue !important;
 }
 */
+

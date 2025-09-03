@@ -84,7 +84,7 @@ const MainPage = () => {
           </div>
           
           <div className="hero-visual">
-            <div className="kiosk-container">
+            <div className="main-kiosk-container">
               <div className="kiosk-mockup">
                 <div className="kiosk-screen">
                   <div className="screen-glow"></div>
@@ -101,9 +101,9 @@ const MainPage = () => {
                 </div>
               </div>
               <div className="floating-bottles">
-                <div className="bottle bottle-1">🍼</div>
-                <div className="bottle bottle-2">🍼</div>
-                <div className="bottle bottle-3">🍼</div>
+                <div className="bottle bottle-1">✨</div>
+                <div className="bottle bottle-2">✨</div>
+                <div className="bottle bottle-3">✨</div>
               </div>
             </div>
           </div>

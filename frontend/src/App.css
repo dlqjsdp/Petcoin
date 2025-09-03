@@ -7,7 +7,10 @@
 }
 
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -16,7 +19,9 @@ html, body, #root {
 }
 
 .App {
+  height: auto;
   min-height: 100vh;
+  overflow: visible;
   background-color: #f8fafc;
 }
 
@@ -543,10 +548,9 @@ html, body, #root {
 html, body {
   height: auto !important;
   min-height: 100%;
-  overflow-y: auto !important;
+  overflow-y: auto !important; /* 세로 스크롤 다시 켜짐 */
 }
 
 #root, .App, .app-main {
-  overflow: visible !important;
+  overflow: visible !important; /* 내부 요소가 넘칠 수 있게 허용 */
 }
-
