@@ -3,6 +3,7 @@ package com.petcoin.mapper;
 import com.petcoin.domain.MemberVO;
 import com.petcoin.dto.Criteria;
 import com.petcoin.dto.MemberListDto;
+import lombok.Builder;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
