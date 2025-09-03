@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250829 | sehiu | 목록 조회에 검색 조건 없는 페이징 처리로 변경 후 Test
  * - 250829 | sehui | 목록 조회에서 검색 조건(휴대폰 번호, 요청 처리 상태) Test
  * - 250829 | sehui | 포인트 환급 요청 상태 변경 기능의 매개변수 변경 후 Test
+ * - 250903 | leejihye | 포인트 환급 요청 Test
  */
 
 @SpringBootTest
@@ -170,5 +171,22 @@ class PointReqMapperTest {
         assertNotNull(TotalPointRequests, "전체 포인트 환급 요청의 수가 null입니다.");
 
         log.info("Total Point Requests: {}", TotalPointRequests);
+    }
+
+    //포인트 환급 요청 test
+    @Test
+    public void requestRefundTest() {
+        PointRequestDto pointRequestDto = PointRequestDto.builder()
+                .memberId(3L)
+                .requestAmount(50)
+                .bankName("ptbank")
+                .accountNumber("111222333444555")
+                .accountHolder("testUser")
+                .requestStatus(RequestStatus.PENDING)
+                .build();
+
+        pointReqMapper.requestRefund(pointRequestDto);
+
+        log.info("<UNK> <UNK> <UNK>: {}", pointRequestDto);
     }
 }

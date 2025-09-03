@@ -19,6 +19,7 @@ import java.util.List;
  * - 250828 | sehui | 포인트 환급 요청 상태 변경(대기, 승인, 처리 완료, 거절) 기능 추가
  * - 250829 | sehui | 페이징 처리를 위한 전체 포인트 환급 요청의 수 조회 기능 추가
  * - 250829 | sehui | 포인트 환급 요청 상태 변경 기능의 매개변수 변경
+ * - 250903 | leejihye | 회원의 포인트 환급 요청
  */
 
 @Mapper
@@ -35,4 +36,7 @@ public interface PointReqMapper {
 
     //전체 포인트 환급 요청의 수 조회
     public int getTotalPointRequests();
+    
+    //포인트 환급 요청 정보 db 저장
+    public void requestRefund(PointRequestDto pointRequestDto);
 }

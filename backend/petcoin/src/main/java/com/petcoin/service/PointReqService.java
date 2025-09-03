@@ -11,6 +11,7 @@ package com.petcoin.service;
  * - 250828 | sehui | 포인트 환급 요청 상태 변경 기능 추가
  * - 250829 | sehui | 페이징 처리를 위한 전체 포인트 환급 요청의 수 조회 기능 추가
  * - 250829 | sehui | 포인트 환급 요청 상태 변경 기능의 매개변수 변경
+ * - 250903 | leejihye | 포인트 환급 요청 및 포인트 삭감 기능 추가
  */
 
 import com.petcoin.constant.RequestStatus;
@@ -33,4 +34,7 @@ public interface PointReqService {
 
     //전체 포인트 환급 요청의 수 조회
     public int getTotalPointRequests();
+
+    //포인트 환급 요청 및 포인트 차감 기능
+    public void requestRefund(PointRequestDto pointRequestDto);
 }

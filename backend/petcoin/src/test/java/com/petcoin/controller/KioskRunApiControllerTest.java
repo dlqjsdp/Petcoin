@@ -2,6 +2,7 @@ package com.petcoin.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petcoin.dto.KioskRunEndRequest;
 import com.petcoin.dto.KioskRunStartRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -41,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+//@Transactional
 class KioskRunApiControllerTest {
 
     @Autowired
@@ -179,13 +183,18 @@ class KioskRunApiControllerTest {
                 .getContentAsString();
 
         long runId = extractRunId(startBody); // 이후 종료/취소 호출에 사용할 runId 추출
+        KioskRunEndRequest endReq = new KioskRunEndRequest();
+        endReq.setTotalPet(10);
 
         // 2) When : 종료 API 호출 & Then : 200 OK + COMPLETED 상태
-        mockMvc.perform(post("/api/kiosk-runs/{runId}/end", runId))
+        mockMvc.perform(post("/api/kiosk-runs/{runId}/end", runId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(endReq))) // <- totalPet 전달
                 .andExpect(status().isOk()) // HTTP 200 OK
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.runId").value(runId))
-                .andExpect(jsonPath("$.status").value("COMPLETED")); // 서비스가 COMPLETED로 세팅한다고 가정
+                .andExpect(jsonPath("$.status").value("COMPLETED")) // 서비스가 COMPLETED로 세팅한다고 가정
+                .andExpect(jsonPath("$.totalPet").value(10)); // totalPet 확인
     }
 
 
@@ -196,7 +205,7 @@ class KioskRunApiControllerTest {
         // Given: RUNNING 세션 시작
         KioskRunStartRequest req = new KioskRunStartRequest();
         req.setKioskId(1L);
-        req.setMemberId(1L);
+        req.setMemberId(4L);
 
         String startBody = mockMvc.perform(post("/api/kiosk-runs")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -205,13 +214,18 @@ class KioskRunApiControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         long runId = extractRunId(startBody);
+        KioskRunEndRequest endReq = new KioskRunEndRequest();
+        endReq.setTotalPet(70);
 
         // When: 취소 호출 & Then: 200 OK + CANCELLED 상태
-        mockMvc.perform(post("/api/kiosk-runs/{runId}/cancel", runId))
+        mockMvc.perform(post("/api/kiosk-runs/{runId}/cancel", runId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(endReq))) // <- totalPet 전달
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.runId").value(runId))
-                .andExpect(jsonPath("$.status").value("CANCELLED")); // 서비스가 CANCELLED로 세팅한다고 가정
+                .andExpect(jsonPath("$.status").value("CANCELLED")) // 서비스가 CANCELLED로 세팅한다고 가정
+                .andExpect(jsonPath("$.totalPet").value(70)); // totalPet 확인
     }
 
 }

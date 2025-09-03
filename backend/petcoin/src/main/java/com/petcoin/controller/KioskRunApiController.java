@@ -29,6 +29,7 @@ import java.net.URI;
  *                        - 실행 종료 API (POST /api/kiosk-runs/{runId}/end) 구현
  *                        - 실행 취소 API (POST /api/kiosk-runs/{runId}/cancel) 구현
  *                        - 예외 처리 추가 (IllegalArgumentException → 400, IllegalStateException → 409, 기타 → 500)
+ *                        - 세션 종료시 회수 페트병 수 받아서 dto에 넣어야 함
  */
 
 @RestController
@@ -79,11 +80,15 @@ public class KioskRunApiController {
      * - 200 OK
      */
     @PostMapping("/{runId}/end")
-    public ResponseEntity<?> end(@PathVariable Long runId) {
+    public ResponseEntity<?> end(@PathVariable Long runId,
+                                    @RequestBody(required = false) KioskRunEndRequest reqBody) {
         try {
             // 1) DTO 생성 (PathVariable → DTO 세팅)
             KioskRunEndRequest req = new KioskRunEndRequest();
             req.setRunId(runId);
+            if (reqBody != null && reqBody.getTotalPet() != 0) {
+                req.setTotalPet(reqBody.getTotalPet()); // totalPet 세팅
+            }
             // 2) 실행 종료 처리
             KioskRunResponse res = kioskRunService.endRun(req);
             // 3) 200 OK + body 응답
@@ -106,11 +111,15 @@ public class KioskRunApiController {
      * - 200 OK
      */
     @PostMapping("/{runId}/cancel")
-    public ResponseEntity<?> cancel(@PathVariable Long runId) {
+    public ResponseEntity<?> cancel(@PathVariable Long runId,
+                                        @RequestBody(required = false) KioskRunEndRequest reqBody) {
         try {
             // 1) DTO 생성
             KioskRunEndRequest req = new KioskRunEndRequest();
             req.setRunId(runId);
+            if (reqBody != null && reqBody.getTotalPet() != 0) {
+                req.setTotalPet(reqBody.getTotalPet()); // totalPet 세팅
+            }
             // 2) 실행 취소 처리
             KioskRunResponse res = kioskRunService.cancelRun(req);
             // 3) 200 OK + body 응답

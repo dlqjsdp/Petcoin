@@ -100,4 +100,10 @@
         FROM point_request
     </select>
 
+    <!-- 포인트 환급 요청 -->
+    <insert id="requestRefund" parameterType="com.petcoin.domain.PointReqVO" useGeneratedKeys="true" keyProperty="requestId">
+        insert into point_request(request_id, member_id, request_amount, bank_name, account_number, account_holder, request_status, request_at)
+        values (#{requestId}, #{memberId}, #{requestAmount}, #{bankName}, #{accountNumber}, #{accountHolder}, 'PENDING', now())
+    </insert>
+
 </mapper>
