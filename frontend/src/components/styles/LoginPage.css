@@ -401,3 +401,132 @@
     padding: 0.6rem 0.8rem;
   }
 }
+
+/* ===== Modal ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60; /* .login-container(z-index:2)보다 높게 */
+  background: rgba(17, 24, 39, 0.45); /* 어두운 오버레이 */
+  backdrop-filter: blur(4px);
+  animation: modal-fade-in 200ms ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem; /* 모바일 여백 */
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 1.25rem;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.35);
+  padding: 1.75rem 1.5rem;
+  z-index: 61;
+  animation: modal-pop-in 180ms cubic-bezier(.2,.7,.3,1);
+}
+
+.modal-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1f2937; /* gray-800 */
+  text-align: center;
+}
+
+.modal-text {
+  color: #4b5563; /* gray-600 */
+  line-height: 1.6;
+  font-size: 0.975rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  word-break: keep-all;
+}
+.modal-text b {
+  color: #111827; /* gray-900 */
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+/* 버튼 스타일: 기존 오렌지 톤과 일치 */
+.btn-primary,
+.btn-outline {
+  min-width: 120px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.875rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #f97316, #fb923c);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(249, 115, 22, 0.4);
+}
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-primary.loading {
+  background: linear-gradient(45deg, #d1d5db, #9ca3af);
+  box-shadow: none;
+}
+
+.btn-outline {
+  background: rgba(255, 255, 255, 0.9);
+  color: #6b7280; /* gray-500 */
+  border: 1.5px solid rgba(229, 231, 235, 0.9); /* gray-200 */
+}
+.btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  color: #f97316;
+  border-color: #f97316;
+  transform: translateY(-1px);
+}
+.btn-outline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 애니메이션 */
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 작은 화면 최적화 */
+@media (max-width: 640px) {
+  .modal-card {
+    padding: 1.5rem 1.1rem;
+    border-radius: 1rem;
+  }
+  .btn-primary, .btn-outline {
+    min-width: 0;
+    flex: 1;
+  }
+}
