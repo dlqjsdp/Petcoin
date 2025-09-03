@@ -2,7 +2,7 @@ package com.petcoin.dto;
 
 /*
  * @fileName : PhoneRequest
- * 로그인 진행 시 프론트에서 백엔드로 사용자가 입력한 값이 맞는지 확인 요청 전용 DTO
+ * 로그인, 키오스크에서 회원으로 분리수거 진행 시 프론트에서 백엔드로 사용자가 입력한 값이 맞는지 확인 요청 전용 DTO
  * @author : heekyung
  * @since : 250827
  * @history
@@ -10,9 +10,15 @@ package com.petcoin.dto;
  */
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PhoneRequest {
 
     @NotBlank
