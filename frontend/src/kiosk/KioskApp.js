@@ -18,6 +18,8 @@
  *   - 250903 | yukyeong | 로고 고정 헤더 및 공통 레이아웃 구성 완료
  *   - 250903 | yukyeong | 전화번호 입력 화면에 onBack 시 전화번호 초기화 추가
  *   - 250903 | yukyeong | 로그인 성공 시 setAccessToken으로 토큰 저장 기능 추가
+ *   - 250903 | yukyeong | InsertBottleScreen에 memberId, kioskId 동적 전달 처리 완료 (case 3 수정)
+ * 
  */
 
 import React, { useState } from 'react';
@@ -29,6 +31,7 @@ import CompletionScreen from './components/CompletionScreen';
 import logoImage from './img/logo.png';
 import './App.css';
 import './styles/common.css';
+import { jwtDecode } from 'jwt-decode';
 
 function KioskApp() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -56,6 +59,20 @@ function KioskApp() {
   };
 
   const renderCurrentStep = () => {
+    // 현재 한 대만 운용하므로 고정 kioskId
+    const kioskId = 1;
+
+    // accessToken → memberId 추출
+    let memberId = null;
+    if (accessToken) {
+      try {
+        const decoded = jwtDecode(accessToken);
+        memberId = decoded.memberId;
+      } catch (err) {
+        console.error("JWT 디코딩 실패:", err);
+      }
+    }
+
     switch (currentStep) {
       case 1:
         return <MainScreen onNext={(role) => {
@@ -78,9 +95,11 @@ function KioskApp() {
       case 3:
         return (
           <InsertBottleScreen
-            onNext={() => goToStep(4)}
-            onBack={goBack}
+            onNext={() => goToStep(4)}   // 다음 단계로 (예: 포인트 확인 화면)
+            onBack={() => goToStep(2)}   // 전화번호 입력 화면으로 되돌아감
             accessToken={accessToken} // 필요 시 API 호출용
+            memberId={memberId}   // 동적으로 추출
+            kioskId={kioskId}     // 기기 고유값
           />
         );
       case 4:

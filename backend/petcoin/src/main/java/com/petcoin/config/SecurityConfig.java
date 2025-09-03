@@ -106,7 +106,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
-        c.setAllowedOrigins(List.of("http://localhost:3000")); // VSCode React dev 서버
+        c.setAllowedOrigins(List.of("http://localhost:3000", // VSCode React dev 서버
+                                    "http://192.168.10.72:3000"  )); // 아이패드에서 접근하는 주소 추가
         c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         c.setAllowedHeaders(List.of("*"));
         c.setExposedHeaders(List.of("Authorization", "Content-Type"));

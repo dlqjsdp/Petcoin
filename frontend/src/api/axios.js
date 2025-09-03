@@ -27,6 +27,7 @@ const api = axios.create({
 // 2) 인터셉터 설정 (요청 직전)
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken'); // JWT 꺼내오기
+    console.log('[인터셉터] accessToken =', token); // ✅ 콘솔에 출력해보기
     if (token) config.headers.Authorization = `Bearer ${token}`; // 있으면 헤더에 추가
     return config;
 });
