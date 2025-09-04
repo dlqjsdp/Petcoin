@@ -1,8 +1,12 @@
 package com.petcoin.service;
 
+import com.petcoin.domain.KioskRunVO;
+import com.petcoin.dto.KioskRunCriteria;
 import com.petcoin.dto.KioskRunEndRequest;
 import com.petcoin.dto.KioskRunResponse;
 import com.petcoin.dto.KioskRunStartRequest;
+
+import java.util.List;
 
 /*
  * 키오스크 실행 세션 Service 인터페이스
@@ -19,6 +23,9 @@ import com.petcoin.dto.KioskRunStartRequest;
  * @since   : 250827
  * @history
  *   - 250827 | yukyeong | 인터페이스 최초 생성 (startRun, endRun, cancelRun 메서드 정의)
+ *   - 250904 | sehui | 실행 세션 단건 조회 메서드 추가
+ *   - 250904 | sehui | 실행 세션 목록 조회 (페이징 + 조건) 메서드 추가
+ *   - 250904 | sehui | 실행 세션 총 개수 조회 메서드 추가
  */
 
 public interface KioskRunService {
@@ -34,4 +41,13 @@ public interface KioskRunService {
     // 실행 취소 : RUNNING → CANCELLED 전이만 허용
     KioskRunResponse cancelRun(KioskRunEndRequest req);
 
+    /* 관리자 페이지용 */
+    //실행 세션 단건
+    public KioskRunResponse readRun(Long runId);
+
+    //실행 세션 목록
+    public List<KioskRunResponse> getRunListWithPaging(KioskRunCriteria cri);
+
+    //실행 세션 총 개수
+    public int getTotalRunCount(KioskRunCriteria cri);
 }
