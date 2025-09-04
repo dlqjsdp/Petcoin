@@ -1,22 +1,108 @@
+/*
+ * ProcessingScreen.js
+ * - 키오스크 분석 대기 화면 컴포넌트
+ * - 라즈베리파이 서버(Flask)로부터 분석 완료 상태를 주기적으로 확인하고,
+ *   완료되면 다음 단계(onComplete)로 자동 전환
+ *
+ * 주요 기능:
+ *   - runId 기반으로 Flask API에 분석 완료 상태 polling
+ *   - 2초 간격으로 상태 확인 (checkAnalysisComplete)
+ *   - 완료되면 clearInterval 후 onComplete() 호출
+ *   - 분석 중 UI 표시 (제목, 스피너, 안내 텍스트)
+ *
+ * 사용 API:
+ *   - GET /api/analysis/status?runId=123 (Flask)
+ *
+ * @fileName : ProcessingScreen.js
+ * @author   : yukyeong
+ * @since    : 250904
+ * @history
+ *   - 250904 | yukyeong | 최초 생성 - 분석 완료 상태 polling 및 자동 전환 처리
+ *   - 250904 | yukyeong | loading-spinner 및 분석 안내 텍스트 UI 구성
+ *   - 250904 | yukyeong | polling 중 메모리 누수 방지를 위한 clearInterval 정리 처리
+ *   - 250904 | yukyeong | runId 기반 polling 구조 적용 및 자동 취소 처리에 runId 활용 추가
+ *   - 250904 | yukyeong | Flask 서버 미응답 시 최대 15회(30초)까지 재시도, 이후 자동 취소 처리로 변경
+ *   - 250904 | yukyeong | 분석 완료 응답 수신 시 자동 전환, 실패 시 사용자 alert 후 run 종료
+ */
+
 import React, { useEffect } from 'react';
 import '../styles/common.css';
+import { checkAnalysisComplete } from '../../api/pi';
+import { cancelKioskRun } from '../../api/kiosk';
 
-const ProcessingScreen = ({ onComplete }) => {
+const ProcessingScreen = ({ runId, onComplete }) => {
+
   useEffect(() => {
-    // 3초 후 완료 화면으로 이동
-    const timer = setTimeout(() => {
-      onComplete();
-    }, 3000);
+    console.log("🔍 [ProcessingScreen] useEffect mounted. runId:", runId); // runId 확인
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+    let attempts = 0;
+    const maxAttempts = 30; // 30초
+    let isMounted = true;
+
+    const interval = setInterval(async () => {
+      attempts++;
+
+      try {
+        const res = await checkAnalysisComplete(runId);
+        console.log("✅ Flask 응답 데이터:", res.data);
+        if (!isMounted) return;
+
+        console.log(`⏳ [Polling] attempt ${attempts} / done: ${res.data?.done}`); // Flask 응답 확인
+
+        if (res.data?.done) {
+          clearInterval(interval);
+          console.log("✅ [Polling] 분석 완료 응답 수신. 다음 단계로 이동"); // 완료 로그
+          onComplete(); // 완료 화면으로 이동
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          console.warn("분석 타임아웃: 자동 취소 처리");
+          console.warn("🚨 [Timeout] 분석 완료 응답 없음. 취소 요청 시작 (runId:", runId, ")"); // 타임아웃 로그
+
+          try {
+            const cancelRes = await cancelKioskRun(runId);
+            console.log("✅ [Cancel] 취소 요청 성공", cancelRes.data); // 취소 응답 로그
+          } catch (cancelErr) {
+            console.error("❌ [Cancel] 취소 요청 실패", cancelErr); // 취소 실패 로그
+          }
+
+          alert("분석 시간이 초과되어 세션이 종료되었습니다.");
+          onComplete(); // 또는 goHome()
+        }
+
+      } catch (err) {
+        console.error("분석 상태 확인 실패", err);
+        console.error("❌ [Polling] 분석 상태 확인 실패", err); // Flask 에러 로그
+
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+
+          try {
+            const cancelRes = await cancelKioskRun(runId);
+            console.log("✅ [Cancel] 취소 요청 성공", cancelRes.data);
+          } catch (cancelErr) {
+            console.error("❌ [Cancel] 취소 요청 실패", cancelErr);
+          }
+
+          alert("서버 응답이 없어 세션을 종료합니다.");
+          onComplete();
+        }
+      }
+
+    }, 2000); // 2초 간격
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      console.log("🧹 [ProcessingScreen] 컴포넌트 언마운트 - polling 중단됨");
+    };
+  }, [runId, onComplete]);
 
   return (
     <div className="content">
       <h1 className="title">분석 중입니다.</h1>
-      
+
       <div className="loading-spinner"></div>
-      
+
       <div className="processing-text">
         페트병을 분석하고 있습니다.<br />
         잠시만 기다려 주세요...

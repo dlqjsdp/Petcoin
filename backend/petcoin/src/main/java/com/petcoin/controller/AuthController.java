@@ -31,7 +31,7 @@ import java.util.Map;
 @RequestMapping(value = "/api/auth")
 @Slf4j
 public class AuthController {
-    
+
     private final JwtTokenProvider jwtTokenProvider; //토큰 발급 유틸
     private final MemberMapper memberMapper; //회원 조회, 저장
     private final PasswordEncoder passwordEncoder; //비밀번호 암호화
@@ -102,7 +102,7 @@ public class AuthController {
         }
         // 2. 회원 조회
         MemberVO member = memberMapper.findByPhone(phone);
-        
+
         // 3. 없으면 에러 발생
         if (member == null) {
             return ResponseEntity.status(404).body("NO_SUCH_MEMBER");
@@ -113,9 +113,9 @@ public class AuthController {
         // 5. 응답 반환
         return ResponseEntity.ok(
                 TokenResponse.builder()
-                .token("Bearer")
-                .accessToken(jwt)
-                .build()
+                        .token("Bearer")
+                        .accessToken(jwt)
+                        .build()
         );
     }
 }

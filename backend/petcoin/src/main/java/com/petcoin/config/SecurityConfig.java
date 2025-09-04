@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/mypage/pointrefund/*").permitAll()
                         // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/prediction/save").permitAll()
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )

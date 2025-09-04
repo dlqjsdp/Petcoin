@@ -40,6 +40,7 @@ function KioskApp() {
   const [petBottleCount, setPetBottleCount] = useState(3);
   const [points, setPoints] = useState(1000);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [runId, setRunId] = useState(null); // runId 상태 추가
 
   const goToStep = (step) => {
     setCurrentStep(step);
@@ -53,9 +54,14 @@ function KioskApp() {
 
   // 홈으로 이동하면 초기화
   const handleGoHome = () => {
+    console.log('🏠 홈 초기화 실행');
+
     setPhoneNumber('');
     setAccessToken(null);
-    setCurrentStep(1);
+    setRunId(null); // runId도 초기화
+    setPetBottleCount(0); // 페트병 수 초기화
+    setPoints(0); // 포인트 초기화
+    setCurrentStep(1); // 메인 화면으로
   };
 
   const renderCurrentStep = () => {
@@ -95,17 +101,26 @@ function KioskApp() {
       case 3:
         return (
           <InsertBottleScreen
-            onNext={() => goToStep(4)}   // 다음 단계로 (예: 포인트 확인 화면)
+            onNext={(runId) => {
+              setRunId(runId);  // runId 저장!
+              goToStep(4);      // 다음 단계로 이동
+            }}   // 다음 단계로 (예: 포인트 확인 화면)
             onBack={() => goToStep(2)}   // 전화번호 입력 화면으로 되돌아감
             accessToken={accessToken} // 필요 시 API 호출용
             memberId={memberId}   // 동적으로 추출
             kioskId={kioskId}     // 기기 고유값
+            setRunId={setRunId} // runId를 상위에 저장하도록 props 전달
           />
         );
       case 4:
         return (
           <ProcessingScreen
-            onComplete={() => goToStep(5)}
+            runId={runId} // runId 전달
+            onComplete={() => {
+              // runId가 null이 아닐 때만 step 5로
+              if (runId) goToStep(5);
+              else console.error('runId 없음! CompletionScreen으로 이동 방지됨');
+            }}
           />
         );
       case 5:
@@ -113,6 +128,7 @@ function KioskApp() {
           <CompletionScreen
             petBottleCount={petBottleCount}
             points={points}
+            runId={runId}
             onHome={handleGoHome} // 초기화 포함
           />
         );

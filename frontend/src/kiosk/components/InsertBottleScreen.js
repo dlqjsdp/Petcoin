@@ -25,7 +25,8 @@ import '../styles/common.css';
 import { conveyorStart } from '../../api/pi';
 import { startKioskRun } from '../../api/kiosk';
 
-const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId }) => {
+// 상위 컴포넌트(KioskApp)에서 전달할 setRunId를 props로 추가
+const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => {
   const [showInstructions, setShowInstructions] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -46,6 +47,8 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId }) => {
       const runId = runResponse.data.runId;
       console.log("생성된 runId:", runId);
 
+      setRunId(runId); // run_id 추가
+
       // 콘솔에 확인용 로그 추가
       console.log("✔️ 라즈베리파이에 전달할 데이터:");
       console.log("memberId:", memberId);
@@ -62,7 +65,7 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId }) => {
       // 3초 후 다음 단계로 이동
       setTimeout(() => {
         console.log('다음 화면으로 이동');
-        onNext();
+        onNext(runId);
       }, 3000);
 
     } catch (error) {
