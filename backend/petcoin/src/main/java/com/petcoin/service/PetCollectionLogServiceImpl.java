@@ -23,7 +23,7 @@ public class PetCollectionLogServiceImpl implements PetCollectionLogService {
     private final PetCollectionLogMapper petCollectionLogMapper;
     private final FileService fileService;
 
-    private final String uploadPath = "/path/to/image/upload"; // 실제 이미지 저장 경로 지정
+    private final String uploadPath = "C:\\petcoin"; // 실제 이미지 저장 경로 지정
 
     @Override
     @Transactional
