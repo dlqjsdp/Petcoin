@@ -1,6 +1,7 @@
 package com.petcoin.service;
 
 import com.petcoin.constant.RunStatus;
+import com.petcoin.dto.KioskRunCriteria;
 import com.petcoin.dto.KioskRunEndRequest;
 import com.petcoin.dto.KioskRunResponse;
 import com.petcoin.dto.KioskRunStartRequest;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,6 +35,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since   : 250829
  * @history
  *   - 250829 | yukyeong | 실행 시작 ~ 종료까지의 정상 흐름 테스트(testRun) 작성
+ *   - 250904 | sehui | 실행 세션 단건 조회 Test
+ *   - 250904 | sehui | 실행 세션 목록 조회 (페이징 + 조건) Test
+ *   - 250904 | sehui | 실행 세션 총 개수 조회 Test
  */
 
 @SpringBootTest
@@ -77,4 +83,52 @@ class KioskRunServiceTest {
         assertEquals(RunStatus.COMPLETED, ended.getStatus());
     }
 
+    @Test
+    @DisplayName("실행 세션 단건 조회")
+    public void testReadRun() {
+
+        //given : 세션 id 설정
+        Long runId = 1L;
+
+        //when : 실행 세션 단건 조회
+        KioskRunResponse result = kioskRunService.readRun(runId);
+
+        //then : 결과 검증
+        assertNotNull(result);
+        assertEquals(runId, result.getRunId());
+        log.info("kiosk run >> {}", result);
+    }
+
+    @Test
+    @DisplayName("실행 세션 목록 조회 - 검색 조건 없이")
+    public void testRunList() {
+
+        //given : 페이징 + 검색 조건 설정
+        KioskRunCriteria cri = new KioskRunCriteria();
+
+        //when : 실행 세션 목록 조회
+        List<KioskRunResponse> RunListDto = kioskRunService.getRunListWithPaging(cri);
+
+        //then : 결과 검증
+        assertNotNull(RunListDto);
+
+        for(KioskRunResponse dto : RunListDto){
+            log.info("kiosk run list >> {}", dto);
+        }
+    }
+
+    @Test
+    @DisplayName("실행 세션 총 개수")
+    public void testTotalRun() {
+
+        //given : 페이징 + 검색 조건 설정
+        KioskRunCriteria cri = new KioskRunCriteria();
+
+        //when : 실행 세션 총 개수 조회
+        int totalRunCount = kioskRunService.getTotalRunCount(cri);
+
+        //then : 결과 검증
+        assertNotNull(totalRunCount);
+        log.info("kiosk run >> {}", totalRunCount);
+    }
 }

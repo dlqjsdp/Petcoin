@@ -3,6 +3,7 @@ package com.petcoin.service;
 import com.petcoin.constant.KioskStatus;
 import com.petcoin.constant.RunStatus;
 import com.petcoin.domain.KioskRunVO;
+import com.petcoin.dto.KioskRunCriteria;
 import com.petcoin.dto.KioskRunEndRequest;
 import com.petcoin.dto.KioskRunResponse;
 import com.petcoin.dto.KioskRunStartRequest;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /*
  * 키오스크 실행 세션 Service 구현체
@@ -36,6 +40,9 @@ import java.time.LocalDateTime;
  *   - 250827 | yukyeong | ServiceImpl 최초 생성 (dtoToVo, voToDto, startRun 기본 로직 구현)
  *   - 250829 | yukyeong | endRun, cancelRun 메서드 추가 (RUNNING 상태 조건부 전이, 멱등 처리 포함)
  *   - 250829 | yukyeong | 행 잠금(lockKioskRow, lockRunRow) 적용하여 동시성 제어 보강
+ *   - 250904 | sehui | 실행 세션 단건 조회 메서드 추가
+ *   - 250904 | sehui | 실행 세션 목록 조회 (페이징 + 조건) 메서드 추가
+ *   - 250904 | sehui | 실행 세션 총 개수 조회 메서드 추가
  */
 
 @Service
@@ -170,5 +177,51 @@ public class KioskRunServiceImpl implements KioskRunService{
         // 4) 최신값 재조회 후 반환
         KioskRunVO saved = kioskRunMapper.readRunAsVO(runId);
         return voToDto(saved);
+    }
+
+    //실행 세션 단건 조회
+    @Override
+    public KioskRunResponse readRun(Long runId) {
+
+        //1. 실행 세션 단건 조회
+        KioskRunResponse runResponse = kioskRunMapper.readRun(runId);
+
+        //2. 조회 결과 없으면 예외 처리
+        if(runResponse == null) {
+            throw new IllegalArgumentException("존재하지 않는 실행 세션입니다.");
+        }
+
+        return runResponse;
+    }
+
+    //실행 세션 목록 조회
+    @Override
+    public List<KioskRunResponse> getRunListWithPaging(KioskRunCriteria cri) {
+
+        //1. 실행 세션 목록 조회 (VO)
+        List<KioskRunVO> runVOList = kioskRunMapper.getRunListWithPaging(cri);
+
+        //2. VO -> DTO 변환 후 List에 담음
+        List<KioskRunResponse> runResponseList = new ArrayList<>();
+
+        for(KioskRunVO runVO : runVOList) {
+            KioskRunResponse runDto = voToDto(runVO);
+            runResponseList.add(runDto);
+        }
+
+        return runResponseList;
+    }
+
+    //실행 세션 총 개수 조회
+    @Override
+    public int getTotalRunCount(KioskRunCriteria cri) {
+
+        int totalRunCount = kioskRunMapper.getTotalRunCount(cri);
+
+        if(totalRunCount == 0) {
+            throw new IllegalArgumentException("실행 세션 총 개수 조회 오류 발생");
+        }
+
+        return totalRunCount;
     }
 }
