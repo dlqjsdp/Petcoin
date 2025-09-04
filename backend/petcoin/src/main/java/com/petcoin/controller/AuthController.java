@@ -24,6 +24,7 @@ import java.util.Map;
  * @history
  * - 250827 | heekyung | AuthController 생성 / JWT토큰으로 로그인 가능
  * - 250827 | heekyung | kioskphone API 추가(자동가입 없이 존재 확인 전용)
+ * - 250904 | heekyung | JWT에 memberId 포함 발급으로 수정 (마이페이지 등에서 즉시 사용)
  */
 
 @RestController
@@ -81,7 +82,7 @@ public class AuthController {
             memberMapper.insertMember(member);
         }
         // 5. (신규든 기존이든) JWT 토큰 생성 (phone=주체, role=권한)
-        String jwt = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name());
+        String jwt = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name(), member.getMemberId());
 
         // 7. 응답 DTO(TokenResponse)로 토큰 관련 정보를 JSON 으로 반환
         return ResponseEntity.ok(
@@ -108,7 +109,8 @@ public class AuthController {
             return ResponseEntity.status(404).body("NO_SUCH_MEMBER");
         }
         // 4. 있으면 토큰 발급
-        String jwt = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name());
+        String jwt = jwtTokenProvider.createToken(member.getPhone(), member.getRole().name(), member.getMemberId());
+
 
         // 5. 응답 반환
         return ResponseEntity.ok(

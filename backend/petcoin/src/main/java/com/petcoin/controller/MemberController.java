@@ -68,7 +68,7 @@ public class MemberController {
         MemberVO memberVO = memberService.registerMember(phone);
 
         //2. JWT 토큰 생성
-        String jwt = jwtTokenProvider.createToken(memberVO.getPhone(), memberVO.getRole().name());
+        String jwt = jwtTokenProvider.createToken(memberVO.getPhone(), memberVO.getRole().name(), memberVO.getMemberId());
         return ResponseEntity.ok(
                 TokenResponse.builder()
                         .token("Bearer")

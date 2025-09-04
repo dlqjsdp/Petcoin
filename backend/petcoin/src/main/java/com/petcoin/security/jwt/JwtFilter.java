@@ -7,6 +7,7 @@ package com.petcoin.security.jwt;
  * @since : 250829
  * @history
  * - 250829 | heekyung | JWT 필터 코드 작성
+ * - 250904 | heekyung | memberId/phone/role을 Principal로 저장되도록 개선
  */
 
 import io.jsonwebtoken.Jwts;
@@ -57,13 +58,20 @@ public class JwtFilter extends OncePerRequestFilter {
                              .getBody()
                              .get("role", String.class); //user or admin 같은 문자열
 
-                     //6. ROLE_ 붙이기
+                     //6. 토큰에서 memberId 호출
+                     Long memberId = jwtTokenProvider.getMemberId(token);
+
+                     //7. ROLE_ 붙이기
                      var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
-                     //7. 인증 객체 생성
-                     Authentication auth = new UsernamePasswordAuthenticationToken(phone, null, authorities);
+                     //8. Principal(현재 로그인 사용자 최소 정보) 구성
+                     Principal.MemberPrincipal principal = new Principal.MemberPrincipal(memberId, phone, role);
 
-                     //8. 현재 스레드의 SecurityContext 에 인증 저장
+                     //9. 인증 객체 생성 (principal + 권한, 자격증명은 null)
+                     Authentication auth =
+                             new UsernamePasswordAuthenticationToken(principal, null, authorities);
+
+                     //10. 현재 스레드의 SecurityContext 에 인증 저장
                      SecurityContextHolder.getContext().setAuthentication(auth);
                  }
              }
