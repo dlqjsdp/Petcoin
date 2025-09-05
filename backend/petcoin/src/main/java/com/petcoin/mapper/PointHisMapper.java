@@ -32,4 +32,10 @@ public interface PointHisMapper {
 
     //포인트 내역 추가 (포인트 적립)
     public int plusPoint(PointHistoryVO pointHistoryVO);
+
+    //적립된 포인트 및 누적 포인트 조회 기능
+    public int getNewPointChange(Long memberId);
+
+    //신규 회원 포인트 적립 전 0 포인트 db 저장
+    public int newMemberPointHistory(PointHistoryVO pointHistoryVO);
 }

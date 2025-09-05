@@ -75,4 +75,26 @@
                    NOW()
                )
     </insert>
+
+    <!-- 적립된 포인트 및 누적 포인트 조회 기능 추가 -->
+    <select id="getNewPointChange" resultType="int">
+        SELECT point_change, point_balance
+        FROM point_history
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
+            LIMIT 1
+    </select>
+
+    <!-- 신규 회원 0포인트 db 적립 -->
+    <insert id="newMemberPointHistory">
+        INSERT INTO point_history (member_id, point_change, point_balance, action_type, description, created_at)
+        VALUES (
+                   #{memberId},
+                   #{pointChange},
+                   #{pointBalance},
+                   #{actionType},
+                   #{description},
+                   NOW()
+               )
+    </insert>
 </mapper>
