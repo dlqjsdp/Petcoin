@@ -113,15 +113,11 @@ public class KioskRunApiController {
      * - 200 OK
      */
     @PostMapping("/{runId}/cancel")
-    public ResponseEntity<?> cancel(@PathVariable Long runId,
-                                        @RequestBody(required = false) KioskRunEndRequest reqBody) {
+    public ResponseEntity<?> cancel(@PathVariable Long runId) {
         try {
             // 1) DTO 생성
             KioskRunEndRequest req = new KioskRunEndRequest();
             req.setRunId(runId);
-            if (reqBody != null && reqBody.getTotalPet() != 0) {
-                req.setTotalPet(reqBody.getTotalPet()); // totalPet 세팅
-            }
             // 2) 실행 취소 처리
             KioskRunResponse res = kioskRunService.cancelRun(req);
             // 3) 200 OK + body 응답

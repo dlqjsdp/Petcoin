@@ -72,8 +72,7 @@
     <update id="cancelRun">
         UPDATE kiosk_run
         SET status = 'CANCELLED',
-            ended_at = #{endedAt},
-            total_pet = #{totalPet}
+            ended_at = #{endedAt}
         WHERE run_id = #{runId}
           AND status = 'RUNNING'
     </update>

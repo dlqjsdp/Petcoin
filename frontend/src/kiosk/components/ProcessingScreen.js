@@ -21,8 +21,11 @@
  *   - 250904 | yukyeong | loading-spinner 및 분석 안내 텍스트 UI 구성
  *   - 250904 | yukyeong | polling 중 메모리 누수 방지를 위한 clearInterval 정리 처리
  *   - 250904 | yukyeong | runId 기반 polling 구조 적용 및 자동 취소 처리에 runId 활용 추가
- *   - 250904 | yukyeong | Flask 서버 미응답 시 최대 15회(30초)까지 재시도, 이후 자동 취소 처리로 변경
+ *   - 250904 | yukyeong | Flask 서버 미응답 시 최대 30회(60초)까지 재시도, 이후 자동 취소 처리로 변경
  *   - 250904 | yukyeong | 분석 완료 응답 수신 시 자동 전환, 실패 시 사용자 alert 후 run 종료
+ *   - 250905 | yukyeong | runId 가드 추가 및 폴링 시작/진행/완료/타임아웃/에러/언마운트 단계별 콘솔 로그 정리
+ *   - 250905 | yukyeong | 성공 시 onComplete({ totalPet }) 전달, 타임아웃/에러 초과 시 onComplete({ totalPet: 0 })로 일관화
+ *   - 250905 | yukyeong | 타임아웃/에러 시 cancelKioskRun 호출 로깅 보강
  */
 
 import React, { useEffect } from 'react';
@@ -35,8 +38,13 @@ const ProcessingScreen = ({ runId, onComplete }) => {
   useEffect(() => {
     console.log("🔍 [ProcessingScreen] useEffect mounted. runId:", runId); // runId 확인
 
+    if (!runId) {
+      console.warn("⚠️ [Processing] runId가 없어 폴링을 시작하지 않습니다.");
+      return;
+    }
+
     let attempts = 0;
-    const maxAttempts = 30; // 30초
+    const maxAttempts = 30; // 60초 (2초 * 30회)
     let isMounted = true;
 
     const interval = setInterval(async () => {
@@ -49,10 +57,11 @@ const ProcessingScreen = ({ runId, onComplete }) => {
 
         console.log(`⏳ [Polling] attempt ${attempts} / done: ${res.data?.done}`); // Flask 응답 확인
 
-        if (res.data?.done) {
+        if (res?.data?.done === true) {
           clearInterval(interval);
+          const totalPet = typeof res.data?.totalPet === 'number' ? res.data.totalPet : 0;
           console.log("✅ [Polling] 분석 완료 응답 수신. 다음 단계로 이동"); // 완료 로그
-          onComplete(); // 완료 화면으로 이동
+          onComplete({ status: 'DONE', totalPet }); // 수량 전달
         } else if (attempts >= maxAttempts) {
           clearInterval(interval);
           console.warn("분석 타임아웃: 자동 취소 처리");
@@ -66,7 +75,8 @@ const ProcessingScreen = ({ runId, onComplete }) => {
           }
 
           alert("분석 시간이 초과되어 세션이 종료되었습니다.");
-          onComplete(); // 또는 goHome()
+          console.warn("➡️ [Processing] onComplete({ totalPet: 0 }) 호출 (타임아웃)");
+          onComplete({ status: 'TIMEOUT', totalPet: 0 }); // 또는 goHome()
         }
 
       } catch (err) {
@@ -84,7 +94,8 @@ const ProcessingScreen = ({ runId, onComplete }) => {
           }
 
           alert("서버 응답이 없어 세션을 종료합니다.");
-          onComplete();
+          console.warn("➡️ [Processing] onComplete({ totalPet: 0 }) 호출 (에러 누적)");
+          onComplete({ status: 'ERROR', totalPet: 0 });
         }
       }
 

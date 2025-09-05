@@ -4,35 +4,45 @@
  * - 실행 시작 / 종료 / 취소 요청을 각각 함수로 제공
  *
  * 주요 역할:
- *   - startKioskRun(dto) : 실행 시작 요청 (POST /api/kiosk-runs)
- *   - endKioskRun(runId) : 실행 종료 요청 (POST /api/kiosk-runs/{runId}/end)
- *   - cancelKioskRun(runId) : 실행 취소 요청 (POST /api/kiosk-runs/{runId}/cancel)
+ *   - startKioskRun(dto, accessToken) : 실행 시작 요청 (POST /api/kiosk-runs)
+ *     · 회원: Authorization 헤더에 accessToken 포함
+ *     · 비회원: accessToken 없이 호출
+ *   - endKioskRun(runId, body) : 실행 종료 요청 (POST /api/kiosk-runs/{runId}/end)
+ *     · body에 totalPet 포함 가능 (없으면 0 처리)
+ *   - cancelKioskRun(runId, body) : 실행 취소 요청 (POST /api/kiosk-runs/{runId}/cancel)
+ *     · 보통 body 없음, 필요시 구조 맞추기 위해 전달 가능
  *
  * 요청 형식:
- *   - Method: POST
- *   - URL : /api/kiosk-runs, /api/kiosk-runs/{runId}/end, /api/kiosk-runs/{runId}/cancel
- *   - Body : JSON (시작: { kioskId, memberId }, 종료/취소: body 없음, runId는 path로 전달)
+ *   - Method : POST
+ *   - URL : api/kiosk-runs, /api/kiosk-runs/{runId}/end, /api/kiosk-runs/{runId}/cancel
+ *   - Body : JSON (시작: { kioskId, memberId }, 종료/취소: { totalPet } or 없음)
  *
  * @author  : yukyeong
  * @fileName: kiosk.js
  * @since   : 250901
  * @history
- *   - 250901 | yukyeong | 엔드포인트를 KioskRunApiController 설계에 맞게 수정 (/api/kiosk/run/* → /api/kiosk-runs, /{runId}/end, /{runId}/cancel)
- * 
- * 
+ *   - 250901 | yukyeong | 최초 작성 - KioskRunApiController 설계에 맞게 엔드포인트 정리
+ *   - 250905 | yukyeong | startKioskRun에 accessToken 옵션 추가 (회원/비회원 구분 처리)
+ *   - 250905 | yukyeong | endKioskRun, cancelKioskRun에 body 전달 가능하도록 수정 (totalPet 지원)
  */
 
 
 import api from './axios';
 
 // 키오스크 실행 시작
-export const startKioskRun = (dto) =>
-    api.post('/api/kiosk-runs', dto);
+// 회원: accessToken 전달 (Authorization 헤더)
+// 비회원: accessToken 생략
+export const startKioskRun = (dto, accessToken) =>
+    api.post('/api/kiosk-runs', dto, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    });
 
 // 키오스크 실행 종료
-export const endKioskRun = (runId) =>
-    api.post(`/api/kiosk-runs/${runId}/end`);
+// totalPet을 서버로 넘기고 싶으면 body에 담아서 보낼 수 있게 함
+// 서버는 null/미전달이면 0으로 처리 가능
+export const endKioskRun = (runId, body) =>
+    api.post(`/api/kiosk-runs/${runId}/end`, body ?? {});
 
 // 키오스크 실행 취소
-export const cancelKioskRun = (runId) =>
-    api.post(`/api/kiosk-runs/${runId}/cancel`);
+export const cancelKioskRun = (runId, body) =>
+    api.post(`/api/kiosk-runs/${runId}/cancel`, body ?? {});

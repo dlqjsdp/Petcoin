@@ -109,7 +109,7 @@ class KioskRunMapperTest {
         // When
         run.setEndedAt(LocalDateTime.now());
         run.setTotalPet(3);
-        int update = kioskRunMapper.cancelRun(run.getRunId(), run.getEndedAt(), run.getTotalPet());
+        int update = kioskRunMapper.cancelRun(run.getRunId(), run.getEndedAt());
 
         // Then
         assertEquals(1, update);

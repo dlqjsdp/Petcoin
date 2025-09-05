@@ -19,6 +19,9 @@
  *   - 250903 | yukyeong | 전화번호 입력 화면에 onBack 시 전화번호 초기화 추가
  *   - 250903 | yukyeong | 로그인 성공 시 setAccessToken으로 토큰 저장 기능 추가
  *   - 250903 | yukyeong | InsertBottleScreen에 memberId, kioskId 동적 전달 처리 완료 (case 3 수정)
+ *   - 250904 | yukyeong | CompletionScreen에서 runId 기반 종료 처리 및 handleGoHome 초기화 검증
+ *   - 250904 | yukyeong | handleGoHome 실행 시 runId, phoneNumber, token, count, point 상태 초기화 확인용 console 추가
+ *   - 250904 | yukyeong | CompletionScreen → onHome 실행 시 정상적으로 MainScreen 복귀 및 초기화되도록 검증 완료
  * 
  */
 
@@ -37,20 +40,13 @@ function KioskApp() {
   const [currentStep, setCurrentStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [accessToken, setAccessToken] = useState(null); // 토큰 추가
-  const [petBottleCount, setPetBottleCount] = useState(3);
-  const [points, setPoints] = useState(1000);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [petBottleCount, setPetBottleCount] = useState(0); // 실제 수량을 나중에 세팅
   const [runId, setRunId] = useState(null); // runId 상태 추가
 
   const goToStep = (step) => {
     setCurrentStep(step);
   };
 
-  const goBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
 
   // 홈으로 이동하면 초기화
   const handleGoHome = () => {
@@ -60,7 +56,6 @@ function KioskApp() {
     setAccessToken(null);
     setRunId(null); // runId도 초기화
     setPetBottleCount(0); // 페트병 수 초기화
-    setPoints(0); // 포인트 초기화
     setCurrentStep(1); // 메인 화면으로
   };
 
@@ -81,16 +76,20 @@ function KioskApp() {
 
     switch (currentStep) {
       case 1:
-        return <MainScreen onNext={(role) => {
-          if (role === 'member') goToStep(2); // 전화번호 입력
-          else if (role === 'nonMember') goToStep(3); // 페트병 투입
-        }} />;
+        return (
+          <MainScreen
+            onNext={(role) => {
+              if (role === 'member') goToStep(2); // 전화번호 입력 화면
+              else if (role === 'nonMember') goToStep(3); // 바로 투입 화면
+            }}
+          />
+        );
       case 2:
         return (
           <PhoneInputScreen
             phoneNumber={phoneNumber}
             setPhoneNumber={setPhoneNumber}
-            onNext={() => goToStep(3)} // 성공 후 다음 단계
+            onNext={() => goToStep(3)} // 로그인 성공 후 투입 화면
             onBack={() => {
               setPhoneNumber(''); // 전화번호 초기화
               goToStep(1);  // 1단계로 이동
@@ -102,13 +101,14 @@ function KioskApp() {
         return (
           <InsertBottleScreen
             onNext={(runId) => {
-              setRunId(runId);  // runId 저장!
-              goToStep(4);      // 다음 단계로 이동
-            }}   // 다음 단계로 (예: 포인트 확인 화면)
-            onBack={() => goToStep(2)}   // 전화번호 입력 화면으로 되돌아감
+              setRunId(runId); // runId 저장
+              goToStep(4); // 처리 중 화면
+            }}
+            // 뒤로가기: 회원이면 Step2, 비회원이면 Step1
+            onBack={() => (accessToken ? goToStep(2) : goToStep(1))}
             accessToken={accessToken} // 필요 시 API 호출용
-            memberId={memberId}   // 동적으로 추출
-            kioskId={kioskId}     // 기기 고유값
+            memberId={memberId} // 동적으로 추출
+            kioskId={kioskId} // 기기 고유값
             setRunId={setRunId} // runId를 상위에 저장하도록 props 전달
           />
         );
@@ -116,18 +116,30 @@ function KioskApp() {
         return (
           <ProcessingScreen
             runId={runId} // runId 전달
-            onComplete={() => {
-              // runId가 null이 아닐 때만 step 5로
-              if (runId) goToStep(5);
-              else console.error('runId 없음! CompletionScreen으로 이동 방지됨');
+            // 완료 시 실제 수량을 받아서 세팅하고 Step5로 이동
+            onComplete={({ status = 'DONE', totalPet = 0 } = {}) => {
+              if (!runId) {
+                console.error('runId 없음 → 홈으로 복귀');
+                handleGoHome();
+                return;
+              }
+              if (status === 'DONE') {
+                setPetBottleCount(Number.isFinite(totalPet) ? totalPet : 0);
+                goToStep(5); // 완료 화면
+              } else {
+                // TIMEOUT/ERROR → 취소(또는 중단) 화면으로 보내거나 곧장 홈
+                setPetBottleCount(0);
+                alert('세션이 중단되었습니다.');
+                handleGoHome();
+              }
             }}
           />
         );
       case 5:
         return (
           <CompletionScreen
+            status="DONE"
             petBottleCount={petBottleCount}
-            points={points}
             runId={runId}
             onHome={handleGoHome} // 초기화 포함
           />
@@ -143,18 +155,12 @@ function KioskApp() {
         {/* 헤더 - 모든 화면에 고정 */}
         <div className="header">
           <div className="logo">
-            <img
-              src={logoImage}
-              alt="PETCoin Logo"
-              className="logo-image"
-            />
+            <img src={logoImage} alt="PETCoin Logo" className="logo-image" />
           </div>
         </div>
 
         {/* 화면 내용 */}
-        <div className="screen-content">
-          {renderCurrentStep()}
-        </div>
+        <div className="screen-content">{renderCurrentStep()}</div>
       </div>
     </div>
   );
