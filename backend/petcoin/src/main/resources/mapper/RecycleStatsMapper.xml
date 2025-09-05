@@ -22,13 +22,13 @@
             pr.recycle_name AS recycleName,
             pr.address AS address,
             k.status AS status,
-            kr.total_pet AS totalCount,
+            COALESCE(SUM(kr.total_pet),0) AS totalCount,
             MAX(pcl.created_at) AS lastCollection
         FROM pet_recycle pr
         JOIN kiosk k ON pr.recycle_id = k.recycle_id
         LEFT JOIN kiosk_run kr ON k.kiosk_id = kr.kiosk_id
         LEFT JOIN pet_collection_log pcl ON kr.run_id = pcl.run_id
-        GROUP BY pr.recycle_id, pr.recycle_name, pr.address, k.status, kr.total_pet
+        GROUP BY pr.recycle_id, pr.recycle_name, pr.address, k.status
         ORDER BY pr.recycle_name
         LIMIT #{amount} OFFSET #{offset}
     </select>

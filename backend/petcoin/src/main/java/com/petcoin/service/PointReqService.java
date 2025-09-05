@@ -14,7 +14,6 @@ package com.petcoin.service;
  * - 250903 | leejihye | 포인트 환급 요청 및 포인트 삭감 기능 추가
  */
 
-import com.petcoin.constant.RequestStatus;
 import com.petcoin.dto.Criteria;
 import com.petcoin.dto.PointRequestDto;
 import com.petcoin.dto.PointRequestProcessDto;

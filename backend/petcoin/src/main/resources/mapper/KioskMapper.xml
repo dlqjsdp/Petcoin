@@ -25,6 +25,7 @@
  *   - 250828 | yukyeong | 최초 생성 (resultMap, 공통 WHERE, read, getListWithPaging, getTotalCount, insert, update, softDelete, transitionStatus 정의)
  *   - 250828 | yukyeong | insert/update에서 status 컬럼 제거 (DB 기본값/전용 전이 쿼리로 일원화)
  *   - 250829 | yukyeong | findStatusById 추가 (키오스크 ONLINE 여부 확인용), lockKioskRow 추가 (행 잠금: startRun 시 동시 실행 방지용)
+ *   - 250905 | sehui | 키오스크 단건 조회/전체 조회/등록/수정에 recycle_id 컬럼 추가
  *
 -->
 
@@ -47,7 +48,7 @@
 
     <!-- 1-1) 단건 조회 -->
     <select id="read" resultMap="kioskMap">
-        SELECT kiosk_id, name, location, lat, lng, status, sw_version, created_at, updated_at, is_deleted
+        SELECT kiosk_id, recycle_id, name, location, lat, lng, status, sw_version, created_at, updated_at, is_deleted
         FROM kiosk
         WHERE kiosk_id = #{kioskId}
           AND is_deleted = 0
@@ -69,7 +70,7 @@
 
     <!-- 1-2) 전체 조회 (페이징 + 검색) -->
     <select id="getListWithPaging" parameterType="com.petcoin.dto.KioskCriteria" resultMap="kioskMap">
-        SELECT kiosk_id, name, location, lat, lng, status, sw_version, created_at, updated_at, is_deleted
+        SELECT kiosk_id, recycle_id, name, location, lat, lng, status, sw_version, created_at, updated_at, is_deleted
         FROM kiosk
         <include refid="kioskWhere"/>
         ORDER BY updated_at DESC
@@ -87,8 +88,8 @@
 
     <!-- 2-1) 등록 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="kioskId">
-        INSERT INTO kiosk (name, location, lat, lng, sw_version, created_at, updated_at, is_deleted)
-        VALUES (#{name}, #{location}, #{lat}, #{lng}, #{swVersion}, NOW(), NOW(), 0)
+        INSERT INTO kiosk (recycle_id, name, location, lat, lng, sw_version, created_at, updated_at, is_deleted)
+        VALUES (#{recycleId}, #{name}, #{location}, #{lat}, #{lng}, #{swVersion}, NOW(), NOW(), 0)
     </insert>
 
 
@@ -96,6 +97,7 @@
     <update id="update">
         UPDATE kiosk
         SET name = #{name},
+            recycle_id = #{recycleId},
             location = #{location},
             lat = #{lat},
             lng = #{lng},

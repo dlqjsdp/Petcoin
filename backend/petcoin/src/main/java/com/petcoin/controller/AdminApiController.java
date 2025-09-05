@@ -21,6 +21,7 @@ import java.util.Map;
 
 /*
  * 관리자 페이지의 요청을 처리하는 Api Controller
+ * 관리자 페이지 : 회원 관리, 포인트 관리, 수거내역, 대시보드
  * @author : sehui
  * @fileName : AdminApiController
  * @since : 250827
@@ -32,6 +33,7 @@ import java.util.Map;
  *  - 250829 | sehui | 포인트 환급 단건 조회 요청 메서드 생성
  *  - 250829 | sehui | 포인트 환급 처리 요청 메서드 생성
  *  - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 요청 메서드 생성
+ *  - 250905 | sehui | 관리자 권한 메서드 생성하여 코드 중복 방지
  */
 
 @RestController
@@ -45,18 +47,20 @@ public class AdminApiController {
     private final PointReqService pointReqService;
     private final RecycleStatsService recycleStatsService;
 
+    //관리자 권한 확인
+    private boolean isAdmin(Authentication auth) {
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        String userPhone = userDetails.getPhone();
+        Role role = memberService.getMemberByPhone(userPhone).getRole();
+        return role == Role.ADMIN;
+    }
+
     //전체 회원 조회 요청
     @GetMapping("/member/list")
     public ResponseEntity<Map<String, Object>> memberList(Authentication auth, Criteria cri) {
 
-        //로그인한 사용자의 연락처 가져오기
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-
         //관리자 권한 확인
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-
-        if(role != Role.ADMIN) {
+        if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -84,14 +88,8 @@ public class AdminApiController {
     @GetMapping("/member/{memberId}")
     public ResponseEntity<Map<String, Object>> memberDetail(@PathVariable("memberId") Long memberId, Authentication auth) {
 
-        //로그인한 사용자의 연락처 가져오기
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-
         //관리자 권한 확인
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-
-        if(role != Role.ADMIN) {
+        if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -114,14 +112,8 @@ public class AdminApiController {
     @GetMapping("/point/list")
     public ResponseEntity<Map<String, Object>> pointList(Authentication auth, Criteria cri) {
 
-        //로그인한 사용자의 연락처 가져오기
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-
         //관리자 권한 확인
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-
-        if(role != Role.ADMIN) {
+        if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -147,14 +139,8 @@ public class AdminApiController {
     @GetMapping("/point/{requestId}")
     public ResponseEntity<Map<String, Object>> pointDetail(@PathVariable("requestId") Long requestId, Authentication auth) {
 
-        //로그인한 사용자의 연락처 가져오기
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-
         //관리자 권한 확인
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-
-        if(role != Role.ADMIN) {
+        if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -178,14 +164,8 @@ public class AdminApiController {
     public ResponseEntity<Map<String, Object>> processPoint(@PathVariable Long requestId,
                                                @RequestBody PointRequestProcessDto pointRequestDto,
                                                Authentication auth) {
-        //로그인한 사용자의 연락처 가져오기
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-
         //관리자 권한 확인
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-
-        if(role != Role.ADMIN) {
+        if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -222,14 +202,8 @@ public class AdminApiController {
     @GetMapping("/recycle/stats")
     public ResponseEntity<Map<String, Object>> getAllRecycleStats(Authentication auth, Criteria cri) {
 
-        //로그인한 사용자의 연락처 가져오기
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-
         //관리자 권한 확인
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-
-        if(role != Role.ADMIN) {
+        if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
