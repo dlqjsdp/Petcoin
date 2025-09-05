@@ -36,6 +36,7 @@ import java.util.List;
  *   - 250827 | yukyeong | Mapper 최초 생성 (insertRun, completeRun, cancelRun, readRun, getRunListWithPaging, getTotalRunCount, getRunningCountByKioskId 메서드 정의)
  *   - 250829 | yukyeong | lockRunRow 추가 (행 잠금: endRun/cancelRun 시 동시성 제어), readRunAsVO 추가 (실행 로직용 VO 반환, DB DEFAULT/트리거 값 반영 확인용)
  *   - 250905 | sehui | 대시보드용 총 수거량 조회 추가
+ *   - 250905 | yukyeong | cancelRun 시 포인트 관련 로직 제거, ended_at만 업데이트하도록 정리
  */
 
 @Mapper
