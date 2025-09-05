@@ -31,6 +31,7 @@ import java.net.URI;
  *                        - 실행 취소 API (POST /api/kiosk-runs/{runId}/cancel) 구현
  *                        - 예외 처리 추가 (IllegalArgumentException → 400, IllegalStateException → 409, 기타 → 500)
  *                        - 세션 종료시 회수 페트병 수 받아서 dto에 넣어야 함
+ *   - 250905 | yukyeong | POST /api/kiosk-runs/{runId}/cancel 엔드포인트에서 포인트 부수효과 제거
  */
 
 @RestController

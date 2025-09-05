@@ -25,6 +25,9 @@
  *   - 250904 | yukyeong | 홈으로 가기 버튼 클릭 시 초기화 함수(onHome) 호출 처리
  *   - 250905 | yukyeong | endKioskRun 호출 시 totalPet 전달, 응답 기반 회원/비회원 UI 분기
  *   - 250905 | yukyeong | points prop 제거, remainingPoints를 서버 응답으로 표시
+ *   - 250905 | yukyeong | status prop('DONE'|'TIMEOUT'|'ERROR') 도입 → DONE일 때만 endKioskRun 호출
+ *   - 250905 | yukyeong | runId 유효성 가드 및 콘솔 로그 정리, useEffect deps를 [status, runId, petBottleCount]로 조정
+ *   - 250905 | yukyeong | endKioskRun에 { totalPet } 전달, 응답(memberId/pointBalance) 기반으로 회원/비회원 UI 및 잔여 포인트 표시
  */
 
 import React, { useEffect, useState } from 'react';

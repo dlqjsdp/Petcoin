@@ -26,6 +26,8 @@
  *   - 250905 | yukyeong | runId 가드 추가 및 폴링 시작/진행/완료/타임아웃/에러/언마운트 단계별 콘솔 로그 정리
  *   - 250905 | yukyeong | 성공 시 onComplete({ totalPet }) 전달, 타임아웃/에러 초과 시 onComplete({ totalPet: 0 })로 일관화
  *   - 250905 | yukyeong | 타임아웃/에러 시 cancelKioskRun 호출 로깅 보강
+ *   - 250905 | yukyeong | Flask 응답 done을 엄격 비교(res?.data?.done === true)로 변경, totalPet 안전 파싱 보강
+ *   - 250905 | yukyeong | onComplete에 status('DONE'|'TIMEOUT'|'ERROR') 포함하도록 계약 
  */
 
 import React, { useEffect } from 'react';
