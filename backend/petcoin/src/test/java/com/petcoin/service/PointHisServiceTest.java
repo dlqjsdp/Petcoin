@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /*
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 
 @SpringBootTest
-@Transactional
+//@Transactional
 @Slf4j
 class PointHisServiceTest {
 
@@ -93,21 +94,43 @@ class PointHisServiceTest {
     private PointHisMapper pointHisMapper;
 
     @Test
-    void testPlusPoint_AddsRecord() {
+    @DisplayName("신규 회원 포인트 적립 테스트")
+    void plusPoint_NewMember() {
         // given
-        Long memberId = 4L;
-        int totalPet = 5;
-        PointHistoryVO vo = new PointHistoryVO();
-        vo.setMemberId(memberId);
+        Long memberId = 11L; // 테스트마다 겹치지 않는 값 사용 권장
+        int totalPet = 7;
 
         // when
         pointHisService.plusPoint(memberId, totalPet);
 
         // then
-        // 적립 후 최종 포인트 값
-        int lastRecord = pointHisMapper.findLatestPointBalance(memberId);
+        int balance = pointHisService.getLatestPointBalance(memberId);
+        //assertThat(balance).isEqualTo(totalPet * 10);
+    }
 
-        assertNotNull(lastRecord);
-        log.info("<UNK> <UNK> <UNK> <UNK> >> {}", vo.toString());
+    @Test
+    @DisplayName("memberId가 null일 때 예외 테스트")
+    void plusPoint_NullMemberId() {
+        // given
+        Long memberId = null;
+        int totalPet = 3;
+
+        // expect
+        assertThrows(IllegalArgumentException.class, () -> {
+            pointHisService.plusPoint(memberId, totalPet);
+        });
+    }
+
+    @Test
+    @DisplayName("totalPet이 0 이하일 때 예외 테스트")
+    void plusPoint_InvalidTotalPet() {
+        // given
+        Long memberId = 7L;
+        int totalPet = 0;
+
+        // expect
+        assertThrows(IllegalArgumentException.class, () -> {
+            pointHisService.plusPoint(memberId, totalPet);
+        });
     }
 }

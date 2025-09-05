@@ -4,6 +4,7 @@ import com.petcoin.dto.KioskRunEndRequest;
 import com.petcoin.dto.KioskRunResponse;
 import com.petcoin.dto.KioskRunStartRequest;
 import com.petcoin.service.KioskRunService;
+import com.petcoin.service.PointHisService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import java.net.URI;
 public class KioskRunApiController {
 
     private final KioskRunService kioskRunService;
+    private final PointHisService pointHisService;
 
     /**
      * 실행 시작
@@ -133,6 +135,14 @@ public class KioskRunApiController {
             log.error("실행 취소 중 서버 오류", e);
             return ResponseEntity.status(500).body("서버 오류가 발생했습니다."); // 500 Internal Server Error
         }
+    }
+
+    @GetMapping("/getpointchange/{memberId}")
+    public ResponseEntity<?> getPointChange(@PathVariable Long memberId) {
+
+        int newPointChange = pointHisService.getNewPointChange(memberId);
+
+        return ResponseEntity.ok(newPointChange);
     }
 
 }

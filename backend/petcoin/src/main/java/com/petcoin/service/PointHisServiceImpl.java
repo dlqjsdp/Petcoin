@@ -114,7 +114,25 @@ public class PointHisServiceImpl implements PointHisService {
         int pointChange = totalPet * POINT_PER_PET; // 규칙에 따라 계산
 
         //1. 현재 포인트 잔액 조회(null일 경우 정수 0으로 변환)
-        int latestPointBalance = Optional.ofNullable(getLatestPointBalance(memberId)).orElse(0);
+        int latestPointBalance;
+        try {
+            // 기존 회원 포인트 잔액 조회
+            latestPointBalance = getLatestPointBalance(memberId);
+        } catch (Exception e) {
+            // 예외 발생 시 null 반환 상황 포함, 신규 회원으로 간주해 0으로 처리
+            latestPointBalance = 0;
+
+            // 신규 회원 초기 기록 생성
+            PointHistoryVO initVo = new PointHistoryVO();
+            initVo.setMemberId(memberId);
+            initVo.setPointChange(0);
+            initVo.setPointBalance(0);
+            initVo.setActionType(ActionType.EARN);
+            initVo.setDescription("최초 포인트 DB 데이터 생성");
+
+            int inserted = pointHisMapper.newMemberPointHistory(initVo);
+            log.info("신규 회원 초기 레코드 insert 결과: {}", inserted);
+        }
 
         //2. 누적 포인트 계산
         int newBalance = latestPointBalance + pointChange;
@@ -133,5 +151,14 @@ public class PointHisServiceImpl implements PointHisService {
             throw new IllegalArgumentException("포인트 적립 내역 추가 오류 발생");
         }
         log.info("plusPoint 서비스 진입: {}", result);
+    }
+
+    //키오스크 내 적립된 포인트 및 누적 포인트 조회
+    @Override
+    public int getNewPointChange(Long memberId) {
+
+        int newPointChange = pointHisMapper.getNewPointChange(memberId);
+
+        return newPointChange;
     }
 }
