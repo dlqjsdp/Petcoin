@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *   - 250829 | yukyeong | findStatusByIdTest 작성
  *                        - 사전 등록된 kioskId로 현재 상태 조회
  *                        - enum 매핑 정상 확인 및 ONLINE 여부 검증
+ *   - 250905 | sehui | 운영중인 키오스크 개수 조회 Test
  */
 
 @SpringBootTest
@@ -142,5 +143,17 @@ class KioskMapperTest {
         assertNull(result);
         log.info("전이 실패: updated={} 조회 결과={}", updated, result);
 
+    }
+
+    @Test
+    @DisplayName("운영중인 키오스크 개수")
+    public void testOnlineCount() {
+
+        //when : 운영중인 키오스크 개수
+        int onlineCount = kioskMapper.onlineCount();
+
+        //then : 결과 검증
+        assertNotNull(onlineCount);
+        log.info("onlineCount >> {}", onlineCount);
     }
 }

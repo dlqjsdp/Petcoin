@@ -193,16 +193,8 @@ public class KioskRunServiceImpl implements KioskRunService{
     @Override
     public List<KioskRunResponse> getRunListWithPaging(KioskRunCriteria cri) {
 
-        //1. 실행 세션 목록 조회 (VO)
-        List<KioskRunVO> runVOList = kioskRunMapper.getRunListWithPaging(cri);
-
-        //2. VO -> DTO 변환 후 List에 담음
-        List<KioskRunResponse> runResponseList = new ArrayList<>();
-
-        for(KioskRunVO runVO : runVOList) {
-            KioskRunResponse runDto = voToDto(runVO);
-            runResponseList.add(runDto);
-        }
+        //실행 세션 목록 조회
+        List<KioskRunResponse> runResponseList = kioskRunMapper.getRunListWithPaging(cri);
 
         return runResponseList;
     }

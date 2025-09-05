@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
  * @history
  *   - 250826 | yukyeong | DTO 최초 생성
  *   - 250827 | yukyeong | 단건조회에서 핸드폰번호 조회를 위해 phone 추가
+ *   - 250905 | sehui | 키오스크 이름 name 필드 추가
  */
 
 @Getter @Setter
@@ -42,5 +43,6 @@ public class KioskRunResponse {
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;
     private int totalPet; //이지혜 totalPet 추가
+    private String name;        //키오스크 이름
 
 }

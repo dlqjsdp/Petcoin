@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 Test
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 Test
  * - 250901 | leejihye | 포인트 적립 기능 Test
+ * - 250905 | sehui | 모든 회원의 포인트 잔액 합계 조회 기능 Test
  */
 
 @SpringBootTest
@@ -104,6 +105,17 @@ class PointHisMapperTest {
         int result = pointHisMapper.plusPoint(pointHistoryVO);
 
         log.info(String.valueOf(result));
+    }
+
+    @Test
+    @DisplayName("모든 회원의 포인트 잔액 합계 조회")
+    void testTotalPoint() {
+        //when : 모든 회원의 포인트 잔액 합계 조회
+        int totalPoint = pointHisMapper.totalPoint();
+
+        //then : 결과 검증
+        assertNotNull(totalPoint);
+        log.info("Total Point >> {}", totalPoint);
     }
 
 }

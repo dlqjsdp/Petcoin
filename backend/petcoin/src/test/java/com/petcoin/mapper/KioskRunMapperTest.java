@@ -2,6 +2,7 @@ package com.petcoin.mapper;
 
 import com.petcoin.constant.RunStatus;
 import com.petcoin.domain.KioskRunVO;
+import com.petcoin.dto.KioskRunCriteria;
 import com.petcoin.dto.KioskRunResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *                        - kiosk_id=1에 RUNNING 세션을 2개 추가 생성
  *                        - 기존 DB에 남아있던 RUNNING 1개 포함, 총 3개 집계되는지 확인
  *                        - 중복 실행 방지 로직 적용 전 카운트 확인용
- *
+ *   - 250905 | sehui | 키오스크 실행 세션 목록/단건 조회 Test
  */
 
 @SpringBootTest
@@ -143,5 +145,51 @@ class KioskRunMapperTest {
         // Then: 3개가 조회되어야 함 (기존에 있던거 + 방금 만든 2개)
         assertEquals(3, runningCount);
         log.info("kioskId=1 runningCount={}", runningCount);
+    }
+
+    @Test
+    @DisplayName("키오스크 실행 세션 단건 조회")
+    public void testReadRun() {
+
+        //given : 실행 id 설정
+        Long runId = 1L;
+
+        //when : 키오스크 실행 세션 단건 조회
+        KioskRunResponse runResponse = kioskRunMapper.readRun(runId);
+
+        //then : 결과 검증
+        assertEquals(runId, runResponse.getRunId());
+        assertNotNull(runResponse);
+
+        log.info("Kiosk Run >> {}", runResponse);
+    }
+
+    @Test
+    @DisplayName("키오스크 실행 세션 목록 조회")
+    public void testRunList() {
+
+        //given : 페이징 설정
+        KioskRunCriteria kRunCri = new KioskRunCriteria();
+
+        //when : 키오스크 실행 세션 목록 조회
+        List<KioskRunResponse> runResponseList = kioskRunMapper.getRunListWithPaging(kRunCri);
+
+        //then : 결과 검증
+        assertNotNull(runResponseList);
+        for (KioskRunResponse dto : runResponseList) {
+            log.info("Kiosk Run List >> {}", dto);
+        }
+    }
+
+    @Test
+    @DisplayName("총 수거량 조회")
+    public void testTotalPet() {
+
+        //when : 총 수거량 조회
+        int totalPetCount = kioskRunMapper.getTotalPetCount();
+
+        //then : 결과 검증
+        assertNotNull(totalPetCount);
+        log.info("totalPetCount >> {}", totalPetCount);
     }
 }

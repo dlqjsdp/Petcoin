@@ -13,6 +13,7 @@
      - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
      - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
      - 250901 | leejihye | 포인트 적립 기능 추가
+     - 250905 | sehui | 모든 회원의 포인트 잔액 합계 조회 기능 추가
 -->
 
 <mapper namespace="com.petcoin.mapper.PointHisMapper">
@@ -97,4 +98,16 @@
                    NOW()
                )
     </insert>
+
+    <!-- 모든 회원의 포인트 잔액 합계 조회 -->
+    <select id="totalPoint" resultType="int">
+        SELECT COALESCE(SUM(point_balance), 0)
+        FROM point_history ph
+        WHERE (ph.member_id, ph.history_id) IN (
+            SELECT member_id, MAX(history_id)
+            FROM point_history
+            GROUP BY member_id
+            )
+    </select>
+
 </mapper>
