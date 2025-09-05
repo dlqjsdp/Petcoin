@@ -16,6 +16,7 @@ import java.util.List;
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
  * - 250901 | leejihye | 포인트 적립 기능 추가
+ * - 250905 | sehui | 모든 회원의 포인트 잔액 합계 조회 기능 추가
  */
 
 @Mapper
@@ -38,4 +39,7 @@ public interface PointHisMapper {
 
     //신규 회원 포인트 적립 전 0 포인트 db 저장
     public int newMemberPointHistory(PointHistoryVO pointHistoryVO);
+
+    //모든 회원의 포인트 잔액 합계 조회
+    public int totalPoint();
 }

@@ -35,6 +35,7 @@ import java.util.List;
  * @history
  *   - 250828 | yukyeong | Mapper 최초 생성 (read, getListWithPaging, getTotalCount, insert, update, softDelete, transitionStatus 정의)
  *   - 250829 | yukyeong | findStatusById 추가 (키오스크 ONLINE 여부 확인용), lockKioskRow 추가 (행 잠금: startRun 시 동시 실행 방지용)
+ *   - 250905 | sehui | 대시보드에서 조회할 키오스크 운영 상태별 개수 조회 기능 추가
  */
 
 @Mapper
@@ -61,7 +62,6 @@ public interface KioskMapper {
     // 2-3) 키오스크 소프트삭제 (그냥 삭제하면 기존의 기록들도 함께 삭제되기 때문에 소프트삭제 사용)
     public int softDelete(Long kioskId); // is_deleted=1
 
-
     // 키오스크 버튼 클릭시 상태 변경
     // 3-1) 키오스크 상태 전이 : 현재 상태가 from(현재 상태)일 때만 to(바꾸려는 목표 상태)로 변경
     public int transitionStatus(@Param("kioskId") Long kioskId,
@@ -75,4 +75,15 @@ public interface KioskMapper {
 
     // 3-3) 행 잠금: 시작 동시성 제어용
     public KioskVO lockKioskRow(Long kioskId);
+    
+    //관리자페이지의 대시보드(키오스크 상태별 현황 조회)
+    // 4-1) 운영중인 키오스크 개수
+    public int onlineCount();
+    
+    // 4-2) 미운영중인 키오스크 개수
+    public int offlineCount();
+    
+    // 4-3) 점검중인 키오스크 개수
+    public int maintCount();
+
 }

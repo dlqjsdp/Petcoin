@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @history
  *  - 250905 | sehui | 키오스크 장치 전체/단건 조회 요청 Test
  *  - 250905 | sehui | 키오스크 장치 등록/수정/삭제 요청 Test
+ *  - 250905 | sehui | 키오스크 실행 세션 목록/단건 조회 요청 Test
  */
 
 @SpringBootTest
@@ -55,6 +56,7 @@ class AdminKioskApiControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    //키오스크 장치 기본 정보 요청하기 위해 사용 (수정 요청)
     @Autowired
     private KioskService kioskService;
 
@@ -233,4 +235,59 @@ class AdminKioskApiControllerTest {
                 .andDo(print()); 
     }
 
+    @Test
+    @DisplayName("키오스크 실행 세션 전체 조회")
+    void testKioskRunList() throws Exception {
+
+        //given : 테스트용 CustomUserDetails 생성
+        MemberVO testMember = new MemberVO();
+        testMember.setPhone("010-2222-3333");
+        testMember.setRole(Role.ADMIN);
+        testMember.setPassword("$2a$10$qjH49PuTf1e3yPPKqC0WZe4NTnP9vTz8az1iDdHZvdtABclp1dU9W");
+
+        CustomUserDetails userDetails = new CustomUserDetails(testMember);
+
+        //SecurityContext에 Authentication 설정
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        //when : MockMvc GET 요청
+        String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/kiosk/log/list"))
+                .andExpect(status().isOk())     //HTTP 상태 코드 200 OK
+                .andDo(print())
+                .andReturn()        //응답 결과 반환
+                .getResponse()      //응답 객체
+                .getContentAsString();          //응답 본문을 문자열로 반환
+
+        //then : 응답 내용 출력
+        log.info("Kiosk Run List >> {}", responseContent);
+    }
+
+    @Test
+    @DisplayName("키오스크 실행 세션 단건 조회")
+    void testKioskRunDetail() throws Exception {
+
+        //given : 테스트용 CustomUserDetails 생성
+        MemberVO testMember = new MemberVO();
+        testMember.setPhone("010-2222-3333");
+        testMember.setRole(Role.ADMIN);
+        testMember.setPassword("$2a$10$qjH49PuTf1e3yPPKqC0WZe4NTnP9vTz8az1iDdHZvdtABclp1dU9W");
+
+        CustomUserDetails userDetails = new CustomUserDetails(testMember);
+
+        //SecurityContext에 Authentication 설정
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        //when : MockMvc GET 요청
+        String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/kiosk/log/{runId}", 1L))
+                .andExpect(status().isOk())     //HTTP 상태 코드 200 OK
+                .andDo(print())
+                .andReturn()        //응답 결과 반환
+                .getResponse()      //응답 객체
+                .getContentAsString();          //응답 본문을 문자열로 반환
+
+        //then : 응답 내용 출력
+        log.info("Kiosk Run >> {}", responseContent);
+    }
 }

@@ -203,9 +203,9 @@ public class AdminKioskApiController {
 
         try{
             //키오스크 실행 세션 단건 조회
-            KioskResponse kioskDetail = kioskService.read(runId);
+            KioskRunResponse kioskRunDetail = kioskRunService.readRun(runId);
 
-            response.put("kioskRun", kioskDetail);
+            response.put("kioskRun", kioskRunDetail);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e) {
             response.put("errorMessage", e.getMessage());

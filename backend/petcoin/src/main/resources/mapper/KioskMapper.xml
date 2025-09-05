@@ -26,6 +26,7 @@
  *   - 250828 | yukyeong | insert/update에서 status 컬럼 제거 (DB 기본값/전용 전이 쿼리로 일원화)
  *   - 250829 | yukyeong | findStatusById 추가 (키오스크 ONLINE 여부 확인용), lockKioskRow 추가 (행 잠금: startRun 시 동시 실행 방지용)
  *   - 250905 | sehui | 키오스크 단건 조회/전체 조회/등록/수정에 recycle_id 컬럼 추가
+ *   - 250905 | sehui | 대시보드에서 조회할 키오스크 운영 상태별 개수 조회 기능 추가
  *
 -->
 
@@ -144,5 +145,28 @@
             FOR UPDATE
     </select>
 
+    <!-- 4-1) 운영중인 키오스크 개수 -->
+    <select id="onlineCount" resultType="int">
+        SELECT count(*)
+        FROM kiosk
+        WHERE status = 'ONLINE'
+            AND is_deleted = 0
+    </select>
+
+    <!-- 4-2) 미운영중인 키오스크 개수 -->
+    <select id="offlineCount" resultType="int">
+        SELECT count(*)
+        FROM kiosk
+        WHERE status = 'OFFLINE'
+          AND is_deleted = 0
+    </select>
+
+    <!-- 4-3) 점검중인 키오스크 개수 -->
+    <select id="maintCount" resultType="int">
+        SELECT count(*)
+        FROM kiosk
+        WHERE status = 'MAINT'
+          AND is_deleted = 0
+    </select>
 
 </mapper>
