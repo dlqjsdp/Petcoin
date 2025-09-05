@@ -24,15 +24,18 @@ import java.time.LocalDateTime;
  * @history
  *   - 250826 | yukyeong | DTO 최초 생성
  *   - 250827 | yukyeong | updatedAt 필드 추가
+ *   - 250905 | sehui | 연결된 무인 회수기 id (recycleId) 필드 추가
  */
 
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class KioskResponse {
 
     private Long kioskId;
+    private Long recycleId;
     private String name;
     private String location;
     private Double lat;

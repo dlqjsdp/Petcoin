@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
  * @history
  *     - 250826 | yukyeong | VO 최초 생성
  *     - 250826 | yukyeong | updatedAt, isDeleted 필드 추가
+ *     - 250905 | sehui | recycleId (연결된 무인 회수기 ID) 필드 추가
  */
 
 @Getter @Setter
@@ -35,6 +36,7 @@ import java.time.LocalDateTime;
 public class KioskVO {
 
     private Long kioskId;
+    private Long recycleId;
     private String name;
     private String location;
     private Double lat;

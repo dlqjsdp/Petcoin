@@ -58,7 +58,7 @@ class AdminApiControllerTest {
     @DisplayName("전체 회원 조회 요청")
     void testMemberList() throws Exception {
 
-        //when : 테스트용 CustomUserDetails 생성
+        //given : 테스트용 CustomUserDetails 생성
         MemberVO testMember = new MemberVO();
         testMember.setPhone("010-2222-3333");
         testMember.setRole(Role.ADMIN);
@@ -86,7 +86,7 @@ class AdminApiControllerTest {
     @DisplayName("전체 회원 조회 요청 - 핸드폰 번호 검색 조건")
     void testMemberListWithCriteria() throws Exception {
 
-        //when : 테스트용 CustomUserDetails 생성
+        //given : 테스트용 CustomUserDetails 생성
         MemberVO testMember = new MemberVO();
         testMember.setPhone("010-2222-3333");
         testMember.setRole(Role.ADMIN);
@@ -119,7 +119,7 @@ class AdminApiControllerTest {
     @DisplayName("회원 정보 단건 조회 요청")
     void testMemberDetails() throws Exception {
 
-        //when : 테스트용 CustomUserDetails 생성
+        //given : 테스트용 CustomUserDetails 생성
         MemberVO testMember = new MemberVO();
         testMember.setPhone("010-2222-3333");
         testMember.setRole(Role.ADMIN);
@@ -147,7 +147,7 @@ class AdminApiControllerTest {
     @DisplayName("전체 포인트 환급 조회")
     void testPointReqList() throws Exception {
 
-        //when : 테스트용 CustomUserDetails 생성
+        //given : 테스트용 CustomUserDetails 생성
         MemberVO testMember = new MemberVO();
         testMember.setPhone("010-2222-3333");
         testMember.setRole(Role.ADMIN);
@@ -175,7 +175,7 @@ class AdminApiControllerTest {
     @DisplayName("전체 포인트 환급 요청 조회 - 처리 상태 검색 조건")
     void testPointReqListWithCriteria() throws Exception {
 
-        //when : 테스트용 CustomUserDetails 생성
+        //given : 테스트용 CustomUserDetails 생성
         MemberVO testMember = new MemberVO();
         testMember.setPhone("010-2222-3333");
         testMember.setRole(Role.ADMIN);
@@ -189,7 +189,7 @@ class AdminApiControllerTest {
 
         //검색 조건 생성 (Criteria)
         Criteria cri = new Criteria();
-        cri.setRequestStatus(RequestStatus.PENDING.name());
+        cri.setRequestStatus(RequestStatus.COMPLETED.name());
 
         //when : MockMvc 호출
         String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/point/list")
@@ -208,7 +208,7 @@ class AdminApiControllerTest {
     @DisplayName("포인트 환급 단건 조회 요청")
     void testPointReqDetails() throws Exception {
 
-        //when : 테스트용 CustomUserDetails 생성
+        //given : 테스트용 CustomUserDetails 생성
         MemberVO testMember = new MemberVO();
         testMember.setPhone("010-2222-3333");
         testMember.setRole(Role.ADMIN);
