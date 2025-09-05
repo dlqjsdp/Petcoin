@@ -22,6 +22,11 @@
  *   - 250904 | yukyeong | CompletionScreen에서 runId 기반 종료 처리 및 handleGoHome 초기화 검증
  *   - 250904 | yukyeong | handleGoHome 실행 시 runId, phoneNumber, token, count, point 상태 초기화 확인용 console 추가
  *   - 250904 | yukyeong | CompletionScreen → onHome 실행 시 정상적으로 MainScreen 복귀 및 초기화되도록 검증 완료
+ *   - 250905 | yukyeong | ProcessingScreen → onComplete({ status, totalPet }) 처리: DONE이면 step5로 이동 및 수량 세팅, 그 외(TIMEOUT/ERROR)에는 홈으로 복귀
+ *   - 250905 | yukyeong | points 상태 제거, petBottleCount 초기값 0으로 정리, handleGoHome 초기화 로직 정비
+ *   - 250905 | yukyeong | InsertBottleScreen에 accessToken 전달 및 onBack을 회원/비회원에 따라 (2단계/1단계) 분기
+ *   - 250905 | yukyeong | JWT 디코딩으로 memberId 추출 로직 정리 및 runId 가드 추가
+ *   - 250905 | yukyeong | CompletionScreen에 status="DONE" 전달(취소/에러 시 종료 API 호출 방지와 연계)
  * 
  */
 
