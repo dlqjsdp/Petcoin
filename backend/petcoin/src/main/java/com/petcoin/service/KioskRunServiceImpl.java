@@ -150,7 +150,6 @@ public class KioskRunServiceImpl implements KioskRunService{
     @Transactional
     public KioskRunResponse cancelRun(KioskRunEndRequest req){
         Long runId = req.getRunId();
-        int totalPet = req.getTotalPet();//이지혜 totalPet 추가
 
         // 1) 해당 세션 행 잠금
         KioskRunVO cur = kioskRunMapper.lockRunRow(runId);
@@ -165,14 +164,10 @@ public class KioskRunServiceImpl implements KioskRunService{
         }
 
         // 3) 상태 전이: RUNNING -> CANCELLED
-        int updated = kioskRunMapper.cancelRun(runId, LocalDateTime.now(), totalPet);//이지혜 totalPet 추가
+        int updated = kioskRunMapper.cancelRun(runId, LocalDateTime.now());
         if (updated != 1) {
             throw new IllegalStateException("실행 취소(update) 실패");
         }
-
-        //이지혜 포인트 적립 메소드 추가
-        Long memberId = cur.getMemberId();
-        pointHisService.plusPoint(memberId, totalPet);
 
         // 4) 최신값 재조회 후 반환
         KioskRunVO saved = kioskRunMapper.readRunAsVO(runId);

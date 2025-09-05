@@ -51,8 +51,7 @@ public interface KioskRunMapper {
 
     // 1-3) 실행 취소 처리 (RUNNING -> CANCELLED)
     public int cancelRun(@Param("runId") Long runId,
-                         @Param("endedAt") LocalDateTime endedAt,
-                         @Param("totalPet") int totalPet);//이지혜 totalPet 추가
+                         @Param("endedAt") LocalDateTime endedAt);
 
     // 1-4) 특정 키오스크 RUNNING 세션 중복 실행 여부 확인
     public int getRunningCountByKioskId(Long kioskId);

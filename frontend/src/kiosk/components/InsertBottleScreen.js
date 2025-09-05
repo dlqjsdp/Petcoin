@@ -18,6 +18,9 @@
  *   - 250903 | yukyeong | runId 생성 및 conveyorStart 연동 로직 추가
  *   - 250903 | yukyeong | 중복 클릭 방지, 버튼 상태 관리 로직 구현
  *   - 250903 | yukyeong | 분석 시작 후 3초 대기 후 자동 화면 전환 처리
+ *   - 250905 | yukyeong | startKioskRun 호출 시 accessToken 전달 로직 반영 (회원/비회원 구분)
+ *   - 250905 | yukyeong | runId 미생성/에러 상황에 대한 예외 처리 및 상태코드별 알림 추가
+ *   - 250905 | yukyeong | 시작 중(back 버튼 클릭) 방지 로직 추가
  */
 
 import React, { useState } from 'react';
@@ -26,7 +29,7 @@ import { conveyorStart } from '../../api/pi';
 import { startKioskRun } from '../../api/kiosk';
 
 // 상위 컴포넌트(KioskApp)에서 전달할 setRunId를 props로 추가
-const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => {
+const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId, accessToken }) => {
   const [showInstructions, setShowInstructions] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -41,11 +44,14 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => 
     console.log('시작 버튼 클릭됨'); // 디버깅용
 
     try {
+      // 1) payload 구성: 회원이면 memberId 포함, 비회원이면 kioskId만
+      const payload = Number.isFinite(memberId) ? { kioskId, memberId } : { kioskId };
 
-      // 1. Spring Boot에 run 시작 요청 → runId 생성
-      const runResponse = await startKioskRun({ kioskId, memberId });
-      const runId = runResponse.data.runId;
+      // 2) 세션 시작 → runId 생성 (회원 모드면 토큰 전달)
+      const runResponse = await startKioskRun(payload, accessToken);
+      const runId = runResponse?.data?.runId;
       console.log("생성된 runId:", runId);
+      if (!runId) throw new Error('runId 생성 실패');
 
       setRunId(runId); // run_id 추가
 
@@ -54,13 +60,11 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => 
       console.log("memberId:", memberId);
       console.log("runId:", runId);
 
-      // 2. 라즈베리파이에 conveyor 시작 요청
-      // 라즈베리파이에 runId + memberId 전송
-      await conveyorStart({
-        message: 'start', // 라즈베리파이에 시작 요청
-        memberId,
-        runId
-      });
+      // 3) 라즈베리파이에 conveyor 시작 지시 (runId + memberId 전달)
+      const piPayload = { message: 'start', runId };
+      // 비회원이면 memberId를 아예 포함하지 않음
+      if (Number.isFinite(memberId)) piPayload.memberId = memberId;
+      await conveyorStart(piPayload);
 
       // 3초 후 다음 단계로 이동
       setTimeout(() => {
@@ -68,12 +72,24 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => 
         onNext(runId);
       }, 3000);
 
-    } catch (error) {
-      console.error("라즈베리파이 시작 요청 실패:", error);
-      alert("기기와의 통신에 문제가 발생했습니다.");
+    } catch (err) {
+      // 상태코드별 사용자 안내
+      const status = err?.response?.status;
+      if (status === 409) {
+        alert('이미 진행 중인 세션이 있습니다. 잠시 후 다시 시도해주세요.');
+      } else if (status === 400) {
+        alert('요청 값이 올바르지 않습니다. (회원/기기 정보를 확인해주세요)');
+      } else {
+        alert('기기와의 통신에 문제가 발생했습니다.');
+      }
       setIsStarting(false); // 실패 시 다시 버튼 활성화
     }
+  };
 
+  // 시작 중에는 뒤로가기 막기
+  const handleBack = () => {
+    if (isStarting) return;
+    onBack();
   };
 
   // 키오스크 이용방법 팝업 화면
@@ -112,6 +128,7 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => 
     );
   }
 
+  // UI
   // 페트병 투입 화면
   return (
     <div className="screen">
@@ -156,7 +173,7 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId }) => 
         )}
       </div>
 
-      <button className="back-button" onClick={onBack} type="button">
+      <button className="back-button" onClick={handleBack} type="button" disabled={isStarting}>
         ←이전
       </button>
     </div>
