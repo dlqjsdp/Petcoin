@@ -57,11 +57,14 @@ const ProcessingScreen = ({ runId, onComplete }) => {
         console.log("✅ Flask 응답 데이터:", res.data);
         if (!isMounted) return;
 
-        console.log(`⏳ [Polling] attempt ${attempts} / done: ${res.data?.done}`); // Flask 응답 확인
+        const rawDone = res?.data?.done;
+        const isDone =
+        rawDone === true || rawDone === 'true' || rawDone === 1 || rawDone === '1';
+        console.log(`⏳ [Polling] attempt ${attempts} / done(normalized): ${isDone} (raw: ${rawDone})`);
 
-        if (res?.data?.done === true) {
+        if (isDone) {
           clearInterval(interval);
-          const totalPet = typeof res.data?.totalPet === 'number' ? res.data.totalPet : 0;
+          const totalPet = Number(res?.data?.totalPet) || 0;
           console.log("✅ [Polling] 분석 완료 응답 수신. 다음 단계로 이동"); // 완료 로그
           onComplete({ status: 'DONE', totalPet }); // 수량 전달
         } else if (attempts >= maxAttempts) {

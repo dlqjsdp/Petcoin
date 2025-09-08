@@ -1,14 +1,14 @@
 import React from 'react';
 
-function KioskTab({ 
-    kioskData, 
-    selectedKiosk, 
-    setSelectedKiosk, 
-    selectedLogType, 
-    setSelectedLogType, 
-    getFilteredKioskData, 
-    getFilteredLogs, 
-    handleKioskStatusChange 
+function KioskTab({
+    kioskData,
+    selectedKiosk,
+    setSelectedKiosk,
+    selectedLogType,
+    setSelectedLogType,
+    getFilteredKioskData,
+    getFilteredLogs,
+    handleKioskStatusChange
 }) {
     return (
         <div className="kiosk-section">
@@ -16,12 +16,12 @@ function KioskTab({
                 <h2>키오스크 관리</h2>
                 <select
                     value={selectedKiosk}
-                    onChange={(e) => setSelectedKiosk(e.target.value)}
+                    onChange={(e) => setSelectedKiosk(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                     className="kiosk-select"
                 >
                     <option value="all">전체 키오스크</option>
                     {kioskData.map(kiosk => (
-                        <option key={kiosk.id} value={kiosk.id}>{kiosk.name}</option>
+                        <option key={kiosk.kioskId} value={kiosk.kioskId}>{kiosk.name}</option>
                     ))}
                 </select>
             </div>
@@ -31,7 +31,7 @@ function KioskTab({
                 <h3>키오스크 상태 관리</h3>
                 <div className="kiosk-status-grid">
                     {getFilteredKioskData().map(kiosk => (
-                        <div key={kiosk.id} className={`kiosk-status-card ${kiosk.status}`}>
+                        <div key={kiosk.kioskId} className={`kiosk-status-card ${kiosk.status}`}>
                             <div className="status-card-header">
                                 <h4>{kiosk.name}</h4>
                                 <div className="status-controls">
@@ -40,8 +40,8 @@ function KioskTab({
                                         onChange={(e) => handleKioskStatusChange(kiosk.id, e.target.value)}
                                         className="status-select"
                                     >
-                                        <option value="active">운영중</option>
-                                        <option value="maintenance">점검중</option>
+                                        <option value="ONLINE">운영중</option>
+                                        <option value="MAINT">점검중</option>
                                     </select>
                                 </div>
                             </div>
@@ -53,8 +53,9 @@ function KioskTab({
                                 <div className="info-row">
                                     <span>수용량:</span>
                                     <span>
-                                        {kiosk.currentCount}/{kiosk.capacity} 
-                                        ({Math.round((kiosk.currentCount / kiosk.capacity) * 100)}%)
+                                        {kiosk.currentCount}/{kiosk.capacity} (
+                                        {kiosk.capacity ? Math.round((kiosk.currentCount / kiosk.capacity) * 100) : 0}
+                                        %)
                                     </span>
                                 </div>
                                 <div className="info-row">
@@ -83,7 +84,7 @@ function KioskTab({
                 <div className="log-filters">
                     <div className="filter-group">
                         <label>로그 유형:</label>
-                        <select 
+                        <select
                             className="log-type-filter"
                             value={selectedLogType}
                             onChange={(e) => setSelectedLogType(e.target.value)}
@@ -96,7 +97,7 @@ function KioskTab({
                         </select>
                     </div>
                 </div>
-                
+
                 <div className="logs-table">
                     <div className="logs-header">
                         <span>시간</span>
@@ -106,7 +107,7 @@ function KioskTab({
                         <span>사용자</span>
                         <span>상세정보</span>
                     </div>
-                    
+
                     <div className="logs-body">
                         {getFilteredLogs().length > 0 ? (
                             getFilteredLogs().map(log => (

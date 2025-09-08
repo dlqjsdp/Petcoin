@@ -62,6 +62,8 @@ public class SecurityConfig {
                         // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/prediction/save").permitAll()
+                        //키오스크 종료시 플라스크에서 end api 호출
+                        .requestMatchers("/api/kiosk-runs/**").permitAll()
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )

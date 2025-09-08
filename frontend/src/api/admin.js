@@ -9,6 +9,13 @@
  *   - getPointRequests(criteria) : 포인트 환급 요청 목록 조회 (페이징/검색 포함)
  *   - getPointRequestById(requestId) : 포인트 환급 단건 상세 조회
  *   - processPointRequest(id, payload) : 포인트 환급 요청 처리 (승인/거절 등 상태 변경)
+ *   - getKiosks(criteria) : 키오스크 장치 목록 조회 (페이징/검색 포함)
+ *   - getKiosk(kioskId) : 키오스크 장치 단건 상세 조회
+ *   - createKiosk(payload) : 키오스크 장치 등록
+ *   - updateKiosk(id, payload) : 키오스크 장치 수정
+ *   - deleteKiosk(id) : 키오스크 장치 삭제 (소프트 삭제)
+ *   - getKioskRuns(criteria) : 키오스크 실행 세션 목록 조회 (페이징/검색 포함)
+ *   - getKioskRun(runId) : 키오스크 실행 세션 단건 상세 조회
  *
  * 요청 경로는 AdminApiController와 1:1 매핑됨.
  *
@@ -17,10 +24,13 @@
  * @since   : 250901
  * @history
  *   - 250901 | yukyeong | 최초 작성 (회원/포인트 환급 관련 API 함수 추가)
+ *   - 250908 | yukyeong | 키오스크 장치/실행 세션 관련 API 함수 추가
  */
 
 
 import api from './axios';
+
+/* 기존 회원/포인트 API */
 
 // 전체 회원 목록 조회 (Criteria를 쿼리로 전달)
 export const getAllMembers = (params) =>
@@ -41,3 +51,35 @@ export const getPointRequestById = (requestId) =>
 // 포인트 환급 요청 처리 (승인/거절 등 상태 변경)
 export const processPointRequest = (requestId, payload) =>
     api.put(`/api/admin/point/process/${requestId}`, payload);
+
+
+/* 키오스크 장치 */
+// 목록 조회 (KioskCriteria -> 쿼리스트링로 전달: pageNum, amount, keyword 등)
+export const getKiosks = (params) =>
+    api.get('/api/admin/kiosk/list', { params });
+
+// 단건 조회
+export const getKiosk = (kioskId) =>
+    api.get(`/api/admin/kiosk/${kioskId}`);
+
+// 등록
+export const createKiosk = (payload) =>
+    api.post('/api/admin/kiosk/register', payload);
+
+// 수정
+export const updateKiosk = (kioskId, payload) =>
+    api.put(`/api/admin/kiosk/${kioskId}`, payload);
+
+// 삭제(소프트 삭제)
+export const deleteKiosk = (kioskId) =>
+    api.delete(`/api/admin/kiosk/${kioskId}`);
+
+
+/* 키오스크 실행 세션 로그 */
+// 목록 조회 (KioskRunCriteria -> pageNum, amount, kioskId, status 등)
+export const getKioskRuns = (params) =>
+    api.get('/api/admin/kiosk/log/list', { params });
+
+// 단건 조회
+export const getKioskRun = (runId) =>
+    api.get(`/api/admin/kiosk/log/${runId}`);
