@@ -50,7 +50,8 @@ export const endKioskRun = (runId, body) =>
 export const cancelKioskRun = (runId, body) =>
     api.post(`/api/kiosk-runs/${runId}/cancel`, body ?? {});
 
-// 잔여 포인트 조회
+// 최근 포인트 변화량 + 현재 잔액 조회 (PointHistoryDto 반환)
+// 응답 예: { memberId: 1, pointChange: 10, pointBalance: 40, ... }
 export const getPointChange = (memberId) =>
     api.get(`/api/kiosk-runs/getpointchange/${memberId}`);
 
