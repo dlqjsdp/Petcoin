@@ -1,21 +1,29 @@
+
+import { getKiosks, getKioskRuns, updateKiosk } from '../../api/admin.js';
 import React, { useState, useEffect } from 'react';
 
 // AdminDashboard.js에서
-import DashboardTab from '../pages/DashboardTab.jsx';       // admin/pages/에서 가져옴
-import CollectionHistoryTab from '../pages/CollectionHistoryTab.jsx';
-import UserManagementTab from '../pages/UserManagementTab.jsx';
-import PointsTab from '../pages/PointsTab.jsx';
-import KioskTab from '../pages/KioskTab.jsx';
-import NoticeTab from '../pages/NoticeTab.jsx';              // 새로 추가
+import DashboardTab from '../pages/DashboardTab.js';       // admin/pages/에서 가져옴
+import CollectionHistoryTab from '../pages/CollectionHistoryTab.js';
+import UserManagementTab from '../pages/UserManagementTab.js';
+import PointsTab from '../pages/PointsTab.js';
+import KioskTab from '../pages/KioskTab.js';
+import NoticeTab from '../pages/NoticeTab.js';              // 새로 추가
 import '../styles/AdminDashboard.css'; // styles 폴더 위치 확인 필요
 import logo from '../img/logo.png';    // img 폴더 위치 확인 필요
 
 function AdminDashboard({ onNavigateToMain }) {
+
+    // 하드코딩 삭제하고 빈 배열로 시작
+    const [kioskData, setKioskData] = useState([]); // 키오스크 데이터 (REQ-002)
+    const [kioskLogs, setKioskLogs] = useState([]); // 키오스크 로그 데이터 (REQ-006)
+    const [selectedKiosk, setSelectedKiosk] = useState('all'); // 현재 선택된 키오스크 ID (드롭다운) - 기본은 'all' (전체 보기)
+    const [selectedLogType, setSelectedLogType] = useState('all'); // 현재 선택된 로그 유형 (드롭다운) - 기본은 'all' (전체 보기)
+
+
     // ========== 상태 관리 ==========
     const [currentTime, setCurrentTime] = useState('');
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [selectedKiosk, setSelectedKiosk] = useState('all');
-    const [selectedLogType, setSelectedLogType] = useState('all');
 
     // ========== 대시보드 통계 데이터 (REQ-001) ==========
     const [dashboardStats] = useState({
@@ -27,53 +35,7 @@ function AdminDashboard({ onNavigateToMain }) {
         activeKiosks: 42,
         totalKiosks: 45
     });
-
-    // ========== 키오스크 데이터 (REQ-002) ==========
-    const [kioskData, setKioskData] = useState([
-        {
-            id: 'K001',
-            name: '강남역점',
-            location: '서울시 강남구 강남대로 지하 2층',
-            status: 'active',
-            capacity: 500,
-            currentCount: 342,
-            todayCollection: 89,
-            totalCollection: 2847,
-            lastCollection: '2024-12-18 14:32:00',
-            temperature: 24,
-            humidity: 65,
-            errorCount: 0
-        },
-        {
-            id: 'K002',
-            name: '홍대입구역점',
-            location: '서울시 마포구 양화로 지하 1층',
-            status: 'active',
-            capacity: 500,
-            currentCount: 78,
-            todayCollection: 156,
-            totalCollection: 4521,
-            lastCollection: '2024-12-18 15:21:00',
-            temperature: 22,
-            humidity: 62,
-            errorCount: 1
-        },
-        {
-            id: 'K003',
-            name: '명동점',
-            location: '서울시 중구 명동길 1층',
-            status: 'maintenance',
-            capacity: 500,
-            currentCount: 0,
-            todayCollection: 0,
-            totalCollection: 1892,
-            lastCollection: '2024-12-17 18:45:00',
-            temperature: 0,
-            humidity: 0,
-            errorCount: 3
-        }
-    ]);
-
+    
     // ========== 회원 데이터 (REQ-003) ==========
     const [memberData, setMemberData] = useState([
         {
@@ -132,33 +94,7 @@ function AdminDashboard({ onNavigateToMain }) {
         }
     ]);
 
-    // ========== 키오스크 로그 데이터 (REQ-006) ==========
-    const [kioskLogs, setKioskLogs] = useState([
-        {
-            id: 'LOG001',
-            kioskId: 'K001',
-            kioskName: '강남역점',
-            timestamp: '2024-12-18 16:45:23',
-            type: 'collection',
-            message: '페트병 3개 수거 완료',
-            userId: 'U001',
-            userName: '김*민',
-            details: 'bottles: 3, points: 15',
-            level: 'info'
-        },
-        {
-            id: 'LOG002',
-            kioskId: 'K002',
-            kioskName: '홍대입구역점',
-            timestamp: '2024-12-18 16:42:15',
-            type: 'error',
-            message: '센서 오류 감지',
-            userId: null,
-            userName: null,
-            details: 'sensor_id: S003, error_code: E102',
-            level: 'error'
-        }
-    ]);
+
 
     // ========== 공지사항 데이터 (새로 추가) ==========
     const [noticeData, setNoticeData] = useState([
@@ -200,7 +136,7 @@ function AdminDashboard({ onNavigateToMain }) {
         }
     ]);
 
-    // ========== useEffect: 실시간 시간 업데이트 ==========
+    // 1) 실시간 시간 업데이트 (헤더 우측 표시용)
     useEffect(() => {
         const updateTime = () => {
             const now = new Date();

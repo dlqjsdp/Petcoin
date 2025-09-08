@@ -27,6 +27,7 @@
  *   - 250905 | yukyeong | InsertBottleScreen에 accessToken 전달 및 onBack을 회원/비회원에 따라 (2단계/1단계) 분기
  *   - 250905 | yukyeong | JWT 디코딩으로 memberId 추출 로직 정리 및 runId 가드 추가
  *   - 250905 | yukyeong | CompletionScreen에 status="DONE" 전달(취소/에러 시 종료 API 호출 방지와 연계)
+ *   - 250908 | yukyeong | CompletionScreen에 memberId 전달 → Boot API(getPointChange)로 잔여 포인트 조회; runId는 표시/디버깅용으로 유지
  * 
  */
 
@@ -146,6 +147,7 @@ function KioskApp() {
             status="DONE"
             petBottleCount={petBottleCount}
             runId={runId}
+            memberId={memberId} // 포인트 조회용
             onHome={handleGoHome} // 초기화 포함
           />
         );

@@ -11,12 +11,14 @@
  *     · body에 totalPet 포함 가능 (없으면 0 처리)
  *   - cancelKioskRun(runId, body) : 실행 취소 요청 (POST /api/kiosk-runs/{runId}/cancel)
  *     · 보통 body 없음, 필요시 구조 맞추기 위해 전달 가능
+ *   - getPointChange(memberId) : 잔여 포인트 조회 (GET /api/kiosk-runs/getpointchange/{memberId})
  *
  * 요청 형식:
- *   - Method : POST
- *   - URL : api/kiosk-runs, /api/kiosk-runs/{runId}/end, /api/kiosk-runs/{runId}/cancel
+ *   - Method : POST / GET
+ *   - URL : /api/kiosk-runs, /api/kiosk-runs/{runId}/end, /api/kiosk-runs/{runId}/cancel, /api/kiosk-runs/getpointchange/{memberId}
  *   - Body : JSON (시작: { kioskId, memberId }, 종료/취소: { totalPet } or 없음)
  *
+ * 
  * @author  : yukyeong
  * @fileName: kiosk.js
  * @since   : 250901
@@ -24,6 +26,7 @@
  *   - 250901 | yukyeong | 최초 작성 - KioskRunApiController 설계에 맞게 엔드포인트 정리
  *   - 250905 | yukyeong | startKioskRun에 accessToken 옵션 추가 (회원/비회원 구분 처리)
  *   - 250905 | yukyeong | endKioskRun, cancelKioskRun에 body 전달 가능하도록 수정 (totalPet 지원)
+ *   - 250908 | yukyeong | getPointChange API 추가 (회원 잔여 포인트 조회 기능)
  */
 
 
@@ -46,3 +49,8 @@ export const endKioskRun = (runId, body) =>
 // 키오스크 실행 취소
 export const cancelKioskRun = (runId, body) =>
     api.post(`/api/kiosk-runs/${runId}/cancel`, body ?? {});
+
+// 잔여 포인트 조회
+export const getPointChange = (memberId) =>
+    api.get(`/api/kiosk-runs/getpointchange/${memberId}`);
+
