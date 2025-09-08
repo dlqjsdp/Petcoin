@@ -1,3 +1,34 @@
+/*
+ * KioskTab.js
+ * - 관리자 페이지 내 키오스크 관리 탭 컴포넌트
+ *
+ * 주요 기능:
+ *   - 키오스크 선택 드롭다운 (전체 / 특정 키오스크)
+ *   - 선택된 키오스크 데이터 상태 카드 표시 (위치, 수용량, 온도/습도, 오류 건수)
+ *   - 키오스크 상태 변경 (ONLINE / MAINT) 드롭다운 → handleKioskStatusChange 호출
+ *   - 키오스크 로그 표시 (수거/오류/점검/시스템) 및 필터링 기능
+ *   - 로그가 없을 경우 빈 상태(empty-state) 표시
+ *
+ * props:
+ *   - kioskData: 전체 키오스크 목록
+ *   - selectedKiosk: 현재 선택된 키오스크 ID ('all' 또는 숫자)
+ *   - setSelectedKiosk: 키오스크 선택 상태 변경 함수
+ *   - selectedLogType: 현재 선택된 로그 유형
+ *   - setSelectedLogType: 로그 유형 상태 변경 함수
+ *   - getFilteredKioskData: 선택 조건에 맞는 키오스크 목록 반환 함수
+ *   - getFilteredLogs: 선택 조건에 맞는 로그 목록 반환 함수
+ *   - handleKioskStatusChange: 키오스크 상태 변경 처리 함수
+ *
+ * @fileName : KioskTab.js
+ * @author   : yukyeong
+ * @since    : 250909
+ * @history
+ *   - 250909 | yukyeong | 키오스크 관리/로그 UI 및 상태 변경 처리 로직 구현
+ *   - 250909 | yukyeong | selectedKiosk 문자열 → 숫자 변환 처리 추가 (타입 불일치 방지)
+ *   - 250909 | yukyeong | 수용량 퍼센티지 계산 시 capacity=0/누락 대비 안전 처리 (NaN/Infinity 방지)
+ *   - 250909 | yukyeong | 로그 레벨 기본값 처리(log.level ?? 'info') 및 안전성 강화
+ */
+
 import React from 'react';
 
 function KioskTab({
@@ -37,7 +68,7 @@ function KioskTab({
                                 <div className="status-controls">
                                     <select
                                         value={kiosk.status}
-                                        onChange={(e) => handleKioskStatusChange(kiosk.id, e.target.value)}
+                                        onChange={(e) => handleKioskStatusChange(kiosk.kioskId, e.target.value)}
                                         className="status-select"
                                     >
                                         <option value="ONLINE">운영중</option>
@@ -111,7 +142,7 @@ function KioskTab({
                     <div className="logs-body">
                         {getFilteredLogs().length > 0 ? (
                             getFilteredLogs().map(log => (
-                                <div key={log.id} className={`log-row ${log.level}`}>
+                                <div key={log.id} className={`log-row ${log.level ?? 'info'}`}>
                                     <span className="log-time">
                                         {new Date(log.timestamp).toLocaleString('ko-KR', {
                                             month: '2-digit',

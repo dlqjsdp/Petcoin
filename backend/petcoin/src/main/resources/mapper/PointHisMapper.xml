@@ -47,7 +47,7 @@
         SELECT point_balance
         FROM point_history
         WHERE member_id = #{memberId}
-        ORDER BY created_at DESC
+        ORDER BY history_id DESC
         LIMIT 1
     </select>
 
@@ -82,7 +82,7 @@
         SELECT point_change, point_balance
         FROM point_history
         WHERE member_id = #{memberId}
-        ORDER BY created_at DESC
+        ORDER BY history_id DESC
             LIMIT 1
     </select>
 

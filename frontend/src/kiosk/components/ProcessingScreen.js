@@ -28,6 +28,7 @@
  *   - 250905 | yukyeong | 타임아웃/에러 시 cancelKioskRun 호출 로깅 보강
  *   - 250905 | yukyeong | Flask 응답 done을 엄격 비교(res?.data?.done === true)로 변경, totalPet 안전 파싱 보강
  *   - 250905 | yukyeong | onComplete에 status('DONE'|'TIMEOUT'|'ERROR') 포함하도록 계약 
+ *   - 250908 | yukyeong | 폴링 최대 재시도 시간을 60초(30회) → 5분(150회)로 확장(2초 간격 유지)
  */
 
 import React, { useEffect } from 'react';
@@ -46,7 +47,7 @@ const ProcessingScreen = ({ runId, onComplete }) => {
     }
 
     let attempts = 0;
-    const maxAttempts = 30; // 60초 (2초 * 30회)
+    const maxAttempts = 150; // 5분
     let isMounted = true;
 
     const interval = setInterval(async () => {

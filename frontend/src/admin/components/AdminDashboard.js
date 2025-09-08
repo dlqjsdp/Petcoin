@@ -1,3 +1,30 @@
+/*
+ * AdminDashboard.js
+ * - 관리자 페이지 메인 대시보드 컴포넌트
+ *
+ * 주요 기능:
+ *   - 상단 헤더: 로고, 관리자 정보, 현재 시간 실시간 표시
+ *   - 탭 네비게이션: 대시보드, 수거 내역, 회원 관리, 포인트, 키오스크, 공지사항 전환
+ *   - 각 탭 전환 시 해당 서브 컴포넌트(DashboardTab, CollectionHistoryTab 등) 렌더링
+ *
+ * 상태 관리:
+ *   - kioskData: 키오스크 목록 데이터
+ *   - kioskLogs: 키오스크 로그 데이터
+ *   - memberData: 회원 데이터
+ *   - refundRequests: 환급 요청 데이터
+ *   - noticeData: 공지사항 데이터
+ *   - selectedKiosk: 현재 선택된 키오스크 ID ('all' 또는 숫자)
+ *   - selectedLogType: 현재 선택된 로그 유형
+ *   - activeTab: 현재 활성화된 탭
+ *   - currentTime: 실시간 현재 시각
+ *
+ * @fileName : AdminDashboard.js
+ * @author   : yukyeong
+ * @since    : 250909
+ * @history
+ *   - 250909 | yukyeong | 관리자 대시보드 기본 레이아웃 및 탭 구조 구현
+ *   - 250909 | yukyeong | 키오스크 관련 하드코딩 데이터 삭제, 상태를 빈 배열([])로 초기화
+ */
 
 import { getKiosks, getKioskRuns, updateKiosk } from '../../api/admin.js';
 import React, { useState, useEffect } from 'react';

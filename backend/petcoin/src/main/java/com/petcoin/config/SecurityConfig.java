@@ -56,14 +56,13 @@ public class SecurityConfig {
                                 "/api/member/check", "/api/member/register", "/api/auth/**", "/login", "/logout",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/public/**"
                         ).permitAll()
+                        //키오스크 종료시 플라스크에서 end api 호출
                         .requestMatchers("/api/kiosk-runs/**").permitAll()
                         //마이페이지 포인트 관련 테스트용
                         .requestMatchers("/api/mypage/pointrefund/*").permitAll()
                         // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/prediction/save").permitAll()
-                        //키오스크 종료시 플라스크에서 end api 호출
-                        .requestMatchers("/api/kiosk-runs/**").permitAll()
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
