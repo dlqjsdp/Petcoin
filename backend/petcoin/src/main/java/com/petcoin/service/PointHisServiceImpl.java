@@ -155,10 +155,15 @@ public class PointHisServiceImpl implements PointHisService {
 
     //키오스크 내 적립된 포인트 및 누적 포인트 조회
     @Override
-    public int getNewPointChange(Long memberId) {
+    public PointHistoryDto getNewPointChange(Long memberId) {
 
         int newPointChange = pointHisMapper.getNewPointChange(memberId);
+        int latestPointBalance = getLatestPointBalance(memberId);
 
-        return newPointChange;
+        return PointHistoryDto.builder()
+                .memberId(memberId)
+                .pointChange(newPointChange)
+                .pointBalance(latestPointBalance)
+                .build();
     }
 }

@@ -2,6 +2,7 @@ package com.petcoin.mapper;
 
 import com.petcoin.constant.ActionType;
 import com.petcoin.domain.PointHistoryVO;
+import com.petcoin.dto.PointHistoryDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

@@ -33,5 +33,5 @@ public interface PointHisService {
     public void plusPoint(Long memberId, int totalPet);
 
     //키오스크 내 적립된 포인트 및 누적 포인트 조회
-    public int getNewPointChange(Long memberId);
+    public PointHistoryDto getNewPointChange(Long memberId);
 }

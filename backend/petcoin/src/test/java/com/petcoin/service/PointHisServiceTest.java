@@ -133,4 +133,13 @@ class PointHisServiceTest {
             pointHisService.plusPoint(memberId, totalPet);
         });
     }
+    
+    //키오스크에서 분석 완료 후 적립 및 누적 포인트 조회 테스트
+    @Test
+    void getNewPointChange() {
+        Long memberId = 4L;
+
+        PointHistoryDto dto = pointHisService.getNewPointChange(memberId);
+        log.info(dto.toString());
+    }
 }
