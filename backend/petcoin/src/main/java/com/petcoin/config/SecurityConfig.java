@@ -56,8 +56,7 @@ public class SecurityConfig {
                                 "/api/member/check", "/api/member/register", "/api/auth/**", "/login", "/logout",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/public/**"
                         ).permitAll()
-                        //포인트 적립 테스트용
-                        .requestMatchers("/api/point/add").permitAll()
+                        .requestMatchers("/api/kiosk-runs/**").permitAll()
                         //마이페이지 포인트 관련 테스트용
                         .requestMatchers("/api/mypage/pointrefund/*").permitAll()
                         // 관리자 전용

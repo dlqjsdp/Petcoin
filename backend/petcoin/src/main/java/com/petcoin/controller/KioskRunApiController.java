@@ -3,6 +3,7 @@ package com.petcoin.controller;
 import com.petcoin.dto.KioskRunEndRequest;
 import com.petcoin.dto.KioskRunResponse;
 import com.petcoin.dto.KioskRunStartRequest;
+import com.petcoin.dto.PointHistoryDto;
 import com.petcoin.service.KioskRunService;
 import com.petcoin.service.PointHisService;
 import jakarta.validation.Valid;
@@ -137,9 +138,9 @@ public class KioskRunApiController {
     @GetMapping("/getpointchange/{memberId}")
     public ResponseEntity<?> getPointChange(@PathVariable Long memberId) {
 
-        int newPointChange = pointHisService.getNewPointChange(memberId);
+        PointHistoryDto pointHistoryDto = pointHisService.getNewPointChange(memberId);
 
-        return ResponseEntity.ok(newPointChange);
+        return ResponseEntity.ok(pointHistoryDto);
     }
 
 }
