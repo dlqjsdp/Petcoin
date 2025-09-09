@@ -3,10 +3,7 @@ package com.petcoin.controller;
 import com.petcoin.constant.Role;
 import com.petcoin.dto.*;
 import com.petcoin.security.CustomUserDetails;
-import com.petcoin.service.MemberService;
-import com.petcoin.service.PointHisService;
-import com.petcoin.service.PointReqService;
-import com.petcoin.service.RecycleStatsService;
+import com.petcoin.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -34,6 +31,7 @@ import java.util.Map;
  *  - 250829 | sehui | 포인트 환급 처리 요청 메서드 생성
  *  - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 요청 메서드 생성
  *  - 250905 | sehui | 관리자 권한 메서드 생성하여 코드 중복 방지
+ *  - 250909 | sehui | 대시보드 조회 요청 메서드 생성
  */
 
 @RestController
@@ -46,13 +44,13 @@ public class AdminApiController {
     private final PointHisService pointHisService;
     private final PointReqService pointReqService;
     private final RecycleStatsService recycleStatsService;
+    private final DashboardService dashboardService;
 
     //관리자 권한 확인
     private boolean isAdmin(Authentication auth) {
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-        return role == Role.ADMIN;
+        return auth != null && auth.isAuthenticated() &&
+                auth.getAuthorities().stream()
+                        .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
     //전체 회원 조회 요청
@@ -227,4 +225,23 @@ public class AdminApiController {
         }
     }
 
+    //대시보드 조회 요청
+    @GetMapping("/dashboard")
+    public ResponseEntity<DashboardResponse> dashboard(Authentication auth) {
+
+        //관리자 권한 확인
+        if(!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        //대시보드 조회 요청
+        DashboardResponse dashboard = dashboardService.getDashboardData();
+
+        //데이터 없을 경우 204 No Content 응답 처리
+        if(dashboard == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(dashboard);
+    }
 }

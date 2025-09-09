@@ -1,5 +1,15 @@
 import React from 'react';
 
+/*
+ * 포인트 페이지
+ *
+ * @author  : sehui
+ * @fileName: PointsTab.js
+ * @since   : 250909
+ * @history
+ *   - 250909 | sehui | Controller에서 넘겨주는 DTO 값에 맞게 <span> 값 변경
+ */
+
 function PointsTab({ refundRequests, handleRefundProcess }) {
     return (
         <div className="points-section">
@@ -9,15 +19,15 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
             <div className="refund-summary-board">
                 <div className="summary-item-board">
                     <span className="summary-label">대기중</span>
-                    <span className="summary-value pending">{refundRequests.filter(r => r.status === 'pending').length}건</span>
+                    <span className="summary-value pending">{refundRequests.filter(r => r.requestStatus === 'pending').length}건</span>
                 </div>
                 <div className="summary-item-board">
                     <span className="summary-label">승인됨</span>
-                    <span className="summary-value approved">{refundRequests.filter(r => r.status === 'approved').length}건</span>
+                    <span className="summary-value approved">{refundRequests.filter(r => r.requestStatus === 'approved').length}건</span>
                 </div>
                 <div className="summary-item-board">
                     <span className="summary-label">거부됨</span>
-                    <span className="summary-value rejected">{refundRequests.filter(r => r.status === 'rejected').length}건</span>
+                    <span className="summary-value rejected">{refundRequests.filter(r => r.requestStatus === 'rejected').length}건</span>
                 </div>
             </div>
 
@@ -49,27 +59,27 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
 
                     <div className="board-table-body">
                         {refundRequests.map((request, index) => (
-                            <div key={request.id} className={`board-row ${request.status}`}>
+                            <div key={request.requestId} className={`board-row ${request.requestStatus}`}>
                                 <span className="col-no">{refundRequests.length - index}</span>
                                 <span className="col-member">
                                     <div className="member-info">
-                                        <strong>{request.memberName}</strong>
+                                        <strong>{request.phone}</strong>
                                         <small>({request.memberId})</small>
                                     </div>
                                 </span>
                                 <span className="col-amount">
                                     <div className="amount-display">
-                                        <strong>{request.requestedPoints.toLocaleString()}P</strong>
+                                        <strong>{request.requestAmount}P</strong>
                                     </div>
                                 </span>
                                 <span className="col-account">
                                     <div className="account-info">
-                                        {request.accountInfo}
+                                        {request.accountNumber}
                                     </div>
                                 </span>
                                 <span className="col-date">
                                     <div className="date-info">
-                                        {new Date(request.requestDate).toLocaleString('ko-KR', {
+                                        {new Date(request.requestAt).toLocaleString('ko-KR', {
                                             year: 'numeric',
                                             month: '2-digit',
                                             day: '2-digit',
@@ -79,24 +89,24 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                                     </div>
                                 </span>
                                 <span className="col-status">
-                                    <span className={`status-badge-board ${request.status}`}>
-                                        {request.status === 'pending' && '대기중'}
-                                        {request.status === 'approved' && '승인됨'}
-                                        {request.status === 'rejected' && '거부됨'}
+                                    <span className={`status-badge-board ${request.requestStatus}`}>
+                                        {request.requestStatus === 'pending' && '대기중'}
+                                        {request.requestStatus === 'approved' && '승인됨'}
+                                        {request.requestStatus === 'rejected' && '거부됨'}
                                     </span>
                                 </span>
                                 <span className="col-action">
-                                    {request.status === 'pending' ? (
+                                    {request.requestStatus === 'pending' ? (
                                         <div className="action-buttons">
                                             <button 
                                                 className="approve-btn-small"
-                                                onClick={() => handleRefundProcess(request.id, 'approved', '환급 승인 처리')}
+                                                onClick={() => handleRefundProcess(request.requestId, 'approved', '환급 승인 처리')}
                                             >
                                                 승인
                                             </button>
                                             <button 
                                                 className="reject-btn-small"
-                                                onClick={() => handleRefundProcess(request.id, 'rejected', '환급 거부 처리')}
+                                                onClick={() => handleRefundProcess(request.requestId, 'rejected', '환급 거부 처리')}
                                             >
                                                 거부
                                             </button>
@@ -104,8 +114,8 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                                     ) : (
                                         <div className="processed-info">
                                             <small>
-                                                {request.processedDate && 
-                                                    new Date(request.processedDate).toLocaleDateString('ko-KR')
+                                                {request.processedAt && 
+                                                    new Date(request.processedAt).toLocaleDateString('ko-KR')
                                                 }
                                             </small>
                                             <br />
@@ -131,21 +141,21 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                 <h3>최근 처리 내역</h3>
                 <div className="history-list">
                     {refundRequests
-                        .filter(r => r.status !== 'pending')
+                        .filter(r => r.requestStatus !== 'pending')
                         .slice(0, 5)
                         .map(request => (
-                            <div key={request.id} className="history-item">
+                            <div key={request.requestId} className="history-item">
                                 <div className="history-main">
-                                    <span className="history-member">{request.memberName}</span>
-                                    <span className="history-amount">{request.requestedPoints.toLocaleString()}P</span>
-                                    <span className={`history-status ${request.status}`}>
-                                        {request.status === 'approved' ? '승인' : '거부'}
+                                    <span className="history-member">{request.phone}</span>
+                                    <span className="history-amount">{request.requestAmount}P</span>
+                                    <span className={`history-status ${request.requestStatus}`}>
+                                        {request.requestStatus === 'approved' ? '승인' : '거부'}
                                     </span>
                                 </div>
                                 <div className="history-sub">
                                     <span className="history-date">
-                                        {request.processedDate && 
-                                            new Date(request.processedDate).toLocaleDateString('ko-KR')
+                                        {request.processedAt && 
+                                            new Date(request.processedAt).toLocaleDateString('ko-KR')
                                         }
                                     </span>
                                     {request.note && (

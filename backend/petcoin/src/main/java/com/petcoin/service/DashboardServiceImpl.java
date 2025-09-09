@@ -1,6 +1,7 @@
 package com.petcoin.service;
 
 import com.petcoin.dto.DashboardResponse;
+import com.petcoin.dto.KioskResponse;
 import com.petcoin.mapper.KioskMapper;
 import com.petcoin.mapper.KioskRunMapper;
 import com.petcoin.mapper.MemberMapper;
@@ -8,6 +9,8 @@ import com.petcoin.mapper.PointHisMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
  * 대시보드 조회용 Service 구현체
@@ -47,7 +50,18 @@ public class DashboardServiceImpl implements DashboardService{
         int offlineCount = kioskMapper.offlineCount();
         int maintCount = kioskMapper.maintCount();
         int totalCount = onlineCount + offlineCount + maintCount;
-        
-        return null;
+
+        //반환타입 객체에 담기
+        DashboardResponse dashboardResponse = DashboardResponse.builder()
+                .totalRecycle(totalRecycle)
+                .totalMember(totalMember)
+                .totalPoint(totalPoint)
+                .onlineCount(onlineCount)
+                .offlineCount(offlineCount)
+                .maintCount(maintCount)
+                .totalCount(totalCount)
+                .build();
+
+        return dashboardResponse;
     }
 }

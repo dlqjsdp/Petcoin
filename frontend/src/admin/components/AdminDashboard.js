@@ -24,9 +24,14 @@
  * @history
  *   - 250909 | yukyeong | 관리자 대시보드 기본 레이아웃 및 탭 구조 구현
  *   - 250909 | yukyeong | 키오스크 관련 하드코딩 데이터 삭제, 상태를 빈 배열([])로 초기화
+ *   - 250909 | sehui | 회원 관리 하드코딩 데이터 삭제, 상태의 기본값을 빈 배열([])로 설정
+ *   - 250909 | sehui | 환급 요청 하드코딩 데이터 삭제, 상태의 기본값을 빈 배열([])로 설정
+ *   - 250909 | sehui | 페이지 정보 상태의 기본 값을 빈 배열([])로 설정
  */
 
 import { getKiosks, getKioskRuns, updateKiosk } from '../../api/admin.js';
+import { getAllMembers, getMemberDetail } from '../../api/admin.js';
+import { getPointRequests, getPointRequestById, processPointRequest } from '../../api/admin.js';
 import React, { useState, useEffect } from 'react';
 
 // AdminDashboard.js에서
@@ -46,7 +51,10 @@ function AdminDashboard({ onNavigateToMain }) {
     const [kioskLogs, setKioskLogs] = useState([]); // 키오스크 로그 데이터 (REQ-006)
     const [selectedKiosk, setSelectedKiosk] = useState('all'); // 현재 선택된 키오스크 ID (드롭다운) - 기본은 'all' (전체 보기)
     const [selectedLogType, setSelectedLogType] = useState('all'); // 현재 선택된 로그 유형 (드롭다운) - 기본은 'all' (전체 보기)
+    const [memberData, setMemberData] = useState([]);   //회원 관리 데이터 (REQ-003)
+    const [refundRequests, setRefundRequests] = useState([]);       //환급 요청 데이터 (REQ-004, REQ-005)
 
+    const [pageInfo, setPageInfo] = useState([]);       //페이지 정보
 
     // ========== 상태 관리 ==========
     const [currentTime, setCurrentTime] = useState('');
@@ -62,66 +70,6 @@ function AdminDashboard({ onNavigateToMain }) {
         activeKiosks: 42,
         totalKiosks: 45
     });
-    
-    // ========== 회원 데이터 (REQ-003) ==========
-    const [memberData, setMemberData] = useState([
-        {
-            id: 'U001',
-            name: '김*민',
-            email: 'kim***@gmail.com',
-            phone: '010-****-1234',
-            joinDate: '2024-10-15',
-            totalBottles: 234,
-            currentPoints: 1170,
-            usedPoints: 430,
-            totalPoints: 1600,
-            lastActivity: '2024-12-18 14:30:00',
-            status: 'active'
-        },
-        {
-            id: 'U002',
-            name: '이*수',
-            email: 'lee***@naver.com',
-            phone: '010-****-5678',
-            joinDate: '2024-11-02',
-            totalBottles: 189,
-            currentPoints: 945,
-            usedPoints: 200,
-            totalPoints: 1145,
-            lastActivity: '2024-12-18 13:45:00',
-            status: 'active'
-        }
-    ]);
-
-    // ========== 환급 요청 데이터 (REQ-004, REQ-005) ==========
-    const [refundRequests, setRefundRequests] = useState([
-        {
-            id: 'RF001',
-            memberId: 'U001',
-            memberName: '김*민',
-            requestedPoints: 1000,
-            requestDate: '2024-12-18 09:30:00',
-            status: 'pending',
-            accountInfo: '국민은행 123-456-789012',
-            processedDate: null,
-            processedBy: null,
-            note: ''
-        },
-        {
-            id: 'RF002',
-            memberId: 'U002',
-            memberName: '이*수',
-            requestedPoints: 500,
-            requestDate: '2024-12-17 16:45:00',
-            status: 'approved',
-            accountInfo: '신한은행 987-654-321098',
-            processedDate: '2024-12-18 10:15:00',
-            processedBy: 'admin',
-            note: '환급 처리 완료'
-        }
-    ]);
-
-
 
     // ========== 공지사항 데이터 (새로 추가) ==========
     const [noticeData, setNoticeData] = useState([
@@ -182,6 +130,27 @@ function AdminDashboard({ onNavigateToMain }) {
         return () => clearInterval(timer);
     }, []);
 
+    //전체 회원 목록 조회
+    useEffect(() => {
+        const params = { pageNum: 1, amount: 10 };
+
+        getAllMembers(params)
+            .then(res => {
+                setMemberData(res.data.memberList || []);
+                setPageInfo(res.data.pageInfo);
+            })
+            .catch(err => console.error("회원 목록 조회 실패", err))
+    }, []);
+
+    //환급 요청 목록 조회
+    useEffect(() => {
+        const params = { pageNum: 1, amount: 10 };
+
+        getPointRequests(params)
+            .then(res => setRefundRequests(res.data.pointReqList || []))
+            .catch(err => console.error("포인트 환급 요청 목록 조회 실패", err));
+    }, []);
+
     // ========== 이벤트 핸들러 함수들 ==========
 
     /**
@@ -190,12 +159,11 @@ function AdminDashboard({ onNavigateToMain }) {
     const handleRefundProcess = (refundId, action, note = '') => {
         setRefundRequests(prev => 
             prev.map(request => 
-                request.id === refundId 
+                request.requestId === refundId 
                     ? {
                         ...request,
-                        status: action,
-                        processedDate: new Date().toLocaleString('ko-KR'),
-                        processedBy: 'admin',
+                        requestStatus: action,
+                        processedAt: new Date().toLocaleString('ko-KR'),
                         note: note
                     }
                     : request
@@ -208,11 +176,10 @@ function AdminDashboard({ onNavigateToMain }) {
             if (request) {
                 setMemberData(prev =>
                     prev.map(member =>
-                        member.id === request.memberId
+                        member.memberId === request.memberId
                             ? {
                                 ...member,
-                                currentPoints: member.currentPoints - request.requestedPoints,
-                                usedPoints: member.usedPoints + request.requestedPoints
+                                currentPoints: member.currentPoint - request.requestAmount
                             }
                             : member
                     )
@@ -258,7 +225,7 @@ function AdminDashboard({ onNavigateToMain }) {
     const handleMemberStatusChange = (memberId, newStatus) => {
         setMemberData(prev =>
             prev.map(member =>
-                member.id === memberId
+                member.memberId === memberId
                     ? { ...member, status: newStatus }
                     : member
             )
