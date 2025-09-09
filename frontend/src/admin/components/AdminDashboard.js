@@ -20,10 +20,14 @@
  *
  * @fileName : AdminDashboard.js
  * @author   : yukyeong
- * @since    : 250909
+ * @since    : 250908
  * @history
- *   - 250909 | yukyeong | 관리자 대시보드 기본 레이아웃 및 탭 구조 구현
- *   - 250909 | yukyeong | 키오스크 관련 하드코딩 데이터 삭제, 상태를 빈 배열([])로 초기화
+ *   - 250908 | yukyeong | 관리자 대시보드 기본 레이아웃 및 탭 구조 구현
+ *   - 250908 | yukyeong | 키오스크 관련 하드코딩 데이터 삭제, 상태를 빈 배열([])로 초기화
+ *   - 250909 | yukyeong | id 필드명을 kioskId 등 백엔드와 일치하도록 통일
+ *   - 250909 | yukyeong | 키오스크 목록(getKiosks) 마운트 시 1회 로딩 useEffect 추가, 로딩 실패 시 빈 배열로 폴백, alive 플래그로 언마운트 후 setState 방지
+ *   - 250909 | yukyeong | 키오스크 로그(getKioskRuns) 탭 활성/필터 변경 시 로딩 useEffect 추가,'all' 선택 시 쿼리 파라미터(kioskId/status) 조건부 제외 처리, 로딩 실패 시 빈 배열로 폴백 및 alive 플래그 적용
+ *   - 250909 | yukyeong | 키오스크 상태값을 ONLINE/MAINT 기준으로 통일(요약/필터/뱃지 일관화), handleKioskStatusChange 메시지도 ONLINE/MAINT에 맞게 수정
  */
 
 import { getKiosks, getKioskRuns, updateKiosk } from '../../api/admin.js';
@@ -62,7 +66,7 @@ function AdminDashboard({ onNavigateToMain }) {
         activeKiosks: 42,
         totalKiosks: 45
     });
-    
+
     // ========== 회원 데이터 (REQ-003) ==========
     const [memberData, setMemberData] = useState([
         {
@@ -163,7 +167,7 @@ function AdminDashboard({ onNavigateToMain }) {
         }
     ]);
 
-    // 1) 실시간 시간 업데이트 (헤더 우측 표시용)
+    // 실시간 시간 업데이트 (헤더 우측 표시용)
     useEffect(() => {
         const updateTime = () => {
             const now = new Date();
@@ -182,15 +186,58 @@ function AdminDashboard({ onNavigateToMain }) {
         return () => clearInterval(timer);
     }, []);
 
+    // 1) 키오스크 목록: 마운트 시 한 번
+    useEffect(() => {
+        let alive = true;
+        (async () => {
+            try {
+                const { list /*, pageInfo*/ } = await getKiosks({ pageNum: 1, amount: 100 });
+                if (alive) setKioskData(list);
+                // pageInfo 필요해지면 setKioskPageInfo(pageInfo) 추가
+            } catch (e) {
+                console.error('키오스크 목록 로딩 실패', e);
+                if (alive) setKioskData([]);
+            }
+        })();
+        return () => { alive = false; };
+    }, []);
+
+    // 2) 로그: 키오스크 탭일 때, 선택 변경마다
+    useEffect(() => {
+        if (activeTab !== 'kiosk') return;
+
+        let alive = true;
+        // selectedKiosk가 'all'이면 쿼리에서 제외(=undefined)해서 불필요한 "status=null" 전송 방지
+        const params = {
+            pageNum: 1,
+            amount: 50,
+            ...(selectedKiosk === 'all' ? {} : { kioskId: selectedKiosk }),
+            ...(selectedLogType === 'all' ? {} : { status: selectedLogType }),
+        };
+
+        (async () => {
+            try {
+                const { list /*, pageInfo*/ } = await getKioskRuns(params);
+                if (alive) setKioskLogs(list);
+                // pageInfo 필요해지면 setKioskRunPageInfo(pageInfo) 추가
+            } catch (e) {
+                console.error('키오스크 로그 로딩 실패', e);
+                if (alive) setKioskLogs([]);
+            }
+        })();
+
+        return () => { alive = false; };
+    }, [activeTab, selectedKiosk, selectedLogType]);
+
     // ========== 이벤트 핸들러 함수들 ==========
 
     /**
      * 환급 요청 처리 (승인/거부)
      */
     const handleRefundProcess = (refundId, action, note = '') => {
-        setRefundRequests(prev => 
-            prev.map(request => 
-                request.id === refundId 
+        setRefundRequests(prev =>
+            prev.map(request =>
+                request.id === refundId
                     ? {
                         ...request,
                         status: action,
@@ -227,14 +274,14 @@ function AdminDashboard({ onNavigateToMain }) {
     const handleKioskStatusChange = (kioskId, newStatus) => {
         setKioskData(prev =>
             prev.map(kiosk =>
-                kiosk.id === kioskId
+                kiosk.kioskId === kioskId
                     ? { ...kiosk, status: newStatus }
                     : kiosk
             )
         );
 
         // 상태 변경 로그 추가
-        const kiosk = kioskData.find(k => k.id === kioskId);
+        const kiosk = kioskData.find(k => k.kioskId === kioskId);
         if (kiosk) {
             const newLog = {
                 id: `LOG${Date.now()}`,
@@ -242,7 +289,7 @@ function AdminDashboard({ onNavigateToMain }) {
                 kioskName: kiosk.name,
                 timestamp: new Date().toISOString(),
                 type: 'system',
-                message: `상태 변경: ${newStatus === 'active' ? '운영중' : '점검중'}`,
+                message: `상태 변경: ${newStatus === 'ONLINE' ? '운영중' : '점검중'}`,
                 userId: null,
                 userName: null,
                 details: `status_change: ${kiosk.status} -> ${newStatus}`,
@@ -332,21 +379,22 @@ function AdminDashboard({ onNavigateToMain }) {
 
     // ========== 필터링 함수들 ==========
     const getFilteredKioskData = () => {
-        return selectedKiosk === 'all' 
-            ? kioskData 
-            : kioskData.filter(kiosk => kiosk.id === selectedKiosk);
+        return selectedKiosk === 'all'
+            ? kioskData
+            : kioskData.filter(kiosk => kiosk.kioskId === selectedKiosk);
     };
 
     const getFilteredLogs = () => {
-        let filteredLogs = selectedKiosk === 'all' 
-            ? kioskLogs 
-            : kioskLogs.filter(log => log.kioskId === selectedKiosk);
+        let logs = kioskLogs ?? [];
 
+        // 상태 필터만 적용 (kioskId 필터는 서버에서 이미 적용됨)
         if (selectedLogType !== 'all') {
-            filteredLogs = filteredLogs.filter(log => log.type === selectedLogType);
+            logs = logs.filter(l => l.status === selectedLogType);
         }
 
-        return filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        // endedAt > startedAt > timestamp 순으로 정렬키 선택
+        const ts = l => new Date(l.endedAt ?? l.startedAt ?? l.timestamp ?? 0).getTime();
+        return [...logs].sort((a, b) => ts(b) - ts(a));
     };
 
     // ========== 렌더링 ==========
@@ -361,7 +409,7 @@ function AdminDashboard({ onNavigateToMain }) {
                             <img src={logo} alt="PETCoin 로고" className="logo-img" />
                         </div>
                     </div>
-                    
+
                     {/* 오른쪽: 관리자 정보 */}
                     <div className="header-right">
                         <div className="user-profile">
@@ -382,37 +430,37 @@ function AdminDashboard({ onNavigateToMain }) {
             {/* ========== 탭 네비게이션 ========== */}
             <nav className="admin-nav">
                 <div className="nav-tabs">
-                    <button 
+                    <button
                         className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
                         onClick={() => setActiveTab('dashboard')}
                     >
                         📊 대시보드
                     </button>
-                    <button 
+                    <button
                         className={`nav-tab ${activeTab === 'collection' ? 'active' : ''}`}
                         onClick={() => setActiveTab('collection')}
                     >
                         📦 수거 내역
                     </button>
-                    <button 
+                    <button
                         className={`nav-tab ${activeTab === 'members' ? 'active' : ''}`}
                         onClick={() => setActiveTab('members')}
                     >
                         👥 회원 관리
                     </button>
-                    <button 
+                    <button
                         className={`nav-tab ${activeTab === 'points' ? 'active' : ''}`}
                         onClick={() => setActiveTab('points')}
                     >
                         💰 포인트
                     </button>
-                    <button 
+                    <button
                         className={`nav-tab ${activeTab === 'kiosk' ? 'active' : ''}`}
                         onClick={() => setActiveTab('kiosk')}
                     >
                         🖥️ 키오스크
                     </button>
-                    <button 
+                    <button
                         className={`nav-tab ${activeTab === 'notice' ? 'active' : ''}`}
                         onClick={() => setActiveTab('notice')}
                     >
@@ -424,14 +472,14 @@ function AdminDashboard({ onNavigateToMain }) {
             {/* ========== 메인 컨텐츠 ========== */}
             <main className="admin-main">
                 {activeTab === 'dashboard' && (
-                    <DashboardTab 
+                    <DashboardTab
                         dashboardStats={dashboardStats}
                         kioskData={kioskData}
                     />
                 )}
 
                 {activeTab === 'collection' && (
-                    <CollectionHistoryTab 
+                    <CollectionHistoryTab
                         kioskData={kioskData}
                         selectedKiosk={selectedKiosk}
                         setSelectedKiosk={setSelectedKiosk}
@@ -440,21 +488,21 @@ function AdminDashboard({ onNavigateToMain }) {
                 )}
 
                 {activeTab === 'members' && (
-                    <UserManagementTab 
+                    <UserManagementTab
                         memberData={memberData}
                         handleMemberStatusChange={handleMemberStatusChange}
                     />
                 )}
 
                 {activeTab === 'points' && (
-                    <PointsTab 
+                    <PointsTab
                         refundRequests={refundRequests}
                         handleRefundProcess={handleRefundProcess}
                     />
                 )}
 
                 {activeTab === 'kiosk' && (
-                    <KioskTab 
+                    <KioskTab
                         kioskData={kioskData}
                         selectedKiosk={selectedKiosk}
                         setSelectedKiosk={setSelectedKiosk}
@@ -467,7 +515,7 @@ function AdminDashboard({ onNavigateToMain }) {
                 )}
 
                 {activeTab === 'notice' && (
-                    <NoticeTab 
+                    <NoticeTab
                         noticeData={noticeData}
                         onNoticeCreate={handleNoticeCreate}
                         onNoticeUpdate={handleNoticeUpdate}
