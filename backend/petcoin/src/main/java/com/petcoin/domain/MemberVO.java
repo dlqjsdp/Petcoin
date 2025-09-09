@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /*
  * @fileName : MemberVO
  * 회원가입/로그인한 사용자의 정보를 담는 vo 클래스
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
  * @history
  * - 250826 | heekyung | MemberVO 생성
  * - 250828 | heekyung | 비밀번호 추가
+ * - 250909 | sehui | 가입일 필드 추가
  */
 
 @Data
@@ -31,5 +34,6 @@ public class MemberVO {
 
     private String phone; //연락처
     private Role role; //권한 (USER, ADMIN)
+    private LocalDateTime createdAt;    //가입일
 
 }

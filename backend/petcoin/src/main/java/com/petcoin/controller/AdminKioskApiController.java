@@ -41,10 +41,9 @@ public class AdminKioskApiController {
 
     //관리자 권한 확인
     private boolean isAdmin(Authentication auth) {
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        String userPhone = userDetails.getPhone();
-        Role role = memberService.getMemberByPhone(userPhone).getRole();
-        return role == Role.ADMIN;
+        return auth != null && auth.isAuthenticated() &&
+                auth.getAuthorities().stream()
+                        .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
     //키오스크 장치 전체 조회 요청
