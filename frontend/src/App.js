@@ -29,6 +29,7 @@ import KioskApp from "./kiosk/KioskApp";
 import MainPage from "./components/pages/MainPage";
 import LoginPage from "./components/pages/LoginPage";
 import NoticePage from "./components/pages/NoticePage";
+//import KioskMap from "./components/pages/KioskMap";
 
 import "./App.css";
 import logo from "./img/logo.png";
@@ -81,7 +82,6 @@ function App() {
           <Route path="/user/*" element={<UserApp />} />
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/kiosk/*" element={<KioskApp />} />
-
         </Routes>
       </main>
     </div>

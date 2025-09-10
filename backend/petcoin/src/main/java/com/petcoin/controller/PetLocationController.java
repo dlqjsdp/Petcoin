@@ -31,6 +31,7 @@ public class PetLocationController {
         return petLocationService.listSido();
     }
 
+
     // "구" 목록 검색
     @GetMapping("/sigungu")
     public List<String> listSigungu(@RequestParam String sido){
@@ -49,6 +50,7 @@ public class PetLocationController {
     public List<PetLocationVO> findByRegion(
             @RequestParam(required = false) String sido,
             @RequestParam(required = false) String sigungu,
+
             @RequestParam(required = false) String dong){
 
         return petLocationService.findByRegion(sido, sigungu, dong);

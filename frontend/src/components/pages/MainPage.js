@@ -3,36 +3,87 @@
  * - 랜딩 메인 화면(히어로/이용방법/지도/혜택/CTA)
  *
  * 주요 기능:
- *   - 히어로: 가입/이용방법 CTA, 키오스크 모형 애니메이션
- *   - 이용방법: 4단계 카드 + 연결 화살표
- *   - 지도: 주변 키오스크 목록/마커 플레이스홀더
- *   - 혜택: 그라데이션 카드(—delay 인라인 변수로 순차 등장)
- *   - CTA: 가입/안내 버튼, 신뢰 배지
+ * - 히어로: 가입/이용방법 CTA, 키오스크 모형 애니메이션
+ * - 이용방법: 4단계 카드 + 연결 화살표
+ * - 지도: 주변 키오스크 목록/마커 플레이스홀더
+ * - 혜택: 그라데이션 카드(—delay 인라인 변수로 순차 등장)
+ * - CTA: 가입/안내 버튼, 신뢰 배지
  *
  * @fileName : MainPage.js
  * @author  : yukyeong
  * @since   : 250902
  * @history
- *   - 250902 | yukyeong | 라우팅 리팩토링: props.navigateTo 제거 → react-router-dom useNavigate() 도입
- *                       - CTA onClick을 navigate('/signup'), navigate('/guide')로 변경
- *                       - 컴포넌트 시그니처 MainPage({ navigateTo }) → MainPage()로 단순화
- *
+ * - 250902 | yukyeong | 라우팅 리팩토링: props.navigateTo 제거 → react-router-dom useNavigate() 도입
+ * - 250910 | heekyung | 기존 페이지 내용 유지 및 검색 기능 추가
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MainPage.css';
-
+import api from '../../api/axios';
+import KioskMap from './KioskMap';
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const [kioskLocations, setKioskLocations] = useState([]);
+  const [sidoList, setSidoList] = useState([]);
+  const [sigunguList, setSigunguList] = useState([]);
+  const [dongList, setDongList] = useState([]);
+  const [searchParams, setSearchParams] = useState({ sido: '', sigungu: '', dong: '' });
 
-  const kioskLocations = [
-    { name: '홍대입구역 1번 출구', address: '서울시 마포구 홍대입구역', distance: '0.5km' },
-    { name: '강남역 2번 출구', address: '서울시 강남구 강남역', distance: '1.2km' },
-    { name: '신촌역 3번 출구', address: '서울시 서대문구 신촌역', distance: '2.1km' },
-    { name: '이태원역 1번 출구', address: '서울시 용산구 이태원역', distance: '3.5km' }
-  ];
+  // 최초 로드 시 시(sido) 목록 가져오기
+  useEffect(() => {
+    api.get("/api/locations/sido")
+      .then(response => {
+        setSidoList(response.data);
+      })
+      .catch(error => {
+        console.error("시(sido) 목록을 불러오는 데 실패했습니다.", error);
+      });
+  }, []);
+
+  // 시(sido)가 변경될 때 구(sigungu) 목록 가져오기
+  useEffect(() => {
+    if (searchParams.sido) {
+      api.get(`/api/locations/sigungu?sido=${searchParams.sido}`)
+        .then(response => {
+          setSigunguList(response.data);
+          setDongList([]);
+          setSearchParams(prev => ({ ...prev, sigungu: '', dong: '' }));
+        })
+        .catch(error => {
+          console.error("구(sigungu) 목록을 불러오는 데 실패했습니다.", error);
+        });
+    }
+  }, [searchParams.sido]);
+
+  // 구(sigungu)가 변경될 때 동(dong) 목록 가져오기
+  useEffect(() => {
+    if (searchParams.sigungu) {
+      api.get(`/api/locations/dong?sido=${searchParams.sido}&sigungu=${searchParams.sigungu}`)
+        .then(response => {
+          setDongList(response.data);
+          setSearchParams(prev => ({ ...prev, dong: '' }));
+        })
+        .catch(error => {
+          console.error("동(dong) 목록을 불러오는 데 실패했습니다.", error);
+        });
+    }
+  }, [searchParams.sigungu]);
+
+  // 검색 버튼 클릭 핸들러
+  const handleSearch = () => {
+    const { sido, sigungu, dong } = searchParams;
+    const query = `sido=${sido}&sigungu=${sigungu}&dong=${dong}`;
+    
+    api.get(`/api/locations?${query}`)
+      .then(response => {
+        setKioskLocations(response.data);
+      })
+      .catch(error => {
+        console.error("검색 결과를 불러오는 데 실패했습니다.", error);
+      });
+  };
 
   const benefits = [
     { icon: '⚡', title: '즉시 포인트 적립', description: '페트병을 넣는 순간 바로 포인트가 적립되어 실시간으로 확인 가능합니다', gradient: 'from-yellow-400 to-orange-500' },
@@ -146,6 +197,7 @@ const MainPage = () => {
       </section>
 
       {/* Map Section */}
+      {/* Map Section */}
       <section className="map-section">
         <div className="container">
           <div className="section-header">
@@ -153,40 +205,48 @@ const MainPage = () => {
             <p className="section-subtitle">내 주변 키오스크 위치를 확인해보세요</p>
           </div>
           <div className="map-container">
+            {/* 지도 */}
             <div className="map-visual">
-              <div className="map-placeholder">
-                <div className="map-bg"></div>
-                <div className="map-markers">
-                  <div className="marker marker-1">📍</div>
-                  <div className="marker marker-2">📍</div>
-                  <div className="marker marker-3">📍</div>
-                  <div className="marker marker-4">📍</div>
-                </div>
-                <div className="map-content">
-                  <div className="map-icon">🗺️</div>
-                  <h3 className="map-title">키오스크 위치</h3>
-                  <p className="map-description">가까운 키오스크를 찾아보세요</p>
-                  <button className="btn-primary small">
-                    지도에서 보기
-                  </button>
-                </div>
-              </div>
+              <KioskMap locations={kioskLocations} /> 
             </div>
+
+            {/* 검색 + 결과 리스트 */}
             <div className="location-list">
               <div className="location-header">
                 <h3 className="location-title">주변 키오스크</h3>
-                <div className="location-refresh">🔄</div>
-              </div>
-              {kioskLocations.map((location, index) => (
-                <div key={index} className="location-item">
-                  <div className="location-marker">📍</div>
-                  <div className="location-info">
-                    <h4 className="location-name">{location.name}</h4>
-                    <p className="location-address">{location.address}</p>
-                  </div>
-                  <div className="location-distance">{location.distance}</div>
+                <div className="search-container">
+                  <select value={searchParams.sido} onChange={e => setSearchParams({ ...searchParams, sido: e.target.value })}>
+                    <option value="">시 선택</option>
+                    {sidoList.map((sido, idx) => <option key={idx} value={sido}>{sido}</option>)}
+                  </select>
+
+                  <select value={searchParams.sigungu} onChange={e => setSearchParams({ ...searchParams, sigungu: e.target.value })}>
+                    <option value="">구 선택</option>
+                    {sigunguList.map((sigungu, idx) => <option key={idx} value={sigungu}>{sigungu}</option>)}
+                  </select>
+
+                  <select value={searchParams.dong} onChange={e => setSearchParams({ ...searchParams, dong: e.target.value })}>
+                    <option value="">동 선택</option>
+                    {dongList.map((dong, idx) => <option key={idx} value={dong}>{dong}</option>)}
+                  </select>
+
+                  <button onClick={handleSearch}>검색</button>
                 </div>
-              ))}
+              </div>
+
+              {kioskLocations.length > 0 ? (
+                kioskLocations.map((location, index) => (
+                  <div key={index} className="location-item">
+                    <div className="location-marker">📍</div>
+                    <div className="location-info">
+                      <h4 className="location-name">{location.recycleName}</h4>
+                      <p className="location-address">{location.address}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="no-locations">주변 키오스크 정보가 없습니다.</p>
+              )}
             </div>
           </div>
         </div>

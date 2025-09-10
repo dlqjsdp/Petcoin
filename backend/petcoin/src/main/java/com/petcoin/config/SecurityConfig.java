@@ -8,6 +8,7 @@ package com.petcoin.config;
  * @history
  * - 250828 | heekyung | phone 기반 폼 로그인 + BCrypt + 권한정책 적용
  * - 250828 | heekyung | 세션 끄고, 관리자 URL 보호 & JWT 필터 등록
+ * - 250910 | heekyung | 위치 검색 기능 권한 추가
  */
 
 import com.petcoin.security.jwt.JwtFilter;
@@ -54,7 +55,8 @@ public class SecurityConfig {
                         // 공개 API (로그인/토큰 발급/회원확인 등)
                         .requestMatchers(
                                 "/api/member/check", "/api/member/register", "/api/auth/**", "/login", "/logout",
-                                "/css/**", "/js/**", "/images/**", "/favicon.ico", "/public/**"
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico", "/public/**",
+                                "/api/locations/**"
                         ).permitAll()
                         //키오스크 종료시 플라스크에서 end api 호출
                         .requestMatchers("/api/kiosk-runs/**").permitAll()
