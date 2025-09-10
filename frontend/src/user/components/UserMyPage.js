@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import '../styles/UserMyPage.css';
 import logo from "../img/logo.png";
 import DashboardTab from '../pages/DashboardTad.js';  // 이미 맞음
-import PointsTab from '../pages/PointsTab.js';        // 이미 맞음
+//import PointsTab from '../pages/PointsTab.js';        // 이미 맞음
+import PointsTab from './PointHistoryList.js';        // 이미 맞음
 import DisposalHistoryTab from '../pages/DisposalHistoryTab.js'; // 이미 맞음
 import SettingsTab from '../pages/SettingsTab.js';    // 이미 맞음
 
