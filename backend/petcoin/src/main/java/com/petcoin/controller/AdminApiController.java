@@ -1,5 +1,6 @@
 package com.petcoin.controller;
 
+import com.petcoin.constant.RequestStatus;
 import com.petcoin.constant.Role;
 import com.petcoin.dto.*;
 import com.petcoin.security.CustomUserDetails;
@@ -32,6 +33,7 @@ import java.util.Map;
  *  - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 요청 메서드 생성
  *  - 250905 | sehui | 관리자 권한 메서드 생성하여 코드 중복 방지
  *  - 250909 | sehui | 대시보드 조회 요청 메서드 생성
+ *  - 250910 | sehui | 포인트 환급 처리 요청 메서드 잔액 차감과 관계없이 상태 변경되도록 수정
  */
 
 @RestController
@@ -162,6 +164,7 @@ public class AdminApiController {
     public ResponseEntity<Map<String, Object>> processPoint(@PathVariable Long requestId,
                                                @RequestBody PointRequestProcessDto pointRequestDto,
                                                Authentication auth) {
+
         //관리자 권한 확인
         if(!isAdmin(auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -173,25 +176,32 @@ public class AdminApiController {
             //1. 환급 요청 정보 DB에서 조회
             PointRequestDto pointReqDto = pointReqService.getPointRequestById(requestId);
 
-            //2. 포인트 잔액 조회 후 포인트 차감 내역 추가
-            int addHistoryResult = pointHisService.addPointHistory(pointReqDto);
+            boolean pointDeducted = false;
 
-            if(addHistoryResult != 1) {
-                response.put("errorMessage", "포인트 내역 추가에 실패했습니다.");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            //2. 포인트 잔액 조회 후 포인트 차감 시도
+            if(RequestStatus.APPROVED.equals(pointRequestDto.getRequestStatus())) {
+                pointDeducted = pointHisService.addPointHistory(pointReqDto);
+
+                if(!pointDeducted) {
+                    response.put("errorMessage", "포인트 잔액 부족으로 차감 실패, 상태만 변경됨");
+                }
             }
 
             //3. 환급 요청 상태 변경
             int updateStatusResult = pointReqService.updatePointRequestStatus(pointRequestDto);
 
             if(updateStatusResult != 1) {
-                response.put("errorMessage", "환급 요청 상태 변경에 실패했습니다.");
+                response.put("errorMessage", "환급 요청 상태 변경에 실패");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
-            
-            return ResponseEntity.status(HttpStatus.OK).body(null);
-        }catch (IllegalArgumentException e) {
-            response.put("errorMessage", "포인트 환급 요청 처리 실패");
+
+            response.put("message", "환급 요청 처리 완료");
+            response.put("pointDeducted", pointDeducted);   //프론트에서 포인트 차감 여부 확인용
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e) {
+            e.printStackTrace();
+            response.put("errorMessage", "서버 오류 발생: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

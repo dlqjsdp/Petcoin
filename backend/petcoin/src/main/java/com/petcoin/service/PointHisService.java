@@ -16,6 +16,7 @@ import java.util.List;
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
  * - 250901 | leejihye | 포인트 적립 기능 추가
+ * - 250910 | sehui | 포인트 내역 추가 메서드 반환타입 boolean으로 변경
  */
 
 public interface PointHisService {
@@ -27,7 +28,7 @@ public interface PointHisService {
     public int getLatestPointBalance(Long memberId);
 
     //포인트 내역 추가 (환급 시 포인트 차감)
-    public int addPointHistory(PointRequestDto pointRequestDto);
+    public boolean addPointHistory(PointRequestDto pointRequestDto);
 
     //포인트 적립 내역 추가
     public void plusPoint(Long memberId, int totalPet);

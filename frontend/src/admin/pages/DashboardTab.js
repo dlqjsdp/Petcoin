@@ -13,6 +13,7 @@
  *   - 250909 | yukyeong | 키오스크 상태 표기를 ONLINE/MAINT 기준으로 통일, statusToCss 헬퍼 추가 및 적용
  *   - 250909 | yukyeong | 상태 요약 카운트(운영중/점검중) 필터 로직을 ONLINE/MAINT 기준으로 수정
  *   - 250909 | yukyeong | 키(key) 필드를 kioskId 로 통일
+ *   - 250910 | sehui | 통계 카드 데이터 연결
  * 
  */
 
@@ -31,7 +32,7 @@ function DashboardTab({ dashboardStats, kioskData }) {
                     <div className="card-icon">📦</div>
                     <div className="card-content">
                         <h3>총 수거량</h3>
-                        <div className="card-number">{dashboardStats.totalBottles.toLocaleString()}</div>
+                        <div className="card-number">{dashboardStats.totalRecycle}</div>
                         <p>개</p>
                     </div>
                 </div>
@@ -39,7 +40,7 @@ function DashboardTab({ dashboardStats, kioskData }) {
                     <div className="card-icon">👥</div>
                     <div className="card-content">
                         <h3>전체 회원</h3>
-                        <div className="card-number">{dashboardStats.totalMembers.toLocaleString()}</div>
+                        <div className="card-number">{dashboardStats.totalMember}</div>
                         <p>명</p>
                     </div>
                 </div>
@@ -47,7 +48,7 @@ function DashboardTab({ dashboardStats, kioskData }) {
                     <div className="card-icon">💰</div>
                     <div className="card-content">
                         <h3>총 포인트</h3>
-                        <div className="card-number">{dashboardStats.totalPoints.toLocaleString()}</div>
+                        <div className="card-number">{dashboardStats.totalPoint}</div>
                         <p>P</p>
                     </div>
                 </div>
@@ -55,7 +56,7 @@ function DashboardTab({ dashboardStats, kioskData }) {
                     <div className="card-icon">🌱</div>
                     <div className="card-content">
                         <h3>CO₂ 절약</h3>
-                        <div className="card-number">{dashboardStats.co2Saved}</div>
+                        <div className="card-number">175.4</div>
                         <p>kg</p>
                     </div>
                 </div>

@@ -20,15 +20,15 @@ function UserManagementTab({ memberData, pageInfo, handleMemberStatusChange }) {
             <div className="members-summary">
                 <div className="summary-item">
                     <span className="summary-label">전체 회원</span>
-                    <span className="summary-value">{memberData.length}명</span>
+                    <span className="summary-value totalMember">{memberData.length}명</span>
                 </div>
                 <div className="summary-item">
                     <span className="summary-label">활성 회원</span>
-                    <span className="summary-value">{memberData.filter(m => m.status === 'active').length}명</span>
+                    <span className="summary-value activeMember">{memberData.filter(m => m.status === 'active').length}명</span>
                 </div>
                 <div className="summary-item">
                     <span className="summary-label">총 보유 포인트</span>
-                    <span className="summary-value">{memberData.reduce((sum, m) => sum + m.currentPoint, 0)}P</span>
+                    <span className="summary-value totalPoints">{memberData.reduce((sum, m) => sum + m.currentPoint, 0)}P</span>
                 </div>
             </div>
 

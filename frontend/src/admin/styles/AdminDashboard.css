@@ -76,6 +76,11 @@
     background-color: #f0fdf4;
 }
 
+.board-row.completed {
+    border-left: 4px solid #3b82f6;
+    background-color: #eff6ff;
+}
+
 .board-row.rejected {
     border-left: 4px solid #ef4444;
     background-color: #fef2f2;
@@ -273,12 +278,14 @@
     color: #1e293b;
     font-weight: 600;
     font-size: 15px;
+    margin-right: 20px;         /* 오른쪽에 간격 추가 */
 }
 
 .history-amount {
     color: #ff7849;
     font-weight: 700;
     font-size: 14px;
+    margin-right: 20px;         /* 오른쪽에 간격 추가 */
 }
 
 .history-status {
@@ -288,12 +295,12 @@
     font-weight: 600;
 }
 
-.history-status.approved {
+.history-status.APPROVED {
     background-color: #dcfce7;
     color: #166534;
 }
 
-.history-status.rejected {
+.history-status.REJECTED {
     background-color: #fee2e2;
     color: #991b1b;
 }
@@ -1099,11 +1106,19 @@
     border-radius: 12px;
 }
 
+.card-content {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
 .card-content h3 {
     color: #64748b;
     font-size: 14px;
     font-weight: 500;
     margin: 0 0 8px 0;
+    flex-basis: 100%;
 }
 
 .card-number {
@@ -1415,10 +1430,11 @@
     display: flex;
     gap: 30px;
     margin-bottom: 30px;
-    padding: 20px;
+    padding: 25px;
     background-color: white;
     border-radius: 15px;
     border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .summary-item {
@@ -1426,6 +1442,11 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f8fafc;
 }
 
 .summary-label {
@@ -1435,9 +1456,20 @@
 }
 
 .summary-value {
-    color: #1e293b;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
+}
+
+.summary-value.totalMember {
+    color: #1e293b;
+}
+
+.summary-value.activeMember {
+    color: #e85d2b;
+}
+
+.summary-value.totalPoints {
+    color: #b91c1c;
 }
 
 .members-table {
@@ -1450,7 +1482,7 @@
 
 .table-header {
     display: grid;
-    grid-template-columns: 80px 100px 200px 100px 100px 120px 120px 80px 100px;
+    grid-template-columns: 100px 120px 200px 150px 100px 140px 140px 100px 100px;
     gap: 15px;
     padding: 20px;
     background-color: #f8fafc;
@@ -1465,7 +1497,7 @@
 /* 회원관리 테이블 내용 행 - 가운데 정렬 추가 */
 .table-row {
     display: grid;
-    grid-template-columns: 80px 100px 200px 100px 100px 120px 120px 80px 100px;
+    grid-template-columns: 100px 120px 200px 150px 100px 140px 140px 100px 100px;
     gap: 15px;
     padding: 20px;
     border-bottom: 1px solid #f1f5f9;
@@ -1587,6 +1619,10 @@
     color: #22c55e;
 }
 
+.summary-item-board .summary-value.completed {
+    color: #3b82f6;
+}
+
 .summary-item-board .summary-value.rejected {
     color: #ef4444;
 }
@@ -1630,6 +1666,24 @@
     cursor: pointer;
 
 }
+
+/* 환급 요청 목록 */
+.board-table-header.point-request {
+    display: grid;
+    grid-template-columns: 60px 200px 120px 150px 150px 120px 150px 100px 80px;
+}
+
+.board-table-header span {
+    text-align: center;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.board-row.point-request {
+    display: grid;
+    grid-template-columns: 60px 200px 120px 150px 150px 120px 150px 100px 80px;
+}
+
 
 /* ========== 사용자 헤더 스타일 (mypage-header) ========== */
 
