@@ -1,8 +1,10 @@
+// UserApp.js
 import React, { useState, useEffect } from 'react';
 import UserMyPage from './components/UserMyPage';
 import '../App.css';
+import PointHistoryList from "./components/PointHistoryList";
+//import RefundButton from "./components/RefundButton";
 
-// 커스텀 훅 정의
 function useCoupon() {
     const [userPoints, setUserPoints] = useState(890); // 초기 포인트
     
@@ -20,8 +22,8 @@ function useCoupon() {
     return { userPoints, applyCoupon };
 }
 
-function App() {
-    const { userPoints, applyCoupon } = useCoupon();
+function UserApp() {
+        const { userPoints, applyCoupon } = useCoupon();
     
     // 나중에 IntelliJ와 연결할 데이터들
     const [totalBottles, setTotalBottles] = useState(247); // API에서 받아올 총 페트병 수
@@ -74,5 +76,4 @@ function App() {
         </div>
     );
 }
-
-export default App;
+export default UserApp;

@@ -3,6 +3,7 @@ package com.petcoin.controller;
 import com.petcoin.dto.PointHistoryDto;
 import com.petcoin.dto.PointRequestDto;
 import com.petcoin.security.CustomUserDetails;
+import com.petcoin.security.jwt.Principal;
 import com.petcoin.service.PointHisService;
 import com.petcoin.service.PointReqService;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +35,13 @@ public class MyPageApiController {
     private final PointHisService pointHisService;
     private final PointReqService pointReqService;
 
-    @GetMapping("/pointhistory/{memberId}")
-    public ResponseEntity<Map<String, Object>> getPointHistory(@PathVariable("memberId") Long memberId) {
+    // URL에서 memberId를 제거하고 @AuthenticationPrincipal을 사용
+    @GetMapping("/pointhistory")
+    public ResponseEntity<Map<String, Object>> getPointHistory(
+            @AuthenticationPrincipal Principal.MemberPrincipal memberPrincipal) { // <- 타입 변경
+        // MemberPrincipal에서 memberId를 얻어옴
+        Long memberId = memberPrincipal.memberId();
+
         List<PointHistoryDto> pointHistory = pointHisService.getPointHistoryById(memberId);
         int pointBalance = pointHisService.getLatestPointBalance(memberId);
 
@@ -48,13 +54,20 @@ public class MyPageApiController {
         return ResponseEntity.ok(pointList);
     }
 
-    @PostMapping("/pointrefund/{memberId}")
-    public ResponseEntity<?> requestRefund(@PathVariable("memberId") Long memberId,
+
+    @PostMapping("/pointrefund")
+    public ResponseEntity<?> requestRefund(@AuthenticationPrincipal Principal.MemberPrincipal memberPrincipal,
                                            @RequestBody PointRequestDto pointRequestDto) {
+
+        pointRequestDto.setMemberId(memberPrincipal.memberId());
+
         pointReqService.requestRefund(pointRequestDto);
 
-        log.info(pointRequestDto.toString());
+        log.info("환급 요청: {}", pointRequestDto);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "refundAmount", pointRequestDto.getRequestAmount()
+        ));
     }
 }
