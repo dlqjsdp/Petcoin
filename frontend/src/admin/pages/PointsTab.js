@@ -8,9 +8,12 @@ import React from 'react';
  * @since   : 250909
  * @history
  *   - 250909 | sehui | Controller에서 넘겨주는 DTO 값에 맞게 <span> 값 변경
+ *   - 250910 | sehui | 환급 요청 목록에서 보여줄 값 <span> 추가
+ *   - 250910 | sehui | 요청 일시 정렬 변경(요일, 시간 다른 줄로 표시)
+ *   - 250910 | sehui | 환급 요청 통계 css를 위해 <span> 클래스명 구분
  */
 
-function PointsTab({ refundRequests, handleRefundProcess }) {
+function PointsTab({ refundRequests, pageInfo, handleRefundProcess }) {
     return (
         <div className="points-section">
             <h2>포인트 환급 관리</h2>
@@ -19,15 +22,19 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
             <div className="refund-summary-board">
                 <div className="summary-item-board">
                     <span className="summary-label">대기중</span>
-                    <span className="summary-value pending">{refundRequests.filter(r => r.requestStatus === 'pending').length}건</span>
+                    <span className="summary-value pending">{refundRequests.filter(r => r.requestStatus === 'PENDING').length}건</span>
                 </div>
                 <div className="summary-item-board">
-                    <span className="summary-label">승인됨</span>
-                    <span className="summary-value approved">{refundRequests.filter(r => r.requestStatus === 'approved').length}건</span>
+                    <span className="summary-label">승인 완료</span>
+                    <span className="summary-value approved">{refundRequests.filter(r => r.requestStatus === 'APPROVED').length}건</span>
                 </div>
                 <div className="summary-item-board">
-                    <span className="summary-label">거부됨</span>
-                    <span className="summary-value rejected">{refundRequests.filter(r => r.requestStatus === 'rejected').length}건</span>
+                    <span className="summary-label">환급 완료</span>
+                    <span className="summary-value completed">{refundRequests.filter(r => r.requestStatus === 'COMPLETED').length}건</span>
+                </div>
+                <div className="summary-item-board">
+                    <span className="summary-label">거부</span>
+                    <span className="summary-value rejected">{refundRequests.filter(r => r.requestStatus === 'REJECTED').length}건</span>
                 </div>
             </div>
 
@@ -38,20 +45,23 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                     <div className="board-controls">
                         <select className="status-filter">
                             <option value="all">전체</option>
-                            <option value="pending">대기중</option>
-                            <option value="approved">승인됨</option>
-                            <option value="rejected">거부됨</option>
+                            <option value="PENDING">대기중</option>
+                            <option value="APPROVED">승인 완료</option>
+                            <option value="COMPLETED">환급 완료</option>
+                            <option value="REJECTED">거부</option>
                         </select>
                         <button className="refresh-btn">새로고침</button>
                     </div>
                 </div>
 
                 <div className="board-table">
-                    <div className="board-table-header">
+                    <div className="board-table-header point-request">
                         <span className="col-no">번호</span>
                         <span className="col-member">회원정보</span>
                         <span className="col-amount">환급금액</span>
-                        <span className="col-account">계좌정보</span>
+                        <span className="col-bank">은행사</span>
+                        <span className="col-account">계좌번호</span>
+                        <span className="col-account-holder">예금주</span>
                         <span className="col-date">요청일시</span>
                         <span className="col-status">상태</span>
                         <span className="col-action">관리</span>
@@ -59,12 +69,11 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
 
                     <div className="board-table-body">
                         {refundRequests.map((request, index) => (
-                            <div key={request.requestId} className={`board-row ${request.requestStatus}`}>
+                            <div key={request.requestId} className={`board-row point-request ${request.requestStatus}`}>
                                 <span className="col-no">{refundRequests.length - index}</span>
                                 <span className="col-member">
                                     <div className="member-info">
                                         <strong>{request.phone}</strong>
-                                        <small>({request.memberId})</small>
                                     </div>
                                 </span>
                                 <span className="col-amount">
@@ -72,41 +81,57 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                                         <strong>{request.requestAmount}P</strong>
                                     </div>
                                 </span>
+                                <span className="col-bank">
+                                    <div className="account-info">
+                                        <strong>{request.bankName}</strong>
+                                    </div>
+                                </span>
                                 <span className="col-account">
                                     <div className="account-info">
                                         {request.accountNumber}
                                     </div>
                                 </span>
+                                <span className="col-account-holder">
+                                    <div className="account-info">
+                                        <strong>{request.accountHolder}</strong>
+                                    </div>
+                                </span>
                                 <span className="col-date">
                                     <div className="date-info">
-                                        {new Date(request.requestAt).toLocaleString('ko-KR', {
-                                            year: 'numeric',
-                                            month: '2-digit',
-                                            day: '2-digit',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {(() => {
+                                            const date = new Date(request.requestAt);
+                                            const day = date.toLocaleDateString('ko-KR');
+                                            const time = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                                            
+                                            return (
+                                                <>
+                                                    {day}<br/>
+                                                    {time}
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 </span>
                                 <span className="col-status">
                                     <span className={`status-badge-board ${request.requestStatus}`}>
-                                        {request.requestStatus === 'pending' && '대기중'}
-                                        {request.requestStatus === 'approved' && '승인됨'}
-                                        {request.requestStatus === 'rejected' && '거부됨'}
+                                        {request.requestStatus === 'PENDING' && '⏳ 처리 대기'}
+                                        {request.requestStatus === 'APPROVED' && '✔️ 승인 완료'}
+                                        {request.requestStatus === 'COMPLETED' && '💰 환급 완료'}
+                                        {request.requestStatus === 'REJECTED' && '❌ 거부'}
                                     </span>
                                 </span>
                                 <span className="col-action">
-                                    {request.requestStatus === 'pending' ? (
+                                    {request.requestStatus === 'PENDING' ? (
                                         <div className="action-buttons">
                                             <button 
                                                 className="approve-btn-small"
-                                                onClick={() => handleRefundProcess(request.requestId, 'approved', '환급 승인 처리')}
+                                                onClick={() => handleRefundProcess(request.requestId, 'APPROVED', '환급 승인 처리')}
                                             >
                                                 승인
                                             </button>
                                             <button 
                                                 className="reject-btn-small"
-                                                onClick={() => handleRefundProcess(request.requestId, 'rejected', '환급 거부 처리')}
+                                                onClick={() => handleRefundProcess(request.requestId, 'REJECTED', '환급 거부 처리')}
                                             >
                                                 거부
                                             </button>
@@ -130,9 +155,13 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
 
                 {/* 페이지네이션 */}
                 <div className="board-pagination">
-                    <button className="page-btn">이전</button>
-                    <span className="page-info">1 / 1</span>
-                    <button className="page-btn">다음</button>
+                    <button className="page-btn" disabled={!pageInfo?.prev}>이전</button>
+                        <span className="page-info">
+                            {pageInfo 
+                            ? `${pageInfo.pageNum} / ${Math.ceil(pageInfo.total / pageInfo.amount)}`
+                            : "1 / 1"}
+                        </span>
+                    <button className="page-btn" disabled={!pageInfo?.next}>다음</button>
                 </div>
             </div>
 
@@ -141,7 +170,7 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                 <h3>최근 처리 내역</h3>
                 <div className="history-list">
                     {refundRequests
-                        .filter(r => r.requestStatus !== 'pending')
+                        .filter(r => r.requestStatus !== 'PENDING')
                         .slice(0, 5)
                         .map(request => (
                             <div key={request.requestId} className="history-item">
@@ -149,7 +178,7 @@ function PointsTab({ refundRequests, handleRefundProcess }) {
                                     <span className="history-member">{request.phone}</span>
                                     <span className="history-amount">{request.requestAmount}P</span>
                                     <span className={`history-status ${request.requestStatus}`}>
-                                        {request.requestStatus === 'approved' ? '승인' : '거부'}
+                                        {request.requestStatus === 'APPROVED' ? '승인' : '거부'}
                                     </span>
                                 </div>
                                 <div className="history-sub">

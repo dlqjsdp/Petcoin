@@ -32,11 +32,15 @@
  *   - 250909 | yukyeong | 관리자 대시보드 기본 레이아웃 및 탭 구조 구현
  *   - 250909 | yukyeong | 키오스크 관련 하드코딩 데이터 삭제, 상태를 빈 배열([])로 초기화
  *   - 250909 | sehui | 회원 관리 하드코딩 데이터 삭제, 상태의 기본값을 빈 배열([])로 설정
- *   - 250909 | sehui | 환급 요청 하드코딩 데이터 삭제, 상태의 기본값을 빈 배열([])로 설정
+ *   - 250909 | sehui | 포인트 환급 요청 하드코딩 데이터 삭제, 상태의 기본값을 빈 배열([])로 설정
  *   - 250909 | sehui | 페이지 정보 상태의 기본 값을 빈 배열([])로 설정
+ *   - 250910 | sehui | 포인트 환급 요청 처리 이벤트 핸들러 작성(서버에 요청 전송, 환급 요청 목록 상태 업데이트, 승인 시 회원 포인트 차감)
+ *   - 250910 | sehui | 포인트 환급 요청 필터링 상태 변수 생성
+ *   - 250910 | sehui | 대시보트 통계 조회 상태 변수와 함수 생성
+ *   - 250910 | sehui | 공지사항 관련 변수와 함수 삭제
  */
 
-import { getKiosks, getKioskRuns, updateKiosk } from '../../api/admin.js';
+import { getKiosks, getKioskRuns, updateKiosk, getTotal } from '../../api/admin.js';
 import { getAllMembers, getMemberDetail } from '../../api/admin.js';
 import { getPointRequests, getPointRequestById, processPointRequest } from '../../api/admin.js';
 import React, { useState, useEffect } from 'react';
@@ -59,65 +63,13 @@ function AdminDashboard({ onNavigateToMain }) {
     const [selectedKiosk, setSelectedKiosk] = useState('all'); // 현재 선택된 키오스크 ID (드롭다운) - 기본은 'all' (전체 보기)
     const [selectedLogType, setSelectedLogType] = useState('all'); // 현재 선택된 로그 유형 (드롭다운) - 기본은 'all' (전체 보기)
     const [memberData, setMemberData] = useState([]);   //회원 관리 데이터 (REQ-003)
-    const [refundRequests, setRefundRequests] = useState([]);       //환급 요청 데이터 (REQ-004, REQ-005)
-
+    const [refundRequests, setRefundRequests] = useState([]);       //포인트 환급 요청 데이터 (REQ-004, REQ-005)
+    const [dashboardStats, setDashboardStats] = useState([]);   //대시보드 통계 데이터 (REQ-001)
     const [pageInfo, setPageInfo] = useState([]);       //페이지 정보
 
     // ========== 상태 관리 ==========
     const [currentTime, setCurrentTime] = useState('');
     const [activeTab, setActiveTab] = useState('dashboard');
-
-    // ========== 대시보드 통계 데이터 (REQ-001) ==========
-    const [dashboardStats] = useState({
-        totalBottles: 2847,
-        totalMembers: 1847,
-        totalPoints: 142350,
-        co2Saved: 175.4,
-        todayCollection: 247,
-        activeKiosks: 42,
-        totalKiosks: 45
-    });
-
-
-    // ========== 공지사항 데이터 (새로 추가) ==========
-    const [noticeData, setNoticeData] = useState([
-        {
-            id: 'N001',
-            title: '페트코인 서비스 정기점검 안내',
-            content: '더 나은 서비스 제공을 위해 페트코인 시스템 정기점검을 실시합니다.\n\n점검 시간: 2024년 12월 20일 오전 2:00 ~ 4:00\n점검 내용: 시스템 업데이트 및 성능 개선\n\n점검 시간 중에는 일시적으로 서비스 이용이 제한될 수 있습니다.\n불편을 드려 죄송합니다.',
-            author: 'admin',
-            createdDate: '2024-12-18 10:00:00',
-            updatedDate: '2024-12-18 10:00:00',
-            views: 125,
-            isImportant: true,
-            status: 'published',
-            category: '시스템'
-        },
-        {
-            id: 'N002',
-            title: '새로운 키오스크 설치 완료 안내',
-            content: '서울 강남구 삼성역 지하 1층에 새로운 페트코인 키오스크가 설치되었습니다.\n\n설치 위치: 삼성역 2번 출구 근처\n운영 시간: 오전 6시 ~ 밤 12시\n\n많은 이용 부탁드립니다!',
-            author: 'admin',
-            createdDate: '2024-12-17 15:30:00',
-            updatedDate: '2024-12-17 15:30:00',
-            views: 89,
-            isImportant: false,
-            status: 'published',
-            category: '서비스'
-        },
-        {
-            id: 'N003',
-            title: '포인트 적립률 변경 안내',
-            content: '환경 보호 활동 장려를 위해 페트병 1개당 적립 포인트가 5포인트에서 7포인트로 상향 조정됩니다.\n\n적용 일시: 2024년 12월 25일부터\n변경 내용: 페트병 1개 = 7 포인트\n\n더 많은 포인트로 환경 보호에 참여해 보세요!',
-            author: 'admin',
-            createdDate: '2024-12-16 14:20:00',
-            updatedDate: '2024-12-16 14:20:00',
-            views: 234,
-            isImportant: true,
-            status: 'published',
-            category: '정책'
-        }
-    ]);
 
     // 실시간 시간 업데이트 (헤더 우측 표시용)
     useEffect(() => {
@@ -188,10 +140,12 @@ function AdminDashboard({ onNavigateToMain }) {
 
         getAllMembers(params)
             .then(res => {
+                console.log("👤 회원 목록 조회");
+
                 setMemberData(res.data.memberList || []);
                 setPageInfo(res.data.pageInfo);
             })
-            .catch(err => console.error("회원 목록 조회 실패", err))
+            .catch(err => console.error("⚠️ 회원 목록 조회 실패", err))
     }, []);
 
     //환급 요청 목록 조회
@@ -199,10 +153,23 @@ function AdminDashboard({ onNavigateToMain }) {
         const params = { pageNum: 1, amount: 10 };
 
         getPointRequests(params)
-            .then(res => setRefundRequests(res.data.pointReqList || []))
-            .catch(err => console.error("포인트 환급 요청 목록 조회 실패", err));
+            .then(res => {
+                console.log("💰 포인트 환급 요청 목록 조회");
+
+                setRefundRequests(res.data.pointReqList || [])
+            })
+            .catch(err => console.error("⚠️ 포인트 환급 요청 목록 조회 실패", err));
     }, []);
 
+    //대시보드 통계 조회
+    useEffect(() => {
+        getTotal()
+            .then(total => {
+                    console.log("🏠 대시보드 통계 조회");
+                setDashboardStats(total.data)
+            })
+            .catch(err => console.error("⚠️ 대시보드 통계 조회 실패", err))
+    }, []);
 
     // ========== 이벤트 핸들러 함수들 ==========
 
@@ -210,35 +177,48 @@ function AdminDashboard({ onNavigateToMain }) {
      * 환급 요청 처리 (승인/거부)
      */
     const handleRefundProcess = (refundId, action, note = '') => {
-        setRefundRequests(prev => 
-            prev.map(request => 
-                request.requestId === refundId 
-                    ? {
-                        ...request,
-                        requestStatus: action,
-                        processedAt: new Date().toLocaleString('ko-KR'),
-                        note: note
-                    }
-                    : request
-            )
-        );
+        const payload = {
+            requestId: refundId,
+            requestStatus: action,
+            note: note
+        };
 
-        // 승인 시 회원 포인트 차감
-        if (action === 'approved') {
-            const request = refundRequests.find(req => req.id === refundId);
-            if (request) {
-                setMemberData(prev =>
-                    prev.map(member =>
-                        member.memberId === request.memberId
+        processPointRequest(refundId, payload)
+            .then((res) => {
+                console.log("✅ 처리 결과:", res.data.message);
+                console.log("✅ 포인트 차감 여부:", res.data.pointDeducted);
+
+                setRefundRequests(prev => 
+                    prev.map(request => 
+                        request.requestId === refundId 
                             ? {
-                                ...member,
-                                currentPoints: member.currentPoint - request.requestAmount
+                                ...request,
+                                requestStatus: action,
+                                processedAt: new Date().toLocaleString('ko-KR'),
+                                note: note
                             }
-                            : member
+                            : request
                     )
                 );
-            }
-        }
+                
+                //승인 시 회원 포인트 차감
+                if(action === 'APPROVED') {
+                    const request = refundRequests.find(req => req.requestId === refundId);
+                    if(request) {
+                        setMemberData(prev =>
+                            prev.map(member =>
+                                member.memberId === request.memberId
+                                    ? {
+                                        ...member,
+                                        currentPoint: member.currentPoint - request.requestAmount
+                                    }
+                                    : member
+                            )
+                        );
+                    }
+                }
+            })
+            .catch(err => console.error("⚠️ 포인트 환급 처리 실패", err));
     };
 
     /**
@@ -281,60 +261,6 @@ function AdminDashboard({ onNavigateToMain }) {
                 member.memberId === memberId
                     ? { ...member, status: newStatus }
                     : member
-            )
-        );
-    };
-
-    /**
-     * 공지사항 관리 함수들 (새로 추가)
-     */
-    const handleNoticeCreate = (noticeData) => {
-        const newNotice = {
-            id: `N${String(Date.now()).slice(-3).padStart(3, '0')}`,
-            ...noticeData,
-            author: 'admin',
-            createdDate: new Date().toLocaleString('ko-KR'),
-            updatedDate: new Date().toLocaleString('ko-KR'),
-            views: 0,
-            status: 'published'
-        };
-        setNoticeData(prev => [newNotice, ...prev]);
-    };
-
-    const handleNoticeUpdate = (noticeId, updatedData) => {
-        setNoticeData(prev =>
-            prev.map(notice =>
-                notice.id === noticeId
-                    ? {
-                        ...notice,
-                        ...updatedData,
-                        updatedDate: new Date().toLocaleString('ko-KR')
-                    }
-                    : notice
-            )
-        );
-    };
-
-    const handleNoticeDelete = (noticeId) => {
-        setNoticeData(prev => prev.filter(notice => notice.id !== noticeId));
-    };
-
-    const handleNoticeStatusChange = (noticeId, newStatus) => {
-        setNoticeData(prev =>
-            prev.map(notice =>
-                notice.id === noticeId
-                    ? { ...notice, status: newStatus }
-                    : notice
-            )
-        );
-    };
-
-    const handleNoticeViewIncrease = (noticeId) => {
-        setNoticeData(prev =>
-            prev.map(notice =>
-                notice.id === noticeId
-                    ? { ...notice, views: notice.views + 1 }
-                    : notice
             )
         );
     };
@@ -433,12 +359,6 @@ function AdminDashboard({ onNavigateToMain }) {
                     >
                         🖥️ 키오스크
                     </button>
-                    <button
-                        className={`nav-tab ${activeTab === 'notice' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('notice')}
-                    >
-                        📢 공지사항
-                    </button>
                 </div>
             </nav>
 
@@ -447,6 +367,7 @@ function AdminDashboard({ onNavigateToMain }) {
                 {activeTab === 'dashboard' && (
                     <DashboardTab
                         dashboardStats={dashboardStats}
+                        setDashboardStats={setDashboardStats}
                         kioskData={kioskData}
                     />
                 )}
@@ -470,6 +391,7 @@ function AdminDashboard({ onNavigateToMain }) {
                 {activeTab === 'points' && (
                     <PointsTab
                         refundRequests={refundRequests}
+                        pageInfo={pageInfo}
                         handleRefundProcess={handleRefundProcess}
                     />
                 )}
@@ -484,17 +406,6 @@ function AdminDashboard({ onNavigateToMain }) {
                         getFilteredKioskData={getFilteredKioskData}
                         getFilteredLogs={getFilteredLogs}
                         handleKioskStatusChange={handleKioskStatusChange}
-                    />
-                )}
-
-                {activeTab === 'notice' && (
-                    <NoticeTab
-                        noticeData={noticeData}
-                        onNoticeCreate={handleNoticeCreate}
-                        onNoticeUpdate={handleNoticeUpdate}
-                        onNoticeDelete={handleNoticeDelete}
-                        onNoticeStatusChange={handleNoticeStatusChange}
-                        onNoticeViewIncrease={handleNoticeViewIncrease}
                     />
                 )}
             </main>

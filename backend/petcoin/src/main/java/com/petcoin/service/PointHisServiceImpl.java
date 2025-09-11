@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * - 250828 | sehui | 현재 포인트 잔액 조회 기능 추가
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
  * - 250901 | leejihye | 포인트 적립 기능 추가
+ * - 250910 | sehui | 포인트 내역 추가 메서드의 반환타입 boolean으로 변경
  */
 
 @Service
@@ -78,7 +79,7 @@ public class PointHisServiceImpl implements PointHisService {
 
     //포인트 내역 추가 (환급 시 포인트 차감)
     @Override
-    public int addPointHistory(PointRequestDto pointRequestDto) {
+    public boolean addPointHistory(PointRequestDto pointRequestDto) {
 
         Long memberId = pointRequestDto.getMemberId();
         int requestAmount = pointRequestDto.getRequestAmount();
@@ -88,17 +89,13 @@ public class PointHisServiceImpl implements PointHisService {
 
         //잔액이 부족한 경우
         if(latestPointBalance < requestAmount){
-            throw new IllegalArgumentException("포인트 잔액이 부족하여 환급 요청을 처리할 수 없습니다.");
+            return false;
         }
 
         //포인트 차감한 내역 DB에 추가
-        int resultAdd = pointHisMapper.insertPointHistory(memberId, requestAmount, latestPointBalance, ActionType.USE);
+        pointHisMapper.insertPointHistory(memberId, requestAmount, latestPointBalance, ActionType.USE);
 
-        if(resultAdd != 1) {
-            throw new IllegalArgumentException("포인트 내역 추가 오류 발생");
-        }
-
-        return resultAdd;
+        return true;
     }
 
     private static final int POINT_PER_PET = 10; // 페트병당 적립 포인트

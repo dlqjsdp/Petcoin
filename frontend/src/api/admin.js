@@ -16,6 +16,7 @@
  *   - deleteKiosk(id) : 키오스크 장치 삭제 (소프트 삭제)
  *   - getKioskRuns(criteria) : 키오스크 실행 세션 목록 조회 (페이징/검색 포함)
  *   - getKioskRun(runId) : 키오스크 실행 세션 단건 상세 조회
+ *   - getTotal : 대시보드 통계 조회
  *
  * 요청 경로는 AdminApiController와 1:1 매핑됨.
  *
@@ -27,6 +28,7 @@
  *   - 250908 | yukyeong | 키오스크 장치/실행 세션 관련 API 함수 추가
  *   - 250909 | yukyeong | 키오스크 API 개선: getKiosks/getKioskRuns 응답 구조를 {list, pageInfo} 형태로 통일,
  *                         getKiosk/getKioskRun 단건 조회 시 null 가드 처리 추가
+ *   - 250910 | sehui | 대시보드 API 함수 추가
  */
 
 
@@ -95,3 +97,7 @@ export const getKioskRuns = (params) =>
 export const getKioskRun = (runId) =>
     api.get(`/api/admin/kiosk/log/${runId}`)
         .then(r => r?.data?.kioskRun ?? null);
+
+/* 대시보드 */
+export const getTotal = () => 
+    api.get(`/api/admin/dashboard`);
