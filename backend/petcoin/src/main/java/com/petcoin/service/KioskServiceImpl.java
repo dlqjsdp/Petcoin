@@ -1,5 +1,6 @@
 package com.petcoin.service;
 
+import com.petcoin.constant.KioskStatus;
 import com.petcoin.domain.KioskVO;
 import com.petcoin.dto.KioskCriteria;
 import com.petcoin.dto.KioskResponse;
@@ -21,6 +22,7 @@ import java.util.NoSuchElementException;
  * @history
  * - 250905 | sehui | 키오스크 장치 단건/전체 조회 기능 추가
  * - 250905 | sehui | 키오스크 등록, 수정, 삭제 기능 추가
+ * - 250911 | yukyeong | updateStatus 메서드 추가 (관리자 전용 상태 변경: ONLINE/MAINT/OFFLINE)
  */
 
 @Service
@@ -143,5 +145,18 @@ public class KioskServiceImpl implements KioskService {
         }
 
         return deleteResult;
+    }
+
+    // 관리자 페이지-키오스크탭: 키오스크 상태 변경 (ONLINE/MAINT/OFFLINE)
+    @Override
+    public int updateStatus(Long kioskId, KioskStatus status) {
+        int result = kioskMapper.updateStatus(kioskId, status);
+
+        if (result != 1) {
+            throw new IllegalStateException("키오스크 상태 변경 실패: kioskId=" + kioskId + ", status=" + status);
+        }
+
+        log.info("키오스크 상태 변경 성공: kioskId={}, status={}", kioskId, status);
+        return result;
     }
 }

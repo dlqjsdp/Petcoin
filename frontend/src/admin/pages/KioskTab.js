@@ -37,6 +37,10 @@
  *   - 250909 | yukyeong | 사용자 표시 로직 변경: userName/아이콘 제거, phone 기반 표시(없으면 '비회원'), guest 상태에 전용 클래스(log-user guest) 적용
  *   - 250909 | yukyeong | 휴대폰 포맷터 formatPhone 추가(10/11자리 하이픈 처리), 개인정보 마스킹 미적용
  *   - 250909 | yukyeong | 로그 상세 텍스트(detailsText) 추가: 상태별 요약(진행중/취소/총 N개 수거), totalPet 활용
+ *   - 250911 | yukyeong | 로그 테이블에서 상세정보 칸 제거, detailsText 내용을 메시지 칸으로 이동하여 UI 단순화
+ *   - 250911 | yukyeong | 로그 시간 포맷 수정: 날짜+시간을 한 줄로 표시하도록 locale 옵션 지정
+ *   - 250911 | yukyeong | 상태 드롭다운에 OFFLINE(미운영) 옵션 추가 및 statusToCss에 offline 매핑 반영
+ *   - 250911 | yukyeong | 미운영 상태 도입: 드롭다운에 OFFLINE(미운영) 옵션 추가, statusToCss에 OFFLINE→'inactive' 매핑
  * 
  */
 
@@ -50,7 +54,11 @@ const formatPhone = (p) => {
     return p;
 };
 
-const statusToCss = s => (s === 'ONLINE' ? 'active' : s === 'MAINT' ? 'maintenance' : 'unknown');
+const statusToCss = (s) =>
+  s === 'ONLINE' ? 'active'
+  : s === 'MAINT' ? 'maintenance'
+  : s === 'OFFLINE' ? 'inactive'   // ← 추가
+  : 'unknown';
 
 const statusLabel = s =>
     s === 'RUNNING' ? '🔄 실행중' :
@@ -125,6 +133,7 @@ function KioskTab({
                                     >
                                         <option value="ONLINE">운영중</option>
                                         <option value="MAINT">점검중</option>
+                                        <option value="OFFLINE">미운영</option>
                                     </select>
                                 </div>
                             </div>
@@ -194,7 +203,7 @@ function KioskTab({
                         <span>상태</span>
                         <span>메시지</span>
                         <span>사용자</span>
-                        <span>상세정보</span>
+                        {/* <span>상세정보</span> */}
                     </div>
 
                     {/* 로그 목록 */}
@@ -204,16 +213,13 @@ function KioskTab({
                                 // 시간 안전 처리: endedAt가 있으면 그걸, 없으면 startedAt 사용
                                 const dt = new Date(log.endedAt ?? log.startedAt);
                                 const safeTime = isNaN(dt.getTime())
-                                    ? '-' // 잘못된 날짜면 '-' 처리
-                                    : dt.toLocaleString('ko-KR', {
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit'
-                                    });
+                                    ? '-'
+                                    : `${dt.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })} ${dt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
                                 return (
-                                    <div key={log.runId ?? log.id} className={`log-row ${log.level ?? 'info'}`}>
+                                    <div
+                                        key={log.runId ?? log.id}
+                                        className={`log-row ${String(log.status ?? '').toLowerCase()}`}
+                                    >
                                         {/* 로그 시간 */}
                                         <span className="log-time">{safeTime}</span>
 
@@ -226,17 +232,19 @@ function KioskTab({
                                         </span>
 
                                         {/* 로그 메시지 (없으면 '-') */}
-                                        <span className="log-message">{log.message ?? '-'}</span>
+                                        <span className="log-message">
+                                            {log.message ?? detailsText(log) ?? '-'}
+                                        </span>
 
                                         {/* 사용자 정보 */}
                                         <span className={`log-user ${log.phone ? '' : 'guest'}`}>
                                             {formatPhone(log.phone) ?? '비회원'}
                                         </span>
-                                        
-                                        {/* 로그 상세 정보 */}
+
+                                        {/* 로그 상세 정보
                                         <span className="log-details">
                                             {detailsText(log)}
-                                        </span>
+                                        </span> */}
                                     </div>
                                 );
                             })

@@ -12,6 +12,7 @@
  *   - kioskLogs: 키오스크 로그 데이터
  *   - memberData: 회원 데이터
  *   - refundRequests: 환급 요청 데이터
+ *   - recycleStats: 무인 회수기 수거 내역 데이터
  *   - noticeData: 공지사항 데이터
  *   - selectedKiosk: 현재 선택된 키오스크 ID ('all' 또는 숫자)
  *   - selectedLogType: 현재 선택된 로그 유형
@@ -38,11 +39,17 @@
  *   - 250910 | sehui | 포인트 환급 요청 필터링 상태 변수 생성
  *   - 250910 | sehui | 대시보트 통계 조회 상태 변수와 함수 생성
  *   - 250910 | sehui | 공지사항 관련 변수와 함수 삭제
+ *   - 250911 | yukyeong | 수거 내역(무인 회수기 통계) 상태/조회(useEffect, state, 필터링 함수) 및 CollectionHistoryTab 연동 추가
+ *   - 250911 | yukyeong | 키오스크 상태 변경 로직 개선: updateKioskStatus API 연동(낙관적 업데이트 → 실패 시 롤백) 추가
+ *   - 250911 | yukyeong | 키오스크 상태 OFFLINE(미운영) 지원: handleKioskStatusChange가 'OFFLINE' 값도 그대로 서버에 전달/롤백하도록 허용(로컬 상태 업데이트 포함)
+ *   - 250912 | yukyeong | 대시보드 탭 진입 시 getKioskRuns 로드 추가(오늘 기준 수용량 계산용 로그)
+ *   - 250912 | yukyeong | DashboardTab에 kioskRuns 전달
  */
 
-import { getKiosks, getKioskRuns, updateKiosk, getTotal } from '../../api/admin.js';
+import { getKiosks, getKioskRuns, updateKiosk, getTotal, updateKioskStatus } from '../../api/admin.js';
 import { getAllMembers, getMemberDetail } from '../../api/admin.js';
 import { getPointRequests, getPointRequestById, processPointRequest } from '../../api/admin.js';
+import { getRecycleStats } from '../../api/admin.js';
 import React, { useState, useEffect } from 'react';
 
 // AdminDashboard.js에서
@@ -66,6 +73,8 @@ function AdminDashboard({ onNavigateToMain }) {
     const [refundRequests, setRefundRequests] = useState([]);       //포인트 환급 요청 데이터 (REQ-004, REQ-005)
     const [dashboardStats, setDashboardStats] = useState([]);   //대시보드 통계 데이터 (REQ-001)
     const [pageInfo, setPageInfo] = useState([]);       //페이지 정보
+    const [recycleStats, setRecycleStats] = useState([]);
+
 
     // ========== 상태 관리 ==========
     const [currentTime, setCurrentTime] = useState('');
@@ -165,11 +174,34 @@ function AdminDashboard({ onNavigateToMain }) {
     useEffect(() => {
         getTotal()
             .then(total => {
-                    console.log("🏠 대시보드 통계 조회");
+                console.log("🏠 대시보드 통계 조회");
                 setDashboardStats(total.data)
             })
             .catch(err => console.error("⚠️ 대시보드 통계 조회 실패", err))
     }, []);
+
+    // 수거 내역 불러오기
+    useEffect(() => {
+        const params = { pageNum: 1, amount: 10 };
+        getRecycleStats(params)
+            .then(res => setRecycleStats(res.list))
+            .catch(err => console.error("⚠️ 수거 내역 조회 실패", err));
+    }, []);
+
+    // 대시보드 들어올 때 로그 한번 로드
+    useEffect(() => {
+        if (activeTab !== 'dashboard') return;
+        let alive = true;
+        (async () => {
+            try {
+                const { list } = await getKioskRuns({ pageNum: 1, amount: 500 });
+                if (alive) setKioskLogs(list || []);
+            } catch (e) {
+                if (alive) setKioskLogs([]);
+            }
+        })();
+        return () => { alive = false; };
+    }, [activeTab]);
 
     // ========== 이벤트 핸들러 함수들 ==========
 
@@ -188,9 +220,9 @@ function AdminDashboard({ onNavigateToMain }) {
                 console.log("✅ 처리 결과:", res.data.message);
                 console.log("✅ 포인트 차감 여부:", res.data.pointDeducted);
 
-                setRefundRequests(prev => 
-                    prev.map(request => 
-                        request.requestId === refundId 
+                setRefundRequests(prev =>
+                    prev.map(request =>
+                        request.requestId === refundId
                             ? {
                                 ...request,
                                 requestStatus: action,
@@ -200,11 +232,11 @@ function AdminDashboard({ onNavigateToMain }) {
                             : request
                     )
                 );
-                
+
                 //승인 시 회원 포인트 차감
-                if(action === 'APPROVED') {
+                if (action === 'APPROVED') {
                     const request = refundRequests.find(req => req.requestId === refundId);
-                    if(request) {
+                    if (request) {
                         setMemberData(prev =>
                             prev.map(member =>
                                 member.memberId === request.memberId
@@ -224,31 +256,22 @@ function AdminDashboard({ onNavigateToMain }) {
     /**
      * 키오스크 상태 변경
      */
-    const handleKioskStatusChange = (kioskId, newStatus) => {
+    const handleKioskStatusChange = async (kioskId, newStatus) => {
+        // 낙관적 업데이트
+        const prevData = [...kioskData];
         setKioskData(prev =>
             prev.map(kiosk =>
-                kiosk.kioskId === kioskId
-                    ? { ...kiosk, status: newStatus }
-                    : kiosk
+                kiosk.kioskId === kioskId ? { ...kiosk, status: newStatus } : kiosk
             )
         );
-
         // 상태 변경 로그 추가
-        const kiosk = kioskData.find(k => k.kioskId === kioskId);
-        if (kiosk) {
-            const newLog = {
-                id: `LOG${Date.now()}`,
-                kioskId: kioskId,
-                kioskName: kiosk.name,
-                timestamp: new Date().toISOString(),
-                type: 'system',
-                message: `상태 변경: ${newStatus === 'ONLINE' ? '운영중' : '점검중'}`,
-                userId: null,
-                userName: null,
-                details: `status_change: ${kiosk.status} -> ${newStatus}`,
-                level: 'info'
-            };
-            setKioskLogs(prev => [newLog, ...prev]);
+        try {
+            await updateKioskStatus(kioskId, newStatus); // API 호출
+            console.log(`✅ 상태 변경 성공: ${kioskId} → ${newStatus}`);
+        } catch (e) {
+            console.error("⚠️ 상태 변경 실패", e);
+            setKioskData(prevData); // 실패 시 롤백
+            alert("상태 변경 실패");
         }
     };
 
@@ -294,6 +317,12 @@ function AdminDashboard({ onNavigateToMain }) {
         // endedAt > startedAt > timestamp 순으로 정렬키 선택
         const ts = l => new Date(l.endedAt ?? l.startedAt ?? l.timestamp ?? 0).getTime();
         return [...logs].sort((a, b) => ts(b) - ts(a));
+    };
+
+    const getFilteredRecycleStats = () => {
+        return selectedKiosk === 'all'
+            ? recycleStats
+            : recycleStats.filter(kiosk => kiosk.recycleId === Number(selectedKiosk));
     };
 
     // ========== 렌더링 ==========
@@ -369,15 +398,16 @@ function AdminDashboard({ onNavigateToMain }) {
                         dashboardStats={dashboardStats}
                         setDashboardStats={setDashboardStats}
                         kioskData={kioskData}
+                        kioskRuns={kioskLogs}
                     />
                 )}
 
                 {activeTab === 'collection' && (
                     <CollectionHistoryTab
-                        kioskData={kioskData}
+                        kioskData={recycleStats}
                         selectedKiosk={selectedKiosk}
                         setSelectedKiosk={setSelectedKiosk}
-                        getFilteredKioskData={getFilteredKioskData}
+                        getFilteredKioskData={getFilteredRecycleStats}
                     />
                 )}
 

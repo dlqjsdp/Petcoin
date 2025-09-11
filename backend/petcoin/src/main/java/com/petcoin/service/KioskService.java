@@ -1,5 +1,6 @@
 package com.petcoin.service;
 
+import com.petcoin.constant.KioskStatus;
 import com.petcoin.dto.KioskCriteria;
 import com.petcoin.dto.KioskResponse;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * @history
  * - 250905 | sehui | 키오스크 장치 단건/전체 조회 기능 추가
  * - 250905 | sehui | 키오스크 등록, 수정, 삭제 기능 추가
+ * - 250911 | yukyeong | 관리자 전용 키오스크 상태 변경(updateStatus) 기능 추가
  */
 
 public interface KioskService {
@@ -35,4 +37,7 @@ public interface KioskService {
 
     //키오스크 소프트삭제
     public int softDelete(Long kioskId);
+
+    // 관리자 페이지-키오스크탭: 키오스크 상태 단순 변경 (ONLINE/MAINT/OFFLINE)
+    public int updateStatus(Long kioskId, KioskStatus status);
 }

@@ -36,6 +36,7 @@ import java.util.List;
  *   - 250828 | yukyeong | Mapper 최초 생성 (read, getListWithPaging, getTotalCount, insert, update, softDelete, transitionStatus 정의)
  *   - 250829 | yukyeong | findStatusById 추가 (키오스크 ONLINE 여부 확인용), lockKioskRow 추가 (행 잠금: startRun 시 동시 실행 방지용)
  *   - 250905 | sehui | 대시보드에서 조회할 키오스크 운영 상태별 개수 조회 기능 추가
+ *   - 250911 | yukyeong | 관리자 페이지 전용 updateStatus 메서드 추가 (키오스크 상태 단순 변경: ONLINE/MAINT/OFFLINE)
  */
 
 @Mapper
@@ -50,6 +51,10 @@ public interface KioskMapper {
 
     // 1-3) 키오스크 총 개수 조회
     public int getTotalCount(KioskCriteria cri);
+
+    // 1-4) 관리자 페이지에서 키오스크 상태 변경
+    public int updateStatus(@Param("kioskId") Long kioskId,
+                            @Param("status") KioskStatus status);
 
 
     // 관리자페이지에서 키오스크 등록, 수정, 삭제

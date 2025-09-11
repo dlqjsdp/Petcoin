@@ -11,6 +11,9 @@
     @history
      - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 기능 추가
      - 250902 | sehui | 전체 무인 회수기 수 조회 기능 추가
+     - 250911 | yukyeong | 수거량 집계 로직 수정:
+                          - pet_collection_log 조인 제거 -> run 단위(COMPLETED 상태) 기준으로 total_pet 합산
+                          - 마지막 수거 시간은 run 종료 시각(ended_at) 기준으로 집계
 -->
 
 <mapper namespace="com.petcoin.mapper.RecycleStatsMapper">
@@ -22,15 +25,14 @@
             pr.recycle_name AS recycleName,
             pr.address AS address,
             k.status AS status,
-            COALESCE(SUM(kr.total_pet),0) AS totalCount,
-            MAX(pcl.created_at) AS lastCollection
+            COALESCE(SUM(CASE WHEN kr.status = 'COMPLETED' THEN kr.total_pet END),0) AS totalCount,
+            MAX(CASE WHEN kr.status = 'COMPLETED' THEN kr.ended_at END) AS lastCollection
         FROM pet_recycle pr
-        JOIN kiosk k ON pr.recycle_id = k.recycle_id
-        LEFT JOIN kiosk_run kr ON k.kiosk_id = kr.kiosk_id
-        LEFT JOIN pet_collection_log pcl ON kr.run_id = pcl.run_id
+                 JOIN kiosk k ON pr.recycle_id = k.recycle_id
+                 LEFT JOIN kiosk_run kr ON k.kiosk_id = kr.kiosk_id
         GROUP BY pr.recycle_id, pr.recycle_name, pr.address, k.status
         ORDER BY pr.recycle_name
-        LIMIT #{amount} OFFSET #{offset}
+            LIMIT #{amount} OFFSET #{offset}
     </select>
 
     <!-- 전체 무인 회수기 수 조회 -->
