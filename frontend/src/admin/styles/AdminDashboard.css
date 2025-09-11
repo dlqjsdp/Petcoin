@@ -39,7 +39,8 @@
     font-weight: 600;
     color: #374151;
     font-size: 14px;
-    text-align: center; /* 이 줄을 추가 */
+    text-align: center;
+    /* 이 줄을 추가 */
 }
 
 .board-table-body {
@@ -56,7 +57,8 @@
     transition: background-color 0.2s ease;
     align-items: center;
     font-size: 14px;
-    text-align: center; /* 이 줄을 추가 */
+    text-align: center;
+    /* 이 줄을 추가 */
 }
 
 .board-row:hover {
@@ -157,7 +159,8 @@
 .action-buttons {
     display: flex;
     gap: 8px;
-    flex-direction: row; /* 가로로 나란히 배치 */
+    flex-direction: row;
+    /* 가로로 나란히 배치 */
     justify-content: center;
     align-items: center;
 }
@@ -166,13 +169,15 @@
     background-color: #22c55e;
     color: white;
     border: none;
-    padding: 8px 12px; /* 패딩 증가 */
+    padding: 8px 12px;
+    /* 패딩 증가 */
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 50px; /* 최소 너비 설정 */
+    min-width: 50px;
+    /* 최소 너비 설정 */
 }
 
 .approve-btn-small:hover {
@@ -183,13 +188,15 @@
     background-color: #ef4444;
     color: white;
     border: none;
-    padding: 8px 12px; /* 패딩 증가 */
+    padding: 8px 12px;
+    /* 패딩 증가 */
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 50px; /* 최소 너비 설정 */
+    min-width: 50px;
+    /* 최소 너비 설정 */
 }
 
 .reject-btn-small:hover {
@@ -278,14 +285,16 @@
     color: #1e293b;
     font-weight: 600;
     font-size: 15px;
-    margin-right: 20px;         /* 오른쪽에 간격 추가 */
+    margin-right: 20px;
+    /* 오른쪽에 간격 추가 */
 }
 
 .history-amount {
     color: #ff7849;
     font-weight: 700;
     font-size: 14px;
-    margin-right: 20px;         /* 오른쪽에 간격 추가 */
+    margin-right: 20px;
+    /* 오른쪽에 간격 추가 */
 }
 
 .history-status {
@@ -359,6 +368,10 @@
 
 .kiosk-status-card.maintenance {
     border-left: 4px solid #ef4444;
+}
+
+.kiosk-status-card.inactive {
+  border-left: 4px solid #94a3b8;
 }
 
 .status-card-header {
@@ -459,14 +472,20 @@
 
 .logs-header {
     display: grid;
-    grid-template-columns: 120px 150px 100px 2fr 120px 1fr;
-    gap: 15px;
+    grid-template-columns: 1.5fr 2fr 1fr 2fr 1.5fr;
+    /* 시간 | 키오스크 | 상태 | 메시지 | 사용자 */
+    gap: 25px;
+    /* 간격 줄이기 */
     padding: 15px;
     background-color: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
     font-weight: 600;
     color: #374151;
     font-size: 13px;
+    align-items: center;
+    /* 세로 중앙 정렬 */
+    text-align: center;
+    /* 모든 컬럼 가운데 정렬 */
 }
 
 .logs-body {
@@ -476,18 +495,56 @@
 
 .log-row {
     display: grid;
-    grid-template-columns: 120px 150px 100px 2fr 120px 1fr;
-    gap: 15px;
+    grid-template-columns: 1.5fr 2fr 1fr 2fr 1.5fr;
+    /* 시간 | 키오스크 | 상태 | 메시지 | 사용자 */
+    gap: 25px;
+    /* 간격 줄이기 */
     padding: 15px;
     border-bottom: 1px solid #f1f5f9;
     transition: background-color 0.2s ease;
     align-items: center;
     font-size: 13px;
+    text-align: center;
+    /* 가운데 정렬 */
 }
 
-.log-row:hover {
-    background-color: #fff7f5;
+.log-row {
+    transition: background-color 0.2s ease; /* hover 시 부드럽게 */
 }
+
+/* 완료(Completed) → 연한 초록 */
+.log-row.completed {
+    background-color: #f0fdf4;
+    border-left: 4px solid #22c55e;
+}
+
+/* 실행중(Running) → 연한 파랑 */
+.log-row.running {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+}
+
+/* 취소(Cancelled) → 연한 빨강 */
+.log-row.cancelled {
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+}
+
+.log-row.completed:hover {
+    background-color: #dcfce7;
+}
+
+/* 연한 초록 */
+.log-row.running:hover {
+    background-color: #dbeafe;
+}
+
+/* 연한 파랑 */
+.log-row.cancelled:hover {
+    background-color: #fee2e2;
+}
+
+/* 연한 빨강 */
 
 .log-row:last-child {
     border-bottom: none;
@@ -512,6 +569,7 @@
     color: #64748b;
     font-weight: 500;
     font-family: monospace;
+    white-space: nowrap;
 }
 
 .log-kiosk {
@@ -520,11 +578,21 @@
 }
 
 .log-type {
-    padding: 4px 8px;
+    display: flex;
+    /* flex 사용 */
+    justify-content: center;
+    /* 가로 중앙 */
+    align-items: center;
+    /* 세로 중앙 */
+    padding: 6px 12px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     text-align: center;
+    min-width: 60px;
+    /* 균일한 폭 */
+    margin: 0 auto;
+    /* 수평 중앙 */
 }
 
 .log-type.collection {
@@ -550,11 +618,14 @@
 .log-message {
     color: #374151;
     font-weight: 500;
+    text-align: left;
+    padding-left: 60px;
 }
 
 .log-user {
     color: #64748b;
     font-style: italic;
+    text-align: center;
 }
 
 
@@ -620,31 +691,31 @@
     .summary-cards {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .collection-stats {
         grid-template-columns: 1fr;
     }
-    
+
     .kiosk-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .kiosk-status-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .board-table-header,
     .board-row {
         grid-template-columns: 50px 150px 100px 150px 120px 80px 120px;
         font-size: 13px;
     }
-    
+
     /* 버튼은 가로로 유지 */
     .action-buttons {
         flex-direction: row;
         gap: 6px;
     }
-    
+
     .approve-btn-small,
     .reject-btn-small {
         padding: 6px 10px;
@@ -659,40 +730,40 @@
         gap: 15px;
         text-align: center;
     }
-    
+
     .admin-info {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .collection-header,
     .kiosk-header {
         flex-direction: column;
         gap: 15px;
         align-items: stretch;
     }
-    
+
     .members-summary,
     .refund-summary-board {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .collection-metrics {
         grid-template-columns: 1fr;
     }
-    
+
     .system-info {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .logs-header,
     .log-row {
         grid-template-columns: 1fr;
         gap: 5px;
     }
-    
+
     .logs-header span,
     .log-row span {
         padding: 8px;
@@ -704,58 +775,58 @@
     .admin-dashboard {
         font-size: 14px;
     }
-    
+
     .admin-header {
         padding: 15px 20px;
     }
-    
+
     .admin-main {
         padding: 20px;
     }
-    
+
     .nav-tabs {
         flex-wrap: wrap;
         justify-content: center;
     }
-    
+
     .nav-tab {
         padding: 12px 20px;
         font-size: 14px;
     }
-    
+
     .summary-cards {
         grid-template-columns: 1fr;
     }
-    
+
     .kiosk-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .admin-main h2 {
         font-size: 24px;
         text-align: center;
     }
-    
+
     .table-header,
     .table-row {
         grid-template-columns: 1fr;
         gap: 5px;
     }
-    
+
     .table-header span,
     .table-row span,
     .table-row div {
         padding: 8px;
         border-bottom: 1px solid #f1f5f9;
     }
-    
+
     .board-table-header,
     .board-row {
         grid-template-columns: 1fr;
         gap: 5px;
         text-align: left;
     }
-    
+
     .board-table-header span,
     .board-row span {
         padding: 8px;
@@ -767,44 +838,44 @@
     .admin-title-section h1 {
         font-size: 20px;
     }
-    
+
     .admin-title-section p {
         font-size: 12px;
     }
-    
+
     .summary-card {
         flex-direction: column;
         text-align: center;
         padding: 20px;
     }
-    
+
     .card-icon {
         width: 50px;
         height: 50px;
         font-size: 30px;
     }
-    
+
     .kiosk-status-summary {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .board-header {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
-    
+
     .board-controls {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .status-filter,
     .refresh-btn {
         width: 100%;
     }
-    
+
     .log-filters {
         flex-direction: column;
         gap: 10px;
@@ -843,6 +914,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -894,7 +966,7 @@
     .admin-dashboard {
         background-color: white;
     }
-    
+
     .admin-header,
     .admin-nav,
     .back-button,
@@ -906,12 +978,12 @@
     .page-btn {
         display: none;
     }
-    
+
     .admin-main {
         padding: 20px;
         overflow: visible;
     }
-    
+
     .summary-card,
     .kiosk-card,
     .collection-card,
@@ -964,7 +1036,8 @@
     font-size: 28px;
     font-weight: 700;
     margin: 0 0 3px 0;
-    color: white; /* 흰색으로 변경 */
+    color: white;
+    /* 흰색으로 변경 */
 }
 
 .admin-title-section p {
@@ -1179,6 +1252,10 @@
     color: #ef4444;
 }
 
+.status-count.inactive {     /* 미운영 */
+    color: #9ca3af;          /* 회색 계열 */
+}
+
 .status-count.total {
     color: #3b82f6;
 }
@@ -1204,6 +1281,11 @@
 .kiosk-card.maintenance {
     border-left: 4px solid #ef4444;
     background-color: #fef2f2;
+}
+
+.kiosk-card.inactive {
+  border-left: 4px solid #94a3b8;   /* 회색 보더 */
+  background-color: #f3f4f6;        /* 연회색 배경 */
 }
 
 .kiosk-card:hover {
@@ -1240,6 +1322,11 @@
 .status-badge.maintenance {
     background-color: #fee2e2;
     color: #991b1b;
+}
+
+.status-badge.inactive {
+  background-color: #e5e7eb; /* 회색 배경 */
+  color: #6b7280;            /* 회색 글자 */
 }
 
 .kiosk-stats {
@@ -1410,7 +1497,7 @@
 
 .system-info {
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-start;
     padding: 15px;
     background-color: #f8fafc;
     border-radius: 8px;
@@ -1490,7 +1577,8 @@
     font-weight: 600;
     color: #374151;
     font-size: 14px;
-    text-align: center; /* 이 줄을 추가 */
+    text-align: center;
+    /* 이 줄을 추가 */
 }
 
 
@@ -1504,7 +1592,8 @@
     transition: background-color 0.2s ease;
     align-items: center;
     font-size: 14px;
-    text-align: center; /* 이 줄을 추가 */
+    text-align: center;
+    /* 이 줄을 추가 */
 }
 
 .table-row:hover {
@@ -1698,11 +1787,15 @@
 /* 헤더 내용 컨테이너 - 좌우 정렬과 최대 너비 설정 */
 .mypage-header .container {
     display: flex;
-    justify-content: space-between;  /* 좌우 끝 정렬 */
+    justify-content: space-between;
+    /* 좌우 끝 정렬 */
     align-items: center;
-    max-width: 1400px;               /* 최대 너비 제한 */
-    margin: 0 auto;                  /* 가운데 정렬 */
-    padding: 0 30px;                 /* 좌우 여백 */
+    max-width: 1400px;
+    /* 최대 너비 제한 */
+    margin: 0 auto;
+    /* 가운데 정렬 */
+    padding: 0 30px;
+    /* 좌우 여백 */
 }
 
 /* 왼쪽 로고 영역 */
@@ -1719,9 +1812,12 @@
 
 /* 로고 이미지 스타일 */
 .logo-img {
-    height: 80px;           /* 로고 높이 설정 */
-    width: auto;            /* 비율에 맞게 너비 자동 조정 */
-    object-fit: contain;    /* 이미지 비율 유지 */
+    height: 80px;
+    /* 로고 높이 설정 */
+    width: auto;
+    /* 비율에 맞게 너비 자동 조정 */
+    object-fit: contain;
+    /* 이미지 비율 유지 */
 }
 
 /* 오른쪽 사용자 정보 영역 */
@@ -1734,15 +1830,18 @@
 .user-profile {
     display: flex;
     align-items: center;
-    gap: 15px;  /* 아바타와 텍스트 사이 간격 */
+    gap: 15px;
+    /* 아바타와 텍스트 사이 간격 */
 }
 
 /* 프로필 아바타 - 원형 아이콘 */
 .profile-avatar {
     width: 50px;
     height: 50px;
-    background-color: #ff7849;  /* 브랜드 색상 배경 */
-    border-radius: 50%;         /* 완전한 원형 */
+    background-color: #ff7849;
+    /* 브랜드 색상 배경 */
+    border-radius: 50%;
+    /* 완전한 원형 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1753,8 +1852,10 @@
 /* 프로필 정보 텍스트 영역 - 세로 정렬 */
 .profile-info {
     display: flex;
-    flex-direction: column;  /* 세로로 배치 */
-    gap: 4px;               /* 이름과 상세정보 사이 간격 */
+    flex-direction: column;
+    /* 세로로 배치 */
+    gap: 4px;
+    /* 이름과 상세정보 사이 간격 */
 }
 
 /* 프로필 이름 스타일 */
@@ -1767,7 +1868,8 @@
 
 /* 프로필 상세 정보 (등급, 연속 참여일 등) */
 .profile-details {
-    color: #94a3b8;  /* 연한 회색 */
+    color: #94a3b8;
+    /* 연한 회색 */
     font-size: 14px;
     font-weight: 400;
     margin: 0;
@@ -1777,25 +1879,29 @@
 
 /* 태블릿 사이즈 (768px 이하) */
 @media (max-width: 768px) {
+
     /* 헤더를 세로 배치로 변경 */
     .mypage-header .container {
-        flex-direction: column;  /* 세로 배치 */
+        flex-direction: column;
+        /* 세로 배치 */
         gap: 15px;
-        text-align: center;      /* 가운데 정렬 */
-        padding: 0 20px;         /* 좌우 패딩 줄임 */
+        text-align: center;
+        /* 가운데 정렬 */
+        padding: 0 20px;
+        /* 좌우 패딩 줄임 */
     }
-    
+
     /* 사용자 프로필도 세로 배치 */
     .user-profile {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     /* 프로필 정보 가운데 정렬 */
     .profile-info {
         text-align: center;
     }
-    
+
     /* 로고 이미지 크기 축소 */
     .logo-img {
         height: 32px;
@@ -1804,27 +1910,28 @@
 
 /* 모바일 사이즈 (480px 이하) */
 @media (max-width: 480px) {
+
     /* 헤더 패딩 줄임 */
     .mypage-header {
         padding: 15px 0;
     }
-    
+
     /* 아바타 크기 축소 */
     .profile-avatar {
         width: 40px;
         height: 40px;
         font-size: 20px;
     }
-    
+
     /* 텍스트 크기 축소 */
     .profile-name {
         font-size: 16px;
     }
-    
+
     .profile-details {
         font-size: 12px;
     }
-    
+
     .logo-text {
         font-size: 20px;
     }
@@ -2529,7 +2636,7 @@
     .notice-summary {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .notice-table-header,
     .notice-row {
         grid-template-columns: 60px 80px 2fr 100px 60px 80px 120px;
@@ -2544,24 +2651,24 @@
         text-align: center;
         gap: 20px;
     }
-    
+
     .notice-controls {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .search-section {
         margin-right: 0;
     }
-    
+
     .filter-section {
         justify-content: center;
     }
-    
+
     .detail-actions {
         justify-content: center;
     }
-    
+
     .form-row {
         flex-direction: column;
     }
@@ -2571,34 +2678,34 @@
     .notice-summary {
         grid-template-columns: 1fr;
     }
-    
+
     .notice-table-header,
     .notice-row {
         grid-template-columns: 1fr;
         gap: 5px;
         text-align: left;
     }
-    
+
     .notice-table-header span,
     .notice-row span {
         padding: 8px;
         border-bottom: 1px solid #f1f5f9;
     }
-    
+
     .notice-title-cell {
         justify-content: flex-start;
     }
-    
+
     .notice-actions {
         justify-content: flex-start;
         flex-wrap: wrap;
     }
-    
+
     .detail-meta {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .meta-item {
         justify-content: space-between;
         padding: 8px 0;
@@ -2610,38 +2717,38 @@
     .notice-title-section h2 {
         font-size: 24px;
     }
-    
+
     .create-notice-btn {
         width: 100%;
         text-align: center;
     }
-    
+
     .summary-item-notice {
         padding: 15px;
     }
-    
+
     .summary-item-notice .summary-value {
         font-size: 20px;
     }
-    
+
     .detail-title {
         font-size: 20px;
     }
-    
+
     .notice-form-header {
         flex-direction: column;
         gap: 10px;
         text-align: center;
     }
-    
+
     .notice-form-header h2 {
         font-size: 24px;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .btn-cancel,
     .btn-submit {
         width: 100%;
@@ -2716,6 +2823,7 @@
 
 /* ========== 프린트 스타일 ========== */
 @media print {
+
     .notice-header,
     .notice-controls,
     .notice-actions,
@@ -2726,14 +2834,14 @@
     .create-notice-btn {
         display: none;
     }
-    
+
     .notice-table,
     .notice-detail-content,
     .notice-form {
         box-shadow: none;
         border: 1px solid #000;
     }
-    
+
     .notice-row {
         break-inside: avoid;
     }

@@ -6,6 +6,7 @@ import com.petcoin.security.CustomUserDetails;
 import com.petcoin.service.KioskRunService;
 import com.petcoin.service.KioskService;
 import com.petcoin.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import java.util.Map;
  *  - 250905 | sehui | 키오스크 장치 전체/단건 조회 요청 메서드 생성
  *  - 250905 | sehui | 키오스크 장치 등록/수정/삭제 요청 메서드 생성
  *  - 250905 | sehui | 키오스크 실행 세션 전체/단건 조회 요청 메서드 생성
+ *  - 250911 | yukyeong | 키오스크 상태 변경 API 추가 (PUT /{kioskId}/status, 관리자 전용, ONLINE/MAINT/OFFLINE)
  */
 
 @RestController
@@ -210,6 +212,27 @@ public class AdminKioskApiController {
             response.put("errorMessage", e.getMessage());
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+
+    @PutMapping("/{kioskId}/status")
+    public ResponseEntity<?> changeKioskStatus(Authentication auth,
+                                               @PathVariable("kioskId") Long kioskId,
+                                               @Valid @RequestBody StatusUpdateRequest req) {
+
+        if (!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        try {
+            kioskService.updateStatus(kioskId, req.getStatus());
+            return ResponseEntity.noContent().build(); // 204
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("키오스크 상태 변경 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
         }
     }
 }
