@@ -14,6 +14,8 @@
      - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
      - 250901 | leejihye | 포인트 적립 기능 추가
      - 250905 | sehui | 모든 회원의 포인트 잔액 합계 조회 기능 추가
+     - 250912 | sehui | 포인트 내역 추가 기능에 description 추가
+     - 250912 | sehui | 포인트 내역 추가 기능 VALUES 수정 (계산하지 않고, 전달받은 값만 추가)
 -->
 
 <mapper namespace="com.petcoin.mapper.PointHisMapper">
@@ -51,15 +53,15 @@
         LIMIT 1
     </select>
 
-    <!-- 포인트 내역 추가 (환급 시 포인트 차감) -->
+    <!-- 포인트 내역 추가 (환급 시) -->
     <insert id="insertPointHistory">
         INSERT INTO point_history (member_id, point_change, point_balance, action_type, description, created_at)
         VALUES (
                 #{memberId},
-                -#{requestAmount},
-                #{latestPointBalance} - #{requestAmount},
+                #{requestAmount},
+                #{pointBalance},
                 #{actionType},
-                '포인트 환급 신청',
+                #{description},
                 NOW()
         )
     </insert>

@@ -1,5 +1,6 @@
 package com.petcoin.service;
 
+import com.petcoin.constant.ActionType;
 import com.petcoin.domain.PointHistoryVO;
 import com.petcoin.dto.PointHistoryDto;
 import com.petcoin.dto.PointRequestDto;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250828 | sehui | 현재 포인트 잔액 조회 Test
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) Test
  * - 250901 | leejihye | 포인트 적립 기능 Test
+ * - 250912 | sehui | 포인트 내역 추가 - 거부 Test
  */
 
 @SpringBootTest
@@ -59,7 +61,7 @@ class PointHisServiceTest {
     void testGetLatestPoint() {
 
         //given : 회원 ID 설정
-        Long memberId = 1L;
+        Long memberId = 6L;
 
         //when : 현재 포인트 잔액 조회
         int latestPointBalance = pointHisService.getLatestPointBalance(memberId);
@@ -70,23 +72,46 @@ class PointHisServiceTest {
     }
 
     @Test
-    @DisplayName("포인트 차감한 내역 추가")
+    @DisplayName("포인트 차감한 내역 추가 - 승인")
     void testAddPointHistory() {
 
         //given : 사용자가 입력한 값 설정
         PointRequestDto requestDto = PointRequestDto.builder()
-                .memberId(1L)
+                .memberId(3L)
                 .requestAmount(10)
                 .build();
+        ActionType actionType = ActionType.USE;
 
         //when : 포인트 차감 내역 추가
-        int resultAdd = pointHisService.addPointHistory(requestDto);
+        boolean resultAdd = pointHisService.addPointHistory(requestDto, actionType);
 
         //then : 결과 검증
         assertNotNull(resultAdd, "포인트 내역 추가 오류 발생");
         log.info("포인트 내역 추가된 항목의 수 >> {}", resultAdd);
 
-        int latestPointBalance = pointHisService.getLatestPointBalance(1L);
+        int latestPointBalance = pointHisService.getLatestPointBalance(3L);
+        log.info("변경된 포인트 잔액 >> {}", latestPointBalance);
+    }
+
+    @Test
+    @DisplayName("포인트 차감한 내역 추가 - 거부")
+    void testAddPointHistory2() {
+
+        //given : 사용자가 입력한 값 설정
+        PointRequestDto requestDto = PointRequestDto.builder()
+                .memberId(3L)
+                .requestAmount(10)
+                .build();
+        ActionType actionType = ActionType.ADJUST;
+
+        //when : 포인트 차감 내역 추가
+        boolean resultAdd = pointHisService.addPointHistory(requestDto, actionType);
+
+        //then : 결과 검증
+        assertNotNull(resultAdd, "포인트 내역 추가 오류 발생");
+        log.info("포인트 내역 추가된 항목의 수 >> {}", resultAdd);
+
+        int latestPointBalance = pointHisService.getLatestPointBalance(3L);
         log.info("변경된 포인트 잔액 >> {}", latestPointBalance);
     }
 

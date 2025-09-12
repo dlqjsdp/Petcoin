@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250829 | sehui | 목록 조회에서 검색 조건(휴대폰 번호, 요청 처리 상태) Test
  * - 250829 | sehui | 포인트 환급 요청 상태 변경 기능의 매개변수 변경 후 Test
  * - 250903 | leejihye | 포인트 환급 요청 Test
+ * - 250912 | sehui | 포인트 환급 요청 금액 조회 Test
  */
 
 @SpringBootTest
@@ -188,5 +189,24 @@ class PointReqMapperTest {
         pointReqMapper.requestRefund(pointRequestDto);
 
         log.info("<UNK> <UNK> <UNK>: {}", pointRequestDto);
+    }
+
+    @Test
+    @DisplayName("포인트 환급 금액 조회")
+    public void testPendingAmount() {
+
+        //given : 회원 ID 설정
+        Long memberId = 3L;
+
+        //when : 포인트 환급 금액 조회
+        int pendingRefundAmount = pointReqMapper.getPendingRefundAmount(memberId);
+
+        //then : 결과 검증
+        //memberId = 3L의 PENDING 상태 합계가 30p일 것으로 예상
+        int expectedAmount = 30;
+        assertEquals(expectedAmount, pendingRefundAmount, "PENDING 상태 포인트 환급 금액이 올바르게 조회되어야 한다.");
+
+        System.out.println("회원 ID " + memberId + "의 환급 요청 중 포인트: " + pendingRefundAmount + "p");
+
     }
 }

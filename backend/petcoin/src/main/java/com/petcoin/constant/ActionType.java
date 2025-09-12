@@ -12,5 +12,5 @@ package com.petcoin.constant;
 public enum ActionType {
     EARN,   //포인트 지급
     USE,    //포인트 사용(환급 처리)
-    ADJUST  //오류가 발생하여 포인트 조정
+    ADJUST  //오류나 포인트 조정
 }

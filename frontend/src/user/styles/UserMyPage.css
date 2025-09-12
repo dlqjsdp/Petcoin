@@ -359,6 +359,19 @@ section {
     margin-bottom: 40px;
     width: 100%;
 }
+.points-main {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 60px;
+    flex-wrap: wrap;    /* 화면 작아지면 세트가 줄 바꿈되도록 설정 */
+}
+
+.points-main .point-item {
+    display: flex;
+    flex-direction: column;     /* h3 + div 세트는 세로 정렬 */
+    align-items: center;        /* 세트 내용 가운데 정렬 */
+}
 
 .points-main h3 {
     font-size: 18px;

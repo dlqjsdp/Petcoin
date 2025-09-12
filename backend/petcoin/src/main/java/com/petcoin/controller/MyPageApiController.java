@@ -24,6 +24,7 @@ import java.util.Map;
  * @since : 250901
  * @history
  * - 250901 | leejihye | 회원별 포인트 내역 조회 추가
+ * - 250912 | sehui | 포인트 내역 조회 요청 메서드에 환급 요청 중인 포인트 합계, 사용 가능한 포인트 추가
  */
 @RestController
 @RequestMapping("/api/mypage")
@@ -43,11 +44,21 @@ public class MyPageApiController {
         Long memberId = memberPrincipal.memberId();
 
         List<PointHistoryDto> pointHistory = pointHisService.getPointHistoryById(memberId);
+
+        // 현재 포인트 잔액
         int pointBalance = pointHisService.getLatestPointBalance(memberId);
+
+        //환급 요청 중인 포인트 합계
+        int pendingRefund = pointReqService.getPendingRefundAmount(memberId);
+
+        //사용 가능한 포인트
+        int availablePoint = pointBalance - pendingRefund;
 
         Map<String, Object> pointList = new HashMap<>();
         pointList.put("pointHistory", pointHistory);
         pointList.put("lastPointBalance", pointBalance);
+        pointList.put("pendingRefund", pendingRefund);
+        pointList.put("availablePoint", availablePoint);
 
         log.info("pointList: {}", pointList);
 

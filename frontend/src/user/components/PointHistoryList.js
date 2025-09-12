@@ -63,6 +63,7 @@ function PointHistoryList() {
 
     const [pointHistory, setPointHistory] = useState([]);
     const [lastPointBalance, setLastPointBalance] = useState(0);
+    const [pendingRefundPoints, setPendingRefundPoints] = useState(0);
     const [pageInfo, setPageInfo] = useState({ number: 0, totalPages: 0 });
     const [currentPage, setCurrentPage] = useState(0);
 
@@ -96,6 +97,8 @@ function PointHistoryList() {
                 // Spring이 반환하는 구조: { pointHistory: [...], lastPointBalance: ... }
                 setPointHistory(res.data.pointHistory || []);
                 setLastPointBalance(res.data.lastPointBalance || 0);
+                setPendingRefundPoints(res.data.pendingRefund || 0);
+                setAvailablePoints(res.data.availablePoint || 0);
             })
             .catch((err) => {
                 if (err.response && err.response.status === 401) {
@@ -120,9 +123,23 @@ function PointHistoryList() {
             <section className="points-summary">
                 <div className="points-overview-card">
                     <div className="points-main">
-                        <h3>사용 가능한 포인트</h3>
-                        <div className="points-amount">
-                            {(lastPointBalance)}
+                        <div className="point-item">
+                            <h3>전체 포인트</h3>
+                            <div className="points-amount">
+                                {(lastPointBalance)}
+                            </div>
+                        </div>
+                        <div className="point-item">
+                            <h3>환급 요청한 포인트</h3>
+                            <div className="points-amount">
+                                {(pendingRefundPoints)}
+                            </div>
+                        </div>
+                        <div className="point-item">
+                            <h3>사용 가능한 포인트</h3>
+                            <div className="points-amount">
+                                {(availablePoints)}
+                            </div>
                         </div>
                     </div>
                     <div className="points-actions">

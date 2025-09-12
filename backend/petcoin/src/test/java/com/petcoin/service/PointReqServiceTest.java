@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250829 | sehui | 목록 조회에서 검색 조건(휴대폰 번호, 요청 처리 상태) Test
  * - 250829 | sehui | 포인트 환급 요청 상태 변경의 매개변수 변경 후 Test
  * - 250903 | leejihye | 포인트 확급 요청 및 포인트 차감 test
+ * - 250912 | sehui | 포인트 환급 요청 금액 조회 Test
  */
 
 @SpringBootTest
@@ -157,6 +158,24 @@ class PointReqServiceTest {
 
 
         pointReqService.requestRefund(dto);
+    }
+
+    @Test
+    @DisplayName("포인트 환급 요청 금액 조회")
+    void testGetPendingAmount() {
+
+        //given : 회원 ID 설정
+        Long memberId = 3L;
+
+        //when : 포인트 환급 요청 금액 조회
+        int pendingAmount = pointReqService.getPendingRefundAmount(memberId);
+
+        //then : 결과 검증
+        //memberId = 3L의 예상 PENDING 상태 합계
+        int expectedAmount = 30;
+        assertEquals(expectedAmount, pendingAmount);
+
+        log.info("포인트 환급 요청 금액 : {}", pendingAmount);
     }
 
 }
