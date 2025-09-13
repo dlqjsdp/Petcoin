@@ -1868,8 +1868,7 @@
 
 /* 프로필 상세 정보 (등급, 연속 참여일 등) */
 .profile-details {
-    color: #94a3b8;
-    /* 연한 회색 */
+    color: #ffe9b0;
     font-size: 14px;
     font-weight: 400;
     margin: 0;

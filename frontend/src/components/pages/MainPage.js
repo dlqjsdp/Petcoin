@@ -144,7 +144,7 @@ const MainPage = () => {
                       <div className="screen-icon">♻️</div>
                     </div>
                     <div className="screen-text">페트병을 넣어주세요</div>
-                    <div className="screen-points">+50P 적립 예정</div>
+                    <div className="screen-points">+10P 적립 예정</div>
                   </div>
                 </div>
                 <div className="kiosk-slot">

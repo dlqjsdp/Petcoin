@@ -22,6 +22,9 @@
  *   - 250902 | yukyeong | 접근성 보강: label htmlFor ↔ input id, 에러 메시지 role="alert".
  *   - 250902 | yukyeong | 로고 파일 교체: logo-c.png 사용.
  *   - 250903 | heekyung | 회원가입 모달, 연락처 자동, 화면 - 자동 기재 - 추가 코드 작성.
+ *   - 250914 | yukyeong | JWT 역할 기반 라우팅 도입: jwt-decode import 및 routeByRole() 헬퍼 추가
+ *   - 250914 | yukyeong | 로그인/자동가입 성공 시 토큰 저장→axios Authorization 주입→역할별 라우팅(ADMIN→/admin, 그외→/user) 적용
+ *   - 250914 | yukyeong | 중복 네비게이션 방지: routeByRole 호출 후 return 처리, 토큰 미수신 시 에러 메시지 추가
  * 
  */
 
@@ -31,6 +34,7 @@ import logo from "../../img/logo-c.png";
 import { login, normalizePhone } from '../../api/auth'; // 로그인 API 호출 함수, 전화번호 정규화 유틸
 import api from '../../api/axios'; // 공용 axios 인스턴스(헤더 설정용)
 import { useNavigate } from 'react-router-dom'; // 라우팅 이동 훅
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   // 입력값/오류/로딩 상태
@@ -55,6 +59,13 @@ const LoginPage = () => {
     return { ok: Object.keys(newErrors).length === 0, p };
   };
 
+  const routeByRole = (token) => {
+    const decoded = jwtDecode(token);
+    console.log("디코딩된 토큰:", decoded);
+    if (decoded.role === "ADMIN") navigate('/admin', { replace: true });
+    else navigate('/user', { replace: true });
+  };
+
   // 폼 제출 핸들러
   const handleLogin = async (e) => {
     e.preventDefault(); // 기본 제출(페이지 리로드) 방지
@@ -72,20 +83,21 @@ const LoginPage = () => {
         localStorage.setItem('accessToken', token);
         // 2) 이후 모든 요청에 자동으로 인증 헤더 포함
         api.defaults.headers.common.Authorization = `Bearer ${token}`;
-        console.log('발급된 토큰:', localStorage.getItem('accessToken'));
+        routeByRole(token);   // 역할에 따라 이동
+        return;              // 더 내려가지 않게 종료
       }
+      // 토큰이 없을 때만(거의 없음) 안내
+      setErrors({ general: '토큰이 없습니다. 다시 시도해주세요.' });
 
       alert('로그인 성공');
-      // 성공 후 마이페이지로 이동
-      // replace: true → 히스토리 교체(뒤로가기로 로그인 화면 복귀 방지)
-      navigate('/user', { replace: true });
+
     } catch (err) { // 없는 회원이면 자동가입 동의 모달 띄움
-        const status = err?.response?.status;             
-          if (status === 400) {                                     
-            setPendingPhone(p);                         
-            setShowSignupModal(true);                     
-            return;                                        
-          }
+      const status = err?.response?.status;
+      if (status === 400) {
+        setPendingPhone(p);
+        setShowSignupModal(true);
+        return;
+      }
       console.error(err);
       // 전역 에러 배너로 노출
       setErrors({ general: '로그인 실패. 전화번호를 확인해주세요.' });
@@ -95,42 +107,47 @@ const LoginPage = () => {
   };
 
   // 자동가입 실행 핸들러
-    const handleAutoSignup = async () => {                            // 모달의 "동의하고 가입" 클릭 시 실행
-    if (!pendingPhone) return;                              
-    setSignupLoading(true);                               
-    setErrors({});                                       
+  const handleAutoSignup = async () => {                            // 모달의 "동의하고 가입" 클릭 시 실행
+    if (!pendingPhone) return;
+    setSignupLoading(true);
+    setErrors({});
     try {
       const res = await login(pendingPhone, true);                  // 2차 호출: 자동가입 허용으로 재시도(신규 생성 후 토큰 발급)
-      const token = res.data?.accessToken;              
+      const token = res.data?.accessToken;
       if (token) {
         localStorage.setItem('accessToken', token);                 // 토큰을 로컬스토리지에 저장해 새로고침에도 유지
-        api.defaults.headers.common.Authorization = `Bearer ${token}`; 
+        api.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+        setShowSignupModal(false);
+        alert('회원가입 및 로그인 완료!');
+
+        routeByRole(token);   // 역할에 따라 이동
+        return;               // 아래 코드 실행 방지
       }
-      setShowSignupModal(false);                         
-      alert('회원가입 및 로그인 완료!');                          
-      navigate('/user');                                        
+      setErrors({ general: '토큰이 없습니다. 다시 시도해주세요.' });
+
     } catch (e) {
-      console.error(e);                                        
+      console.error(e);
       setErrors({ general: '회원가입 처리에 실패했습니다. 잠시 후 다시 시도해주세요.' });
     } finally {
       setSignupLoading(false);                                      // 로딩 종료
     }
   };
 
-    // 화면 표시용: 한국 휴대폰(10~11자리) 자동 하이픈
-    const formatPhoneKR = (v) => {
-      const d = (v ?? '').replace(/\D/g, '');      // 숫자만
-      if (d.length <= 3) return d;
-      if (d.length <= 6) return `${d.slice(0,3)}-${d.slice(3)}`; // 3-3(또는 3-? 진행중)
-      if (d.length <= 10) return `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`; // 3-3-4 (10자리)
-      return `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7,11)}`; // 3-4-4 (11자리)
-    };
+  // 화면 표시용: 한국 휴대폰(10~11자리) 자동 하이픈
+  const formatPhoneKR = (v) => {
+    const d = (v ?? '').replace(/\D/g, '');      // 숫자만
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`; // 3-3(또는 3-? 진행중)
+    if (d.length <= 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`; // 3-3-4 (10자리)
+    return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7, 11)}`; // 3-4-4 (11자리)
+  };
 
-    const handlePhoneChange = (e) => {
-      const digits = e.target.value.replace(/\D/g, '').slice(0, 11); // 숫자만 최대 11자리
-      setPhone(formatPhoneKR(digits));                               // 화면엔 하이픈 포함 표시
-      if (errors.phone || errors.general) setErrors({});
-    };
+  const handlePhoneChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11); // 숫자만 최대 11자리
+    setPhone(formatPhoneKR(digits));                               // 화면엔 하이픈 포함 표시
+    if (errors.phone || errors.general) setErrors({});
+  };
 
   return (
     <div className="login-page">
@@ -223,35 +240,35 @@ const LoginPage = () => {
         </button>
 
         {/* 회원가입 여부 모달 노출 */}
-        {showSignupModal && (                                   
-          <div className="modal-backdrop">                       
-            <div className="modal-card">                              
-              <h3>회원가입 동의</h3>                               
-              <p className="modal-text">                         
+        {showSignupModal && (
+          <div className="modal-backdrop">
+            <div className="modal-card">
+              <h3>회원가입 동의</h3>
+              <p className="modal-text">
                 <b>{formatPhoneKR(pendingPhone)}</b> 번호로 가입 내역이 없습니다.
                 <br />
                 해당 번호로 회원가입을 진행하시겠어요?
               </p>
 
-              <div className="modal-actions">                   
+              <div className="modal-actions">
                 <button
                   className="btn-outline"
-                  onClick={() => setShowSignupModal(false)}          
-                  disabled={signupLoading}                          
+                  onClick={() => setShowSignupModal(false)}
+                  disabled={signupLoading}
                 >
                   취소
                 </button>
                 <button
-                  className={`btn-primary ${signupLoading ? 'loading' : ''}`} 
-                  onClick={handleAutoSignup}                              
-                  disabled={signupLoading}                                
+                  className={`btn-primary ${signupLoading ? 'loading' : ''}`}
+                  onClick={handleAutoSignup}
+                  disabled={signupLoading}
                 >
-                  {signupLoading ? '처리 중...' : '동의하고 가입'}        
+                  {signupLoading ? '처리 중...' : '동의하고 가입'}
                 </button>
               </div>
-        </div>
-      </div>
-    )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

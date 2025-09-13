@@ -33,7 +33,7 @@ const statusToCss = (s) => {
 
 function DashboardTab({ dashboardStats = {}, kioskData = [], kioskRuns = [] }) {
 
-    // ✅ 특정 키오스크의 "오늘" 병 합계 + 건수만 계산 (로컬 날짜 기준, KST 고려 X: 가장 단순)
+    // 특정 키오스크의 "오늘" 병 합계 + 건수만 계산 (로컬 날짜 기준, KST 고려 X: 가장 단순)
     const getTodayStats = (kiosk) => {
         const id = kiosk.recycleId ?? kiosk.kioskId ?? kiosk.id;
         const today = new Date();

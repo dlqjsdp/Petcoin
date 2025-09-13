@@ -41,6 +41,8 @@
  *   - 250911 | yukyeong | 로그 시간 포맷 수정: 날짜+시간을 한 줄로 표시하도록 locale 옵션 지정
  *   - 250911 | yukyeong | 상태 드롭다운에 OFFLINE(미운영) 옵션 추가 및 statusToCss에 offline 매핑 반영
  *   - 250911 | yukyeong | 미운영 상태 도입: 드롭다운에 OFFLINE(미운영) 옵션 추가, statusToCss에 OFFLINE→'inactive' 매핑
+ *   - 250913 | yukyeong | '오늘: N개 · N건' 표시(대시보드와 통일), 온도/습도/오류 제거
+ *   - 250913 | yukyeong | 수용량을 '현재 기준(currentCount)'으로 표시 및 진행바 반영(OFFLINE 숨김)
  * 
  */
 
@@ -55,10 +57,10 @@ const formatPhone = (p) => {
 };
 
 const statusToCss = (s) =>
-  s === 'ONLINE' ? 'active'
-  : s === 'MAINT' ? 'maintenance'
-  : s === 'OFFLINE' ? 'inactive'   // ← 추가
-  : 'unknown';
+    s === 'ONLINE' ? 'active'
+        : s === 'MAINT' ? 'maintenance'
+            : s === 'OFFLINE' ? 'inactive'   // ← 추가
+                : 'unknown';
 
 const statusLabel = s =>
     s === 'RUNNING' ? '🔄 실행중' :
@@ -88,6 +90,7 @@ const detailsText = (log) => {
 
 function KioskTab({
     kioskData, // 전체 키오스크 목록
+    kioskRuns, // 추가
     selectedKiosk, // 현재 선택된 키오스크 ID ('all' 또는 숫자)
     setSelectedKiosk, // 키오스크 선택 변경 함수
     selectedLogType, // 현재 선택된 로그 상태 (RUNNING/COMPLETED/CANCELLED/all)
@@ -96,6 +99,29 @@ function KioskTab({
     getFilteredLogs, // 선택된 조건에 맞는 로그 목록 반환 함수
     handleKioskStatusChange // 키오스크 상태 변경 처리 함수
 }) {
+    const getTodayStats = (kiosk) => {
+        const id = kiosk.recycleId ?? kiosk.kioskId ?? kiosk.id;
+        const today = new Date();
+        let bottles = 0, sessions = 0;
+
+        for (const r of kioskRuns) {
+            const runId = r.recycleId ?? r.kioskId ?? r.id;
+            if (runId !== id) continue;
+            if (r.status !== 'COMPLETED') continue;
+
+            const ended = new Date(r.endedAt ?? r.ended_at);
+            if (
+                ended.getFullYear() !== today.getFullYear() ||
+                ended.getMonth() !== today.getMonth() ||
+                ended.getDate() !== today.getDate()
+            ) continue;
+
+            bottles += Number(r.total_pet ?? r.totalPet ?? 0) || 0;
+            sessions += 1;
+        }
+        return { bottles, sessions };
+    };
+
     return (
         <div className="kiosk-section">
             {/* 상단: 키오스크 선택 드롭다운 */}
@@ -120,56 +146,73 @@ function KioskTab({
                 <h3>키오스크 상태 관리</h3>
                 <div className="kiosk-status-grid">
                     {/* 선택된 조건에 맞는 키오스크 데이터만 렌더링 */}
-                    {getFilteredKioskData().map(kiosk => (
-                        <div key={kiosk.kioskId} className={`kiosk-status-card ${statusToCss(kiosk.status)}`}>
-                            <div className="status-card-header">
-                                <h4>{kiosk.name}</h4>
-                                {/* 상태 변경 드롭다운 */}
-                                <div className="status-controls">
-                                    <select
-                                        value={kiosk.status}
-                                        onChange={(e) => handleKioskStatusChange(kiosk.kioskId, e.target.value)}
-                                        className="status-select"
-                                    >
-                                        <option value="ONLINE">운영중</option>
-                                        <option value="MAINT">점검중</option>
-                                        <option value="OFFLINE">미운영</option>
-                                    </select>
+                    {getFilteredKioskData().map(kiosk => {
+                        // 대시보드와 동일: 오늘 투입량/건수 집계
+                        const { bottles, sessions } = getTodayStats(kiosk);
+
+                        // 용량은 BE가 없으므로 기본값 사용
+                        const CAPACITY_DEFAULT = 300;
+                        const cap = CAPACITY_DEFAULT;
+
+                        // 오늘 기준 남은 용량/퍼센트
+                        const remain = Math.max(cap - bottles, 0);
+                        const remainPct = cap ? Math.round((remain / cap) * 100) : 0;
+
+                        // 진행바: 오늘 사용률
+                        const usedPct = cap ? Math.min(100, Math.max(0, Math.round((bottles / cap) * 100))) : 0;
+                        const isInactive = kiosk.status === 'OFFLINE';
+                        const fillClass = usedPct < 60 ? 'ok' : usedPct < 85 ? 'warn' : 'crit';
+
+                        return (
+                            <div key={kiosk.kioskId} className={`kiosk-status-card ${statusToCss(kiosk.status)}`}>
+                                <div className="status-card-header">
+                                    <h4>{kiosk.name}</h4>
+                                    {/* 상태 변경 드롭다운 */}
+                                    <div className="status-controls">
+                                        <select
+                                            value={kiosk.status}
+                                            onChange={(e) => handleKioskStatusChange(kiosk.kioskId, e.target.value)}
+                                            className="status-select"
+                                        >
+                                            <option value="ONLINE">운영중</option>
+                                            <option value="MAINT">점검중</option>
+                                            <option value="OFFLINE">미운영</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {/* 키오스크 상세 정보 */}
+                                <div className="status-info">
+                                    <div className="info-row">
+                                        <span>위치:</span>
+                                        <span>{kiosk.location}</span>
+                                    </div>
+                                    {/* 수용량: 오늘 기준 (대시보드와 동일 표기) */}
+                                    <div className="info-row">
+                                        <span>수용량:</span>
+                                        <span>
+                                            {remain}/{cap} ({remainPct}%)
+                                            <small style={{ marginLeft: 6, color: '#94a3b8' }}>오늘 기준</small>
+                                        </span>
+                                    </div>
+
+                                    
+
+                                    {/* 진행바 (OFFLINE 숨김) */}
+                                    {!isInactive && (
+                                        <div className="capacity-bar">
+                                            <div className={`capacity-fill ${fillClass}`} style={{ width: `${usedPct}%` }} />
+                                        </div>
+                                    )}
+
+                                    {/* 오늘 투입량/세션 수 */}
+                                    <div className="info-row">
+                                        <span>오늘:</span>
+                                        <span>{bottles}개 · {sessions}건</span>
+                                    </div>
                                 </div>
                             </div>
-                            {/* 키오스크 상세 정보 */}
-                            <div className="status-info">
-                                <div className="info-row">
-                                    <span>위치:</span>
-                                    <span>{kiosk.location}</span>
-                                </div>
-                                <div className="info-row">
-                                    <span>수용량:</span>
-                                    <span>
-                                        {kiosk.currentCount}/{kiosk.capacity} (
-                                        {/* 퍼센티지 계산: capacity가 0이면 0%로 처리 */}
-                                        {kiosk.capacity ? Math.round((kiosk.currentCount / kiosk.capacity) * 100) : 0}
-                                        %)
-                                    </span>
-                                </div>
-                                <div className="info-row">
-                                    <span>온도:</span>
-                                    <span>{kiosk.temperature}°C</span>
-                                </div>
-                                <div className="info-row">
-                                    <span>습도:</span>
-                                    <span>{kiosk.humidity}%</span>
-                                </div>
-                                <div className="info-row">
-                                    <span>오류 건수:</span>
-                                    {/* 오류 건수가 0보다 크면 빨간색 강조 */}
-                                    <span className={kiosk.errorCount > 0 ? 'error-count' : ''}>
-                                        {kiosk.errorCount}건
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 

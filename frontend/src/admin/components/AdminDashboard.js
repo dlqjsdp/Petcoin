@@ -45,6 +45,10 @@
  *   - 250912 | yukyeong | 대시보드 탭 진입 시 getKioskRuns 로드 추가(오늘 기준 수용량 계산용 로그)
  *   - 250912 | yukyeong | DashboardTab에 kioskRuns 전달
  *   - 250912 | sehui | 포인트 환급 요청 상태 변수와 함수 생성
+ *   - 250912 | yukyeong | DashboardTab에 kioskRuns 전달
+ *   - 250913 | yukyeong | 헤더 로고를 Link로 교체하여 클릭 시 "/"로 이동하도록 수정
+ *   - 250913 | yukyeong | jwtDecode로 토큰에서 role/phone 추출 로직 추가 및 예외 처리
+ *   - 250913 | yukyeong | 관리자명 옆에 마스킹 전화번호 표기(관리자 (010-****-1111)) 및 formatPhone 유틸 추가
  */
 
 import { getKiosks, getKioskRuns, updateKiosk, getTotal, updateKioskStatus } from '../../api/admin.js';
@@ -62,6 +66,17 @@ import KioskTab from '../pages/KioskTab.js';
 import NoticeTab from '../pages/NoticeTab.js';              // 새로 추가
 import '../styles/AdminDashboard.css'; // styles 폴더 위치 확인 필요
 import logo from '../img/logo.png';    // img 폴더 위치 확인 필요
+import { Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+
+const formatPhone = (p) => {
+  const d = String(p ?? "").replace(/\D/g, "");
+  if (d.length < 10) return p ?? "";
+  // 010-****-1111 형태로 마스킹 + 하이픈
+  const mid = d.length === 11 ? d.slice(3, 7) : d.slice(3, 6);
+  const end = d.slice(-4);
+  return `010-${"*".repeat(mid.length)}-${end}`;
+};
 
 function AdminDashboard({ onNavigateToMain }) {
 
@@ -81,6 +96,23 @@ function AdminDashboard({ onNavigateToMain }) {
     // ========== 상태 관리 ==========
     const [currentTime, setCurrentTime] = useState('');
     const [activeTab, setActiveTab] = useState('dashboard');
+
+    const token = localStorage.getItem("accessToken");
+let role = null;
+let phone = null;
+
+if (token) {
+  try {
+    const decoded = jwtDecode(token);
+    role = decoded.role; // ADMIN, USER 등
+    phone = decoded.sub || decoded.phone || null; // 토큰에 저장된 필드명에 맞게 조정
+  } catch (e) {
+    console.error("⚠️ 토큰 디코딩 실패", e);
+  }
+}
+
+// 토큰 디코딩한 phone이 있다고 가정 (없으면 null)
+const phoneText = phone ? formatPhone(phone) : null;
 
     // 실시간 시간 업데이트 (헤더 우측 표시용)
     useEffect(() => {
@@ -330,8 +362,8 @@ function AdminDashboard({ onNavigateToMain }) {
     //포인트 환급 요청 필터링 함수
     const getFilteredRequests = () => {
         return selectedStatus === 'all'
-        ? refundRequests
-        : refundRequests.filter(request => request.requestStatus === selectedStatus)
+            ? refundRequests
+            : refundRequests.filter(request => request.requestStatus === selectedStatus)
     };
 
     // ========== 렌더링 ==========
@@ -343,7 +375,9 @@ function AdminDashboard({ onNavigateToMain }) {
                     {/* 왼쪽: 로고 */}
                     <div className="header-left">
                         <div className="logo">
-                            <img src={logo} alt="PETCoin 로고" className="logo-img" />
+                            <Link to="/">
+                                <img src={logo} alt="PETCoin 로고" className="logo-img" />
+                            </Link>
                         </div>
                     </div>
 
@@ -354,11 +388,13 @@ function AdminDashboard({ onNavigateToMain }) {
                                 👨‍💼
                             </div>
                             <div className="profile-info">
-                                <h1 className="profile-name">관리자</h1>
-                                <p className="profile-details">
-                                    시스템 관리 • {currentTime}
-                                </p>
-                            </div>
+  <h1 className="profile-name">
+    관리자 {phoneText && <span className="phone-text">({phoneText})</span>}
+  </h1>
+  <p className="profile-details">
+    시스템 관리 • {currentTime}
+  </p>
+</div>
                         </div>
                     </div>
                 </div>
@@ -441,6 +477,7 @@ function AdminDashboard({ onNavigateToMain }) {
                 {activeTab === 'kiosk' && (
                     <KioskTab
                         kioskData={kioskData}
+                        kioskRuns={kioskLogs} // 추가
                         selectedKiosk={selectedKiosk}
                         setSelectedKiosk={setSelectedKiosk}
                         selectedLogType={selectedLogType}
