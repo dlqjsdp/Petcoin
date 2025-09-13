@@ -77,9 +77,10 @@ class PointHisMapperTest {
         int requestAmount = 10;
         ActionType actionType = ActionType.USE;
         int latestPointBalance = 50;
+        String description = "포인트 환급 승인";
 
         //when : 포인트 차감 내역 추가
-        int result = pointHisMapper.insertPointHistory(memberId, requestAmount, latestPointBalance, actionType);
+        int result = pointHisMapper.insertPointHistory(memberId, requestAmount, latestPointBalance, actionType, description);
 
         //then : 결과 검증
         assertEquals(result, 1, "포인트 차감 내역이 1개 추가되어야 합니다.");

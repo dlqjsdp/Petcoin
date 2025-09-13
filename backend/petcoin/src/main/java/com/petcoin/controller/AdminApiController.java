@@ -1,9 +1,8 @@
 package com.petcoin.controller;
 
+import com.petcoin.constant.ActionType;
 import com.petcoin.constant.RequestStatus;
-import com.petcoin.constant.Role;
 import com.petcoin.dto.*;
-import com.petcoin.security.CustomUserDetails;
 import com.petcoin.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +33,7 @@ import java.util.Map;
  *  - 250905 | sehui | 관리자 권한 메서드 생성하여 코드 중복 방지
  *  - 250909 | sehui | 대시보드 조회 요청 메서드 생성
  *  - 250910 | sehui | 포인트 환급 처리 요청 메서드 잔액 차감과 관계없이 상태 변경되도록 수정
+ *  - 250912 | sehui | 포인트 환급 처리 요청 거부 시 거부한 기록 추가
  */
 
 @RestController
@@ -178,13 +178,18 @@ public class AdminApiController {
 
             boolean pointDeducted = false;
 
-            //2. 포인트 잔액 조회 후 포인트 차감 시도
+            //2. 상태별 처리
             if(RequestStatus.APPROVED.equals(pointRequestDto.getRequestStatus())) {
-                pointDeducted = pointHisService.addPointHistory(pointReqDto);
+                //승인일 경우 -> 포인트 차감 시도
+                pointDeducted = pointHisService.addPointHistory(pointReqDto, ActionType.USE);
 
                 if(!pointDeducted) {
                     response.put("errorMessage", "포인트 잔액 부족으로 차감 실패, 상태만 변경됨");
                 }
+            }else if(RequestStatus.REJECTED.equals(pointRequestDto.getRequestStatus())) {
+                //거부일 경우 -> 포인트 차감 X, 상태 변경 후 기록만 추가
+                pointHisService.addPointHistory(pointReqDto, ActionType.ADJUST);
+                response.put("message", "환급 요청 거부 처리 완료 (포인트 차감 없음)");
             }
 
             //3. 환급 요청 상태 변경
@@ -194,7 +199,8 @@ public class AdminApiController {
                 response.put("errorMessage", "환급 요청 상태 변경에 실패");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
-
+            
+            //4. 공통 응답
             response.put("message", "환급 요청 처리 완료");
             response.put("pointDeducted", pointDeducted);   //프론트에서 포인트 차감 여부 확인용
 

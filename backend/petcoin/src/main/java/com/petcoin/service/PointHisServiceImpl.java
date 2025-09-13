@@ -1,6 +1,7 @@
 package com.petcoin.service;
 
 import com.petcoin.constant.ActionType;
+import com.petcoin.constant.RequestStatus;
 import com.petcoin.domain.PointHistoryVO;
 import com.petcoin.dto.PointHistoryDto;
 import com.petcoin.dto.PointRequestDto;
@@ -9,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /*
@@ -24,6 +25,9 @@ import java.util.stream.Collectors;
  * - 250828 | sehui | 포인트 내역 추가 (환급 시 포인트 차감) 기능 추가
  * - 250901 | leejihye | 포인트 적립 기능 추가
  * - 250910 | sehui | 포인트 내역 추가 메서드의 반환타입 boolean으로 변경
+ * - 250912 | sehui | 포인트 내역 추가 메서드에 거부 시 기록만 추가하도록 수정
+ * - 250912 | sehui | 포인트 내역 추가 메서드에 description 변수 추가
+ * - 250912 | sehui | 포인트 내역 추가 메서드에 계산 로직 추가
  */
 
 @Service
@@ -77,23 +81,42 @@ public class PointHisServiceImpl implements PointHisService {
         return latestPointBalance;
     }
 
-    //포인트 내역 추가 (환급 시 포인트 차감)
+    //포인트 내역 추가 (환급 시)
     @Override
-    public boolean addPointHistory(PointRequestDto pointRequestDto) {
+    public boolean addPointHistory(PointRequestDto pointRequestDto, ActionType actionType) {
 
         Long memberId = pointRequestDto.getMemberId();
         int requestAmount = pointRequestDto.getRequestAmount();
+        String description = "";
 
-        //현재 포인트 잔액 조회
-        int latestPointBalance = getLatestPointBalance(memberId);
+        //승인 시 포인트 차감
+        if(actionType == ActionType.USE) {
+            //현재 포인트 잔액 조회
+            int latestPointBalance = getLatestPointBalance(memberId);
 
-        //잔액이 부족한 경우
-        if(latestPointBalance < requestAmount){
-            return false;
+            //잔액이 부족한 경우
+            if(latestPointBalance < requestAmount){
+                return false;
+            }
+
+            //포인트 차감한 내역 DB에 추가
+            pointHisMapper.insertPointHistory(
+                    memberId,
+                    -requestAmount,
+                    latestPointBalance-requestAmount,
+                    ActionType.USE,
+                    "포인트 환급 승인");
+        }else if(actionType == ActionType.ADJUST) {
+            //거부 시 기록만 추가
+            int latestPointBalance = getLatestPointBalance(memberId);
+
+            pointHisMapper.insertPointHistory(
+                    memberId,
+                    +requestAmount,
+                    latestPointBalance,
+                    ActionType.ADJUST,
+                    "포인트 환급 거부");
         }
-
-        //포인트 차감한 내역 DB에 추가
-        pointHisMapper.insertPointHistory(memberId, requestAmount, latestPointBalance, ActionType.USE);
 
         return true;
     }

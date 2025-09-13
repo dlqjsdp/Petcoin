@@ -11,9 +11,10 @@ import React from 'react';
  *   - 250910 | sehui | 환급 요청 목록에서 보여줄 값 <span> 추가
  *   - 250910 | sehui | 요청 일시 정렬 변경(요일, 시간 다른 줄로 표시)
  *   - 250910 | sehui | 환급 요청 통계 css를 위해 <span> 클래스명 구분
+ *   - 250912 | sehui | 환급 요청 상태에 따라 필터링된 목록 표시 추가
  */
 
-function PointsTab({ refundRequests, pageInfo, handleRefundProcess }) {
+function PointsTab({ refundRequests, pageInfo, handleRefundProcess, selectedStatus, setSelectedStatus, getFilteredRequests }) {
     return (
         <div className="points-section">
             <h2>포인트 환급 관리</h2>
@@ -43,14 +44,21 @@ function PointsTab({ refundRequests, pageInfo, handleRefundProcess }) {
                 <div className="board-header">
                     <h3>환급 요청 목록</h3>
                     <div className="board-controls">
-                        <select className="status-filter">
+                        <select className="status-filter"
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
+                        >
                             <option value="all">전체</option>
                             <option value="PENDING">대기중</option>
                             <option value="APPROVED">승인 완료</option>
                             <option value="COMPLETED">환급 완료</option>
                             <option value="REJECTED">거부</option>
                         </select>
-                        <button className="refresh-btn">새로고침</button>
+                        <button className="refresh-btn"
+                                onClick={() => setSelectedStatus('all')}
+                        >
+                            새로고침
+                        </button>
                     </div>
                 </div>
 
@@ -68,7 +76,7 @@ function PointsTab({ refundRequests, pageInfo, handleRefundProcess }) {
                     </div>
 
                     <div className="board-table-body">
-                        {refundRequests.map((request, index) => (
+                        {getFilteredRequests().map((request, index) => (
                             <div key={request.requestId} className={`board-row point-request ${request.requestStatus}`}>
                                 <span className="col-no">{refundRequests.length - index}</span>
                                 <span className="col-member">

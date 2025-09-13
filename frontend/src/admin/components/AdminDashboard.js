@@ -44,13 +44,14 @@
  *   - 250911 | yukyeong | 키오스크 상태 OFFLINE(미운영) 지원: handleKioskStatusChange가 'OFFLINE' 값도 그대로 서버에 전달/롤백하도록 허용(로컬 상태 업데이트 포함)
  *   - 250912 | yukyeong | 대시보드 탭 진입 시 getKioskRuns 로드 추가(오늘 기준 수용량 계산용 로그)
  *   - 250912 | yukyeong | DashboardTab에 kioskRuns 전달
+ *   - 250912 | sehui | 포인트 환급 요청 상태 변수와 함수 생성
  */
 
 import { getKiosks, getKioskRuns, updateKiosk, getTotal, updateKioskStatus } from '../../api/admin.js';
 import { getAllMembers, getMemberDetail } from '../../api/admin.js';
 import { getPointRequests, getPointRequestById, processPointRequest } from '../../api/admin.js';
 import { getRecycleStats } from '../../api/admin.js';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 // AdminDashboard.js에서
 import DashboardTab from '../pages/DashboardTab.js';       // admin/pages/에서 가져옴
@@ -74,6 +75,7 @@ function AdminDashboard({ onNavigateToMain }) {
     const [dashboardStats, setDashboardStats] = useState([]);   //대시보드 통계 데이터 (REQ-001)
     const [pageInfo, setPageInfo] = useState([]);       //페이지 정보
     const [recycleStats, setRecycleStats] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState('all');        //포인트 환급 요청 상태
 
 
     // ========== 상태 관리 ==========
@@ -325,6 +327,13 @@ function AdminDashboard({ onNavigateToMain }) {
             : recycleStats.filter(kiosk => kiosk.recycleId === Number(selectedKiosk));
     };
 
+    //포인트 환급 요청 필터링 함수
+    const getFilteredRequests = () => {
+        return selectedStatus === 'all'
+        ? refundRequests
+        : refundRequests.filter(request => request.requestStatus === selectedStatus)
+    };
+
     // ========== 렌더링 ==========
     return (
         <div className="admin-dashboard">
@@ -423,6 +432,9 @@ function AdminDashboard({ onNavigateToMain }) {
                         refundRequests={refundRequests}
                         pageInfo={pageInfo}
                         handleRefundProcess={handleRefundProcess}
+                        selectedStatus={selectedStatus}
+                        setSelectedStatus={setSelectedStatus}
+                        getFilteredRequests={getFilteredRequests}
                     />
                 )}
 
