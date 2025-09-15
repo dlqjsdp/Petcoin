@@ -49,11 +49,14 @@
  *   - 250913 | yukyeong | 헤더 로고를 Link로 교체하여 클릭 시 "/"로 이동하도록 수정
  *   - 250913 | yukyeong | jwtDecode로 토큰에서 role/phone 추출 로직 추가 및 예외 처리
  *   - 250913 | yukyeong | 관리자명 옆에 마스킹 전화번호 표기(관리자 (010-****-1111)) 및 formatPhone 유틸 추가
+ *   - 250915 | sehui | 페이지네이션 정보 객체(pageInfo)를 API마다 별도의 state로 사용하도록 수정
+ *   - 250915 | sehui | 포인트 환급 요청 전체 데이터 상태 변수와 페이지네이션 핸들러 함수 생성
+ *   - 250915 | sehui | 전체 회원 정보 상태 변수와 페이지네이션 핸들러 함수 생성
  */
 
 import { getKiosks, getKioskRuns, updateKiosk, getTotal, updateKioskStatus } from '../../api/admin.js';
-import { getAllMembers, getMemberDetail } from '../../api/admin.js';
-import { getPointRequests, getPointRequestById, processPointRequest } from '../../api/admin.js';
+import { getAllMembers, getMemberDetail, getMemberAllList } from '../../api/admin.js';
+import { getPointRequests, getPointRequestById, processPointRequest, getPointAllList } from '../../api/admin.js';
 import { getRecycleStats } from '../../api/admin.js';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -63,7 +66,6 @@ import CollectionHistoryTab from '../pages/CollectionHistoryTab.js';
 import UserManagementTab from '../pages/UserManagementTab.js';
 import PointsTab from '../pages/PointsTab.js';
 import KioskTab from '../pages/KioskTab.js';
-import NoticeTab from '../pages/NoticeTab.js';              // 새로 추가
 import '../styles/AdminDashboard.css'; // styles 폴더 위치 확인 필요
 import logo from '../img/logo.png';    // img 폴더 위치 확인 필요
 import { Link } from 'react-router-dom';
@@ -88,9 +90,12 @@ function AdminDashboard({ onNavigateToMain }) {
     const [memberData, setMemberData] = useState([]);   //회원 관리 데이터 (REQ-003)
     const [refundRequests, setRefundRequests] = useState([]);       //포인트 환급 요청 데이터 (REQ-004, REQ-005)
     const [dashboardStats, setDashboardStats] = useState([]);   //대시보드 통계 데이터 (REQ-001)
-    const [pageInfo, setPageInfo] = useState([]);       //페이지 정보
     const [recycleStats, setRecycleStats] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState('all');        //포인트 환급 요청 상태
+    const [memberPageInfo, setMemberPageInfo] = useState({});           //회원 목록용 페이지 정보
+    const [refundPageInfo, setRefundPageInfo] = useState({});            //포인트 환급 목록용 페이지 정보
+    const [allRefundRequests, setAllRefundRequests] = useState([]);             //포인트 환급 요청 전체 데이터
+    const [allMemberData, setAllMemberData] = useState([]);         //전체 회원 정보 데이터
 
 
     // ========== 상태 관리 ==========
@@ -98,18 +103,18 @@ function AdminDashboard({ onNavigateToMain }) {
     const [activeTab, setActiveTab] = useState('dashboard');
 
     const token = localStorage.getItem("accessToken");
-let role = null;
-let phone = null;
+    let role = null;
+    let phone = null;
 
-if (token) {
-  try {
-    const decoded = jwtDecode(token);
-    role = decoded.role; // ADMIN, USER 등
-    phone = decoded.sub || decoded.phone || null; // 토큰에 저장된 필드명에 맞게 조정
-  } catch (e) {
-    console.error("⚠️ 토큰 디코딩 실패", e);
-  }
-}
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            role = decoded.role; // ADMIN, USER 등
+            phone = decoded.sub || decoded.phone || null; // 토큰에 저장된 필드명에 맞게 조정
+        } catch (e) {
+            console.error("⚠️ 토큰 디코딩 실패", e);
+        }
+    }
 
 // 토큰 디코딩한 phone이 있다고 가정 (없으면 null)
 const phoneText = phone ? formatPhone(phone) : null;
@@ -178,30 +183,59 @@ const phoneText = phone ? formatPhone(phone) : null;
     }, [activeTab, selectedKiosk, selectedLogType]);
 
     //전체 회원 목록 조회
-    useEffect(() => {
-        const params = { pageNum: 1, amount: 10 };
-
-        getAllMembers(params)
+    const fetchMembers = (pageNum = 1) => {
+        //1. 페이지별 데이터 조회
+        getAllMembers({ pageNum, amount: 6 })
             .then(res => {
-                console.log("👤 회원 목록 조회");
+                console.log("👤 회원 목록 조회 (페이지)");
 
                 setMemberData(res.data.memberList || []);
-                setPageInfo(res.data.pageInfo);
+                setMemberPageInfo(res.data.pageInfo);   
+
+                //2. 전체 데이터 조회 (첫 페이지 로드 시)
+                if(allMemberData.length === 0) {
+                    getMemberAllList()
+                        .then(res => {
+                            console.log("👤 전체 회원 정보 데이터 조회");
+
+                            setAllMemberData(res.data.memberAllList || []);
+                        })
+                        .catch(err => console.error("⚠️ 전체 회원 정보 데이터 조회 실패", err));
+                }
             })
-            .catch(err => console.error("⚠️ 회원 목록 조회 실패", err))
+            .catch(err => console.error("⚠️ 페이지별 회원 정보 데이터 조회 실패", err));
+    };
+
+    useEffect(() => {
+        fetchMembers(); // 초기 1페이지 조회
     }, []);
 
     //환급 요청 목록 조회
-    useEffect(() => {
-        const params = { pageNum: 1, amount: 10 };
-
-        getPointRequests(params)
+    const fetchRefunds = (pageNum = 1) => {
+        //1. 페이지별 데이터 조회
+        getPointRequests({ pageNum, amount: 6 })
             .then(res => {
-                console.log("💰 포인트 환급 요청 목록 조회");
+                console.log("💰 포인트 환급 요청 목록 조회 (페이지)");
 
-                setRefundRequests(res.data.pointReqList || [])
+                setRefundRequests(res.data.pointReqList || []);
+                setRefundPageInfo(res.data.pageInfo);
+                
+                //2. 전체 데이터 조회 (첫 페이지 로드 시)
+                if(allRefundRequests.length === 0){
+                    getPointAllList()
+                        .then(allRes => {
+                            console.log("💰 포인트 환급 요청 전체 데이터 조회");
+
+                            setAllRefundRequests(allRes.data.pointAllList || []);
+                        })
+                        .catch(err => console.error("⚠️ 포인트 환급 요청 전체 데이터 조회 실패", err));
+                }
             })
-            .catch(err => console.error("⚠️ 포인트 환급 요청 목록 조회 실패", err));
+            .catch(err => console.error("⚠️ 페이지별 포인트 환급 요청 목록 조회 실패", err));
+    };
+
+    useEffect(() => {
+        fetchRefunds();         //초기 1페이지 조회
     }, []);
 
     //대시보드 통계 조회
@@ -333,6 +367,40 @@ const phoneText = phone ? formatPhone(phone) : null;
         }
     };
 
+    // ========== 페이지네이션 핸들러 ==========
+
+    /**
+     * 회원 관리 페이지
+     */
+    const handleMemberPageChange = (direction) => {
+        if(!memberPageInfo || !memberPageInfo.cri) return;
+
+        const currentPage = memberPageInfo.cri.pageNum;
+        let newPage = currentPage;
+
+        if(direction === 'prev' && memberPageInfo.prevPage) newPage = currentPage - 1;
+        if(direction === 'next' && memberPageInfo.nextPage) newPage = currentPage + 1;
+
+        if(newPage !== currentPage) fetchMembers(newPage);
+    };
+
+    /**
+     * 포인트 관리 페이지
+     */
+    const handleRefundPageChange  = (direction) => {
+        if(!refundPageInfo || !refundPageInfo.cri) return;
+
+        const currentPage = refundPageInfo.cri.pageNum;
+        let newPage = currentPage;
+
+        if(direction === 'prev' && refundPageInfo.prevPage) newPage = currentPage - 1;
+        if(direction === 'next' && refundPageInfo.nextPage) newPage = currentPage + 1;
+
+        if(newPage !== currentPage) fetchRefunds(newPage);
+
+    };
+
+
     // ========== 필터링 함수들 ==========
     const getFilteredKioskData = () => {
         return selectedKiosk === 'all'
@@ -363,7 +431,7 @@ const phoneText = phone ? formatPhone(phone) : null;
     const getFilteredRequests = () => {
         return selectedStatus === 'all'
             ? refundRequests
-            : refundRequests.filter(request => request.requestStatus === selectedStatus)
+            : refundRequests.filter(r => r.requestStatus === selectedStatus);
     };
 
     // ========== 렌더링 ==========
@@ -388,13 +456,13 @@ const phoneText = phone ? formatPhone(phone) : null;
                                 👨‍💼
                             </div>
                             <div className="profile-info">
-  <h1 className="profile-name">
-    관리자 {phoneText && <span className="phone-text">({phoneText})</span>}
-  </h1>
-  <p className="profile-details">
-    시스템 관리 • {currentTime}
-  </p>
-</div>
+                                <h1 className="profile-name">
+                                    관리자 {phoneText && <span className="phone-text">({phoneText})</span>}
+                                </h1>
+                                <p className="profile-details">
+                                    시스템 관리 • {currentTime}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -459,18 +527,23 @@ const phoneText = phone ? formatPhone(phone) : null;
                 {activeTab === 'members' && (
                     <UserManagementTab
                         memberData={memberData}
+                        allMemberData={allMemberData}
+                        pageInfo={memberPageInfo}
                         handleMemberStatusChange={handleMemberStatusChange}
+                        onPageChange={handleMemberPageChange}
                     />
                 )}
 
                 {activeTab === 'points' && (
                     <PointsTab
                         refundRequests={refundRequests}
-                        pageInfo={pageInfo}
+                        allRefundRequests={allRefundRequests}
+                        pageInfo={refundPageInfo}
                         handleRefundProcess={handleRefundProcess}
                         selectedStatus={selectedStatus}
                         setSelectedStatus={setSelectedStatus}
                         getFilteredRequests={getFilteredRequests}
+                        onPageChange={handleRefundPageChange}
                     />
                 )}
 

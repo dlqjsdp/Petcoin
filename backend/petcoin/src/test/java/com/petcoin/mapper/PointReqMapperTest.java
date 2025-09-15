@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250829 | sehui | 포인트 환급 요청 상태 변경 기능의 매개변수 변경 후 Test
  * - 250903 | leejihye | 포인트 환급 요청 Test
  * - 250912 | sehui | 포인트 환급 요청 금액 조회 Test
+ * - 250915 | sehui | 포인트 환급 요청 전체 조회 Test
  */
 
 @SpringBootTest
@@ -208,5 +209,19 @@ class PointReqMapperTest {
 
         System.out.println("회원 ID " + memberId + "의 환급 요청 중 포인트: " + pendingRefundAmount + "p");
 
+    }
+    
+    @Test
+    @DisplayName("포인트 환급 요청 전체 조회")
+    public void testRequestList() {
+
+        //when : 포인트 환급 요청 전체 조회
+        List<PointRequestDto> requestDtoList = pointReqMapper.findpointRequestList();
+
+        //then : 결과 검증
+        assertNotNull(requestDtoList);
+        requestDtoList.stream().forEach(pointRequestDto -> {
+            log.info("포인트 환급 요청 전체 조회 >> {}", pointRequestDto);
+        });
     }
 }

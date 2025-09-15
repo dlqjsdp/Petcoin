@@ -21,7 +21,8 @@ public class PageDto {
 
     private int startPage;          //시작 페이지 번호
     private int endPage;            //끝 페이지 번호
-    private boolean prev, next;     //이전/다음 페이지 블록 존재 여부
+    private boolean prevBlock, nextBlock;     //이전/다음 페이지 존재 여부
+    private boolean prevPage, nextPage;     //이전/다음 블록 존재 여부
     private int total;              //전체 데이터 개수
     private Criteria cri;           //페이징 정보 (pageNum, amount)
     private KioskCriteria kcri;     //키오스크 페이징 정보(pageNum, amount)
@@ -57,12 +58,17 @@ public class PageDto {
         //전체 데이터 수를 사용하여 실제 마지막 페이지 번호 계산
         int realEnd = (int)(Math.ceil((total * 1.0) / amount));
 
+        //블록 끝 페이지가 실제 마지막 페이지보다 클 경우
         if (realEnd  < this.endPage) {
             this.endPage = realEnd;
         }
 
         //이전/다음 페이지 블록 존재 여부
-        this.prev = this.startPage > 1;
-        this.next = this.endPage < realEnd;
+        this.prevBlock = this.startPage > 1;
+        this.nextBlock = this.endPage < realEnd;
+
+        //페이지 단위 prev/next
+        this.prevPage = pageNum > 1;
+        this.nextPage = pageNum < realEnd;
     }
 }
