@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250829 | sehui | 포인트 환급 요청 상태 변경의 매개변수 변경 후 Test
  * - 250903 | leejihye | 포인트 확급 요청 및 포인트 차감 test
  * - 250912 | sehui | 포인트 환급 요청 금액 조회 Test
+ * - 250915 | sehui | 포인트 환급 요청 전체 데이터 조회 Test
  */
 
 @SpringBootTest
@@ -176,6 +179,20 @@ class PointReqServiceTest {
         assertEquals(expectedAmount, pendingAmount);
 
         log.info("포인트 환급 요청 금액 : {}", pendingAmount);
+    }
+
+    @Test
+    @DisplayName("포인트 환급 요청 전체 데이터 조회")
+    void testRequestsCount(){
+
+        //when : 포인트 환급 요청 상태별 통계 조회
+        List<PointRequestDto> pointRequestDtoList = pointReqService.getPointRequestList();
+
+        //then : 결과 검증
+        assertNotNull(pointRequestDtoList);
+        pointRequestDtoList.stream().forEach(pointRequestDto -> {
+            log.info("포인트 환급 요청 전체 조회 : {}", pointRequestDto);
+        });
     }
 
 }

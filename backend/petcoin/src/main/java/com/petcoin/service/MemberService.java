@@ -10,6 +10,7 @@ package com.petcoin.service;
  * - 250827 | sehui | 전체 회원 조회 기능 추가
  * - 250827 | sehui | 회원 정보 단건 조회 기능 추가
  * - 250829 | sehui | 페이징 처리를 위한 전체 회원 수 조회 기능 추가
+ * - 250915 | sehui | 전체 회원 정보 데이터 조회 기능 추가 (페이징 처리 없는 통계용)
  */
 
 import com.petcoin.domain.MemberVO;
@@ -28,11 +29,14 @@ public interface MemberService {
     public MemberVO registerMember(String phone);
 
     //전체 회원 조회
-    public List<MemberListDto> getMemberList(Criteria cri);
+    public List<MemberListDto> getMemberListWithPaging(Criteria cri);
 
     //회원 정보 단건 조회
     public MemberDetailDto getMemberById(Long memberId);
 
     //전체 회원 수 조회
     public int getTotalMember();
+
+    //전체 회원 정보 조회 (페이징 처리 없는 단순 조회)
+    public List<MemberListDto> getMemberList();
 }

@@ -8,10 +8,12 @@ import React from 'react';
  * @since   : 250909
  * @history
  *   - 250909 | sehui | Controller에서 넘겨주는 DTO 값에 맞게 <span> 값 변경
+ *   - 250915 | sehui | 페이지네이션 코드 수정
+ *   - 250915 | sehui | 회원 통계 전체 데이터(allMemberData)으로 변경
  */
 
 
-function UserManagementTab({ memberData, pageInfo, handleMemberStatusChange }) {
+function UserManagementTab({ memberData, allMemberData, pageInfo, handleMemberStatusChange, onPageChange }) {
 
     return (
         <div className="members-section">
@@ -20,15 +22,15 @@ function UserManagementTab({ memberData, pageInfo, handleMemberStatusChange }) {
             <div className="members-summary">
                 <div className="summary-item">
                     <span className="summary-label">전체 회원</span>
-                    <span className="summary-value totalMember">{memberData.length}명</span>
+                    <span className="summary-value totalMember">{allMemberData.length}명</span>
                 </div>
                 <div className="summary-item">
                     <span className="summary-label">활성 회원</span>
-                    <span className="summary-value activeMember">{memberData.filter(m => m.status === 'active').length}명</span>
+                    <span className="summary-value activeMember">{allMemberData.filter(m => m.status === 'active').length}명</span>
                 </div>
                 <div className="summary-item">
                     <span className="summary-label">총 보유 포인트</span>
-                    <span className="summary-value totalPoints">{memberData.reduce((sum, m) => sum + m.currentPoint, 0)}P</span>
+                    <span className="summary-value totalPoints">{allMemberData.reduce((sum, m) => sum + m.currentPoint, 0)}P</span>
                 </div>
             </div>
 
@@ -72,13 +74,21 @@ function UserManagementTab({ memberData, pageInfo, handleMemberStatusChange }) {
                 
                 {/* 페이지네이션 */}
                 <div className="board-pagination">
-                    <button className="page-btn" disabled={!pageInfo?.prev}>이전</button>
+                    <button className="page-btn" 
+                            disabled={!pageInfo?.prevPage}
+                            onClick={() => onPageChange('prev')}
+                    >
+                        이전
+                    </button>
                         <span className="page-info">
-                            {pageInfo 
-                            ? `${pageInfo.pageNum} / ${Math.ceil(pageInfo.total / pageInfo.amount)}`
-                            : "1 / 1"}
+                            {`${pageInfo?.cri?.pageNum || 1} / ${Math.ceil((pageInfo?.total || 1) / (pageInfo?.cri?.amount || 10))}`}
                         </span>
-                    <button className="page-btn" disabled={!pageInfo?.next}>다음</button>
+                    <button className="page-btn" 
+                            disabled={!pageInfo?.nextPage}
+                            onClick={() => onPageChange('next')}
+                    >
+                        다음
+                    </button>
                 </div>
             </div>
         </div>

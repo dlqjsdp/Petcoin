@@ -12,9 +12,11 @@ import React from 'react';
  *   - 250910 | sehui | 요청 일시 정렬 변경(요일, 시간 다른 줄로 표시)
  *   - 250910 | sehui | 환급 요청 통계 css를 위해 <span> 클래스명 구분
  *   - 250912 | sehui | 환급 요청 상태에 따라 필터링된 목록 표시 추가
+ *   - 250915 | sehui | 페이지네이션 코드 수정
+ *   - 250915 | sehui | 환급 요청 통계 전체 데이터(allRefundRequests)으로 변경
  */
 
-function PointsTab({ refundRequests, pageInfo, handleRefundProcess, selectedStatus, setSelectedStatus, getFilteredRequests }) {
+function PointsTab({ refundRequests, allRefundRequests, pageInfo, handleRefundProcess, selectedStatus, setSelectedStatus, getFilteredRequests, onPageChange }) {
     return (
         <div className="points-section">
             <h2>포인트 환급 관리</h2>
@@ -23,19 +25,19 @@ function PointsTab({ refundRequests, pageInfo, handleRefundProcess, selectedStat
             <div className="refund-summary-board">
                 <div className="summary-item-board">
                     <span className="summary-label">대기중</span>
-                    <span className="summary-value pending">{refundRequests.filter(r => r.requestStatus === 'PENDING').length}건</span>
+                    <span className="summary-value pending">{allRefundRequests.filter(r => r.requestStatus === 'PENDING').length}건</span>
                 </div>
                 <div className="summary-item-board">
                     <span className="summary-label">승인 완료</span>
-                    <span className="summary-value approved">{refundRequests.filter(r => r.requestStatus === 'APPROVED').length}건</span>
+                    <span className="summary-value approved">{allRefundRequests.filter(r => r.requestStatus === 'APPROVED').length}건</span>
                 </div>
                 <div className="summary-item-board">
                     <span className="summary-label">환급 완료</span>
-                    <span className="summary-value completed">{refundRequests.filter(r => r.requestStatus === 'COMPLETED').length}건</span>
+                    <span className="summary-value completed">{allRefundRequests.filter(r => r.requestStatus === 'COMPLETED').length}건</span>
                 </div>
                 <div className="summary-item-board">
                     <span className="summary-label">거부</span>
-                    <span className="summary-value rejected">{refundRequests.filter(r => r.requestStatus === 'REJECTED').length}건</span>
+                    <span className="summary-value rejected">{allRefundRequests.filter(r => r.requestStatus === 'REJECTED').length}건</span>
                 </div>
             </div>
 
@@ -158,19 +160,28 @@ function PointsTab({ refundRequests, pageInfo, handleRefundProcess, selectedStat
                                 </span>
                             </div>
                         ))}
+                        {/* 페이지네이션 */}
+                        <div className="board-pagination">
+                            <button className="page-btn" 
+                                    disabled={!pageInfo?.prevPage}
+                                    onClick={() => onPageChange('prev')}
+                            >
+                                이전
+                            </button>
+                                <span className="page-info">
+                                    {`${pageInfo?.cri?.pageNum || 1} / ${Math.ceil((pageInfo?.total || 1) / (pageInfo?.cri?.amount || 10))}`}
+                                </span>
+                            <button className="page-btn" 
+                                    disabled={!pageInfo?.nextPage}
+                                    onClick={() => onPageChange('next')}
+                            >
+                                다음
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* 페이지네이션 */}
-                <div className="board-pagination">
-                    <button className="page-btn" disabled={!pageInfo?.prev}>이전</button>
-                        <span className="page-info">
-                            {pageInfo 
-                            ? `${pageInfo.pageNum} / ${Math.ceil(pageInfo.total / pageInfo.amount)}`
-                            : "1 / 1"}
-                        </span>
-                    <button className="page-btn" disabled={!pageInfo?.next}>다음</button>
-                </div>
+                
             </div>
 
             {/* 환급 처리 내역 */}
