@@ -29,6 +29,8 @@
  *   - 250905 | sehui | 대시보드용 총 수거량 조회 추가
  *   - 250905 | yukyeong | cancelRun 쿼리 단순화: status='CANCELLED', ended_at=현재시간만 업데이트 (포인트/총수량 연산 제거)
  *   - 250909 | yukyeong | SQL 별칭 정합성: kioskRunWhere와 목록/카운트 쿼리에 kr. 접두사 적용, ORDER BY를 kr.started_at로 수정
+ *   - 250915 | yukyeong | status='' 입력 시 조건 제외하도록 보강 (쿼리 안정성)
+ *   - 250915 | yukyeong | kioskRunWhere 조건 보강 수정: status != '' 제거 → Enum 비교 오류(취소/완료 조회 시 500) 해결
 -->
 
 

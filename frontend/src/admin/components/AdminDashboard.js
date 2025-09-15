@@ -49,6 +49,11 @@
  *   - 250913 | yukyeong | 헤더 로고를 Link로 교체하여 클릭 시 "/"로 이동하도록 수정
  *   - 250913 | yukyeong | jwtDecode로 토큰에서 role/phone 추출 로직 추가 및 예외 처리
  *   - 250913 | yukyeong | 관리자명 옆에 마스킹 전화번호 표기(관리자 (010-****-1111)) 및 formatPhone 유틸 추가
+ *   - 250915 | yukyeong | 탭별 선택 상태 분리: selectedRecycleId(수거내역)·selectedKioskId(키오스크) 추가
+ *   - 250915 | yukyeong | 키오스크 로그 로딩 시 kioskId 숫자 변환 및 'all'일 때 파라미터 제외 처리
+ *   - 250915 | yukyeong | getFilteredKioskData/getFilteredRecycleStats 함수 분리 및 props 전달 대상 교정
+ *   - 250915 | yukyeong | 로그 응답 안전 폴백(list ?? [] / 실패 시 [])
+ *   - 250915 | yukyeong | 키오스크 로그 페이징 도입: selectedPage/kioskRunPageInfo 상태 추가, getKioskRuns 호출에 pageNum/amount 반영, KioskTab에 pageInfo·setSelectedPage 전달
  *   - 250915 | sehui | 페이지네이션 정보 객체(pageInfo)를 API마다 별도의 state로 사용하도록 수정
  *   - 250915 | sehui | 포인트 환급 요청 전체 데이터 상태 변수와 페이지네이션 핸들러 함수 생성
  *   - 250915 | sehui | 전체 회원 정보 상태 변수와 페이지네이션 핸들러 함수 생성
@@ -72,12 +77,12 @@ import { Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
 const formatPhone = (p) => {
-  const d = String(p ?? "").replace(/\D/g, "");
-  if (d.length < 10) return p ?? "";
-  // 010-****-1111 형태로 마스킹 + 하이픈
-  const mid = d.length === 11 ? d.slice(3, 7) : d.slice(3, 6);
-  const end = d.slice(-4);
-  return `010-${"*".repeat(mid.length)}-${end}`;
+    const d = String(p ?? "").replace(/\D/g, "");
+    if (d.length < 10) return p ?? "";
+    // 010-****-1111 형태로 마스킹 + 하이픈
+    const mid = d.length === 11 ? d.slice(3, 7) : d.slice(3, 6);
+    const end = d.slice(-4);
+    return `010-${"*".repeat(mid.length)}-${end}`;
 };
 
 function AdminDashboard({ onNavigateToMain }) {
@@ -85,13 +90,16 @@ function AdminDashboard({ onNavigateToMain }) {
     // 하드코딩 삭제하고 빈 배열로 시작
     const [kioskData, setKioskData] = useState([]); // 키오스크 데이터 (REQ-002)
     const [kioskLogs, setKioskLogs] = useState([]); // 키오스크 로그 데이터 (REQ-006)
-    const [selectedKiosk, setSelectedKiosk] = useState('all'); // 현재 선택된 키오스크 ID (드롭다운) - 기본은 'all' (전체 보기)
+    const [selectedRecycleId, setSelectedRecycleId] = useState('all'); // 수거내역 탭 전용 선택 상태
+    const [selectedKioskId, setSelectedKioskId] = useState('all'); // 키오스크 탭 전용 선택 상태
     const [selectedLogType, setSelectedLogType] = useState('all'); // 현재 선택된 로그 유형 (드롭다운) - 기본은 'all' (전체 보기)
     const [memberData, setMemberData] = useState([]);   //회원 관리 데이터 (REQ-003)
     const [refundRequests, setRefundRequests] = useState([]);       //포인트 환급 요청 데이터 (REQ-004, REQ-005)
     const [dashboardStats, setDashboardStats] = useState([]);   //대시보드 통계 데이터 (REQ-001)
     const [recycleStats, setRecycleStats] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState('all');        //포인트 환급 요청 상태
+    const [kioskRunPageInfo, setKioskRunPageInfo] = useState({});
+    const [selectedPage, setSelectedPage] = useState(1);
     const [memberPageInfo, setMemberPageInfo] = useState({});           //회원 목록용 페이지 정보
     const [refundPageInfo, setRefundPageInfo] = useState({});            //포인트 환급 목록용 페이지 정보
     const [allRefundRequests, setAllRefundRequests] = useState([]);             //포인트 환급 요청 전체 데이터
@@ -116,8 +124,8 @@ function AdminDashboard({ onNavigateToMain }) {
         }
     }
 
-// 토큰 디코딩한 phone이 있다고 가정 (없으면 null)
-const phoneText = phone ? formatPhone(phone) : null;
+    // 토큰 디코딩한 phone이 있다고 가정 (없으면 null)
+    const phoneText = phone ? formatPhone(phone) : null;
 
     // 실시간 시간 업데이트 (헤더 우측 표시용)
     useEffect(() => {
@@ -162,25 +170,30 @@ const phoneText = phone ? formatPhone(phone) : null;
         let alive = true;
         // selectedKiosk가 'all'이면 쿼리에서 제외(=undefined)해서 불필요한 "status=null" 전송 방지
         const params = {
-            pageNum: 1,
-            amount: 50,
-            ...(selectedKiosk === 'all' ? {} : { kioskId: selectedKiosk }),
+            pageNum: selectedPage,
+            amount: 20,
+            ...(selectedKioskId === 'all' ? {} : { kioskId: Number(selectedKioskId) }),
             ...(selectedLogType === 'all' ? {} : { status: selectedLogType }),
         };
 
         (async () => {
             try {
-                const { list /*, pageInfo*/ } = await getKioskRuns(params);
-                if (alive) setKioskLogs(list);
-                // pageInfo 필요해지면 setKioskRunPageInfo(pageInfo) 추가
+                const { list, pageInfo } = await getKioskRuns(params);
+                if (alive) {
+                    setKioskLogs(list ?? []);
+                    setKioskRunPageInfo(pageInfo ?? {}); // pageInfo도 저장
+                }
             } catch (e) {
                 console.error('키오스크 로그 로딩 실패', e);
-                if (alive) setKioskLogs([]);
+                if (alive) {
+                    setKioskLogs([]);
+                    setPageInfo({}); // 실패 시 빈 객체
+                }
             }
         })();
 
         return () => { alive = false; };
-    }, [activeTab, selectedKiosk, selectedLogType]);
+    }, [activeTab, selectedKioskId, selectedLogType, selectedPage]);
 
     //전체 회원 목록 조회
     const fetchMembers = (pageNum = 1) => {
@@ -403,9 +416,9 @@ const phoneText = phone ? formatPhone(phone) : null;
 
     // ========== 필터링 함수들 ==========
     const getFilteredKioskData = () => {
-        return selectedKiosk === 'all'
+        return selectedKioskId === 'all'
             ? kioskData
-            : kioskData.filter(kiosk => kiosk.kioskId === selectedKiosk);
+            : kioskData.filter(kiosk => kiosk.kioskId === Number(selectedKioskId));
     };
 
     const getFilteredLogs = () => {
@@ -422,9 +435,9 @@ const phoneText = phone ? formatPhone(phone) : null;
     };
 
     const getFilteredRecycleStats = () => {
-        return selectedKiosk === 'all'
+        return selectedRecycleId === 'all'
             ? recycleStats
-            : recycleStats.filter(kiosk => kiosk.recycleId === Number(selectedKiosk));
+            : recycleStats.filter(kiosk => kiosk.recycleId === Number(selectedRecycleId));
     };
 
     //포인트 환급 요청 필터링 함수
@@ -518,8 +531,8 @@ const phoneText = phone ? formatPhone(phone) : null;
                 {activeTab === 'collection' && (
                     <CollectionHistoryTab
                         kioskData={recycleStats}
-                        selectedKiosk={selectedKiosk}
-                        setSelectedKiosk={setSelectedKiosk}
+                        selectedRecycleId={selectedRecycleId}
+                        setSelectedRecycleId={setSelectedRecycleId}
                         getFilteredKioskData={getFilteredRecycleStats}
                     />
                 )}
@@ -551,13 +564,15 @@ const phoneText = phone ? formatPhone(phone) : null;
                     <KioskTab
                         kioskData={kioskData}
                         kioskRuns={kioskLogs} // 추가
-                        selectedKiosk={selectedKiosk}
-                        setSelectedKiosk={setSelectedKiosk}
+                        selectedKiosk={selectedKioskId}
+                        setSelectedKiosk={setSelectedKioskId}
                         selectedLogType={selectedLogType}
                         setSelectedLogType={setSelectedLogType}
                         getFilteredKioskData={getFilteredKioskData}
                         getFilteredLogs={getFilteredLogs}
                         handleKioskStatusChange={handleKioskStatusChange}
+                        pageInfo={kioskRunPageInfo}
+                        setSelectedPage={setSelectedPage}
                     />
                 )}
             </main>

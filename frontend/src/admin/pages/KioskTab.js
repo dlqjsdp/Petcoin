@@ -43,6 +43,7 @@
  *   - 250911 | yukyeong | 미운영 상태 도입: 드롭다운에 OFFLINE(미운영) 옵션 추가, statusToCss에 OFFLINE→'inactive' 매핑
  *   - 250913 | yukyeong | '오늘: N개 · N건' 표시(대시보드와 통일), 온도/습도/오류 제거
  *   - 250913 | yukyeong | 수용량을 '현재 기준(currentCount)'으로 표시 및 진행바 반영(OFFLINE 숨김)
+ *   - 250915 | yukyeong | 로그 페이징 UI 추가(log-pagination): 서버 pageInfo 기반 이전/번호/다음 버튼 렌더링, 필터 변경 시 페이지 1로 리셋(setSelectedPage(1)) 처리
  * 
  */
 
@@ -88,6 +89,8 @@ const detailsText = (log) => {
     }
 };
 
+
+
 function KioskTab({
     kioskData, // 전체 키오스크 목록
     kioskRuns, // 추가
@@ -97,7 +100,10 @@ function KioskTab({
     setSelectedLogType, // 로그 상태 변경 함수
     getFilteredKioskData, // 선택된 조건에 맞는 키오스크 목록 반환 함수
     getFilteredLogs, // 선택된 조건에 맞는 로그 목록 반환 함수
-    handleKioskStatusChange // 키오스크 상태 변경 처리 함수
+    handleKioskStatusChange, // 키오스크 상태 변경 처리 함수
+    pageInfo, // 추가
+    selectedPage, 
+    setSelectedPage // 추가
 }) {
     const getTodayStats = (kiosk) => {
         const id = kiosk.recycleId ?? kiosk.kioskId ?? kiosk.id;
@@ -129,7 +135,10 @@ function KioskTab({
                 <h2>키오스크 관리</h2>
                 <select
                     value={selectedKiosk}
-                    onChange={(e) => setSelectedKiosk(e.target.value === 'all' ? 'all' : Number(e.target.value))}  // all이면 문자열, 아니면 숫자 변환
+                    onChange={(e) => {
+                        setSelectedKiosk(e.target.value === 'all' ? 'all' : Number(e.target.value));
+                        setSelectedPage(1);   // 👈 추가
+                    }}
                     className="kiosk-select"
                 >
                     {/* 전체 선택 */}
@@ -195,7 +204,7 @@ function KioskTab({
                                         </span>
                                     </div>
 
-                                    
+
 
                                     {/* 진행바 (OFFLINE 숨김) */}
                                     {!isInactive && (
@@ -227,7 +236,11 @@ function KioskTab({
                         <select
                             className="log-type-filter"
                             value={selectedLogType}
-                            onChange={(e) => setSelectedLogType(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedLogType(e.target.value);
+                                setSelectedPage(1);   // 👈 추가
+                            }}
+
                         >
                             <option value="all">전체</option>
                             <option value="RUNNING">실행중</option>
@@ -301,6 +314,46 @@ function KioskTab({
                         )}
                     </div>
                 </div>
+
+                {/* 로그 페이징 영역 */}
+                {pageInfo && (
+                    <div className="log-pagination">
+                        {/* 이전 버튼 */}
+                        {pageInfo.prev && (
+                            <button
+                                onClick={() => setSelectedPage(pageInfo.startPage - 1)}
+                                disabled={!pageInfo.prev}
+                            >
+                                이전
+                            </button>
+                        )}
+
+                        {/* 페이지 번호 */}
+                        {Array.from(
+                            { length: pageInfo.endPage - pageInfo.startPage + 1 },
+                            (_, i) => pageInfo.startPage + i
+                        ).map(page => (
+                            <button
+                                key={page}
+                                onClick={() => setSelectedPage(page)}
+                                className={page === selectedPage ? "log-active" : ""}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        {/* 다음 버튼 */}
+                        {pageInfo.next && (
+                            <button
+                                onClick={() => setSelectedPage(pageInfo.endPage + 1)}
+                                disabled={!pageInfo.next}
+                            >
+                                다음
+                            </button>
+                        )}
+                    </div>
+                )}
+
             </div>
         </div>
     );

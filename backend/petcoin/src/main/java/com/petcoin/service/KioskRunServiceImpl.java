@@ -44,6 +44,7 @@ import java.util.List;
  *   - 250904 | sehui | 실행 세션 목록 조회 (페이징 + 조건) 메서드 추가
  *   - 250904 | sehui | 실행 세션 총 개수 조회 메서드 추가
  *   - 250905 | yukyeong | 취소 로직에서 PointHistory 조회/적립 제거 → 순수 상태 전이(RUNNING→CANCELLED)만 수행
+ *   - 250915 | yukyeong | getTotalRunCount에서 0건을 정상 처리(예외 제거), 오류 시 0으로 폴백
  */
 
 @Service
@@ -204,12 +205,11 @@ public class KioskRunServiceImpl implements KioskRunService{
     @Override
     public int getTotalRunCount(KioskRunCriteria cri) {
 
-        int totalRunCount = kioskRunMapper.getTotalRunCount(cri);
-
-        if(totalRunCount == 0) {
-            throw new IllegalArgumentException("실행 세션 총 개수 조회 오류 발생");
+        try {
+            return kioskRunMapper.getTotalRunCount(cri);
+        } catch (Exception e) {
+            log.error("실행 세션 총 개수 조회 실패", e);
+            return 0; // 예외가 나도 0으로 폴백
         }
-
-        return totalRunCount;
     }
 }
