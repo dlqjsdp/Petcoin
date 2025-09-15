@@ -29,6 +29,7 @@ import KioskApp from "./kiosk/KioskApp";
 import MainPage from "./components/pages/MainPage";
 import LoginPage from "./components/pages/LoginPage";
 import NoticePage from "./components/pages/NoticePage";
+import Logout from "./components/pages/Logout";
 //import KioskMap from "./components/pages/KioskMap";
 
 import "./App.css";
@@ -82,6 +83,7 @@ function App() {
           <Route path="/user/*" element={<UserApp />} />
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/kiosk/*" element={<KioskApp />} />
+          <Route path="/logout" element={<Logout />} />
         </Routes>
       </main>
     </div>
