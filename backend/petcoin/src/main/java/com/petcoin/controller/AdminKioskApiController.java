@@ -29,6 +29,7 @@ import java.util.Map;
  *  - 250905 | sehui | 키오스크 장치 등록/수정/삭제 요청 메서드 생성
  *  - 250905 | sehui | 키오스크 실행 세션 전체/단건 조회 요청 메서드 생성
  *  - 250911 | yukyeong | 키오스크 상태 변경 API 추가 (PUT /{kioskId}/status, 관리자 전용, ONLINE/MAINT/OFFLINE)
+ *  - 250915 | yukyeong | kioskRunList 조회 시 빈 결과도 200 OK + [] 반환, null→[] 폴백 및 요청 파라미터 로깅 추가
  */
 
 @RestController
@@ -172,9 +173,16 @@ public class AdminKioskApiController {
 
         Map<String, Object> response = new HashMap<>();
 
+        // 어떤 파라미터로 들어왔는지 로그
+        log.info("[kioskRunList] kioskId={}, status={}, pageNum={}, amount={}",
+                kRunCri.getKioskId(), kRunCri.getStatus(), kRunCri.getPageNum(), kRunCri.getAmount());
+
         try{
-            //전체 실행 세션 목록 조회
+            //전체 실행 세션 목록 조회 (없으면 빈 리스트를 반환하도록 서비스 보장)
             List<KioskRunResponse> kioskRunList = kioskRunService.getRunListWithPaging(kRunCri);
+            if (kioskRunList == null) {
+                kioskRunList = List.of(); // null 방지
+            }
 
             //전체 실행 세션 수 조회
             int totalRunCount = kioskRunService.getTotalRunCount(kRunCri);
@@ -183,11 +191,12 @@ public class AdminKioskApiController {
             response.put("kioskRunList", kioskRunList);
             response.put("pageInfo", pageInfo);
 
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+            // 결과가 0건이어도 200으로 응답
+            return ResponseEntity.ok(response);
+
         }catch (Exception e) {
             response.put("errorMessage", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // 500 반환
         }
     }
 

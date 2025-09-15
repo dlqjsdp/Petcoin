@@ -2845,3 +2845,70 @@
         break-inside: avoid;
     }
 }
+
+/* ===========================
+   Kiosk Logs Pagination (전용)
+   =========================== */
+.log-pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0 8px;
+  flex-wrap: wrap;
+}
+
+/* 공통 버튼 베이스 */
+.log-pagination button {
+  appearance: none;
+  border: 1px solid #e2e8f0;         /* slate-200 */
+  background: #ffffff;
+  color: #0f172a;                    /* slate-900 */
+  padding: 8px 12px;
+  min-width: 36px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .02s ease, background .15s ease;
+}
+
+/* 호버 */
+.log-pagination button:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+/* 활성 페이지 */
+.log-pagination .log-active {
+  background: #1d4ed8;              /* blue-700 */
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+/* 비활성(이전/다음 불가) */
+.log-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+  box-shadow: none;
+}
+
+/* 이전/다음 텍스트 버튼 강조(선택사항) */
+.log-pagination .log-prev,
+.log-pagination .log-next {
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+  .log-pagination {
+    gap: 6px;
+    margin: 12px 0 6px;
+  }
+  .log-pagination button {
+    padding: 7px 10px;
+    min-width: 32px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+}
