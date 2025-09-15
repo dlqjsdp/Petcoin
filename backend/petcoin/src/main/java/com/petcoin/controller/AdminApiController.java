@@ -34,6 +34,8 @@ import java.util.Map;
  *  - 250909 | sehui | 대시보드 조회 요청 메서드 생성
  *  - 250910 | sehui | 포인트 환급 처리 요청 메서드 잔액 차감과 관계없이 상태 변경되도록 수정
  *  - 250912 | sehui | 포인트 환급 처리 요청 거부 시 거부한 기록 추가
+ *  - 250915 | sehui | 포인트 환급 요청 전체 데이터 조회 요청 메서드 생성
+ *  - 250915 | sehui | 전체 회원 정보 데이터 조회 기능 추가 (페이징 처리 없는 통계용)
  */
 
 @RestController
@@ -68,7 +70,7 @@ public class AdminApiController {
 
         try{
             //전체 회원 목록 조회
-            List<MemberListDto> memberListDto = memberService.getMemberList(cri);
+            List<MemberListDto> memberListDto = memberService.getMemberListWithPaging(cri);
 
             int totalMember = memberService.getTotalMember();   //전체 회원 수 조회
             PageDto pageInfo = new PageDto(cri, totalMember);     //페이지 정보 생성
@@ -81,6 +83,33 @@ public class AdminApiController {
             response.put("errorMessage", "회원을 조회할 수 없습니다.");
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    //전체 회원 정보 조회 (페이징 처리 없는 단순 조회)
+    @GetMapping("/member/all")
+    public ResponseEntity<Map<String, Object>> memberAllList(Authentication auth) {
+
+        //관리자 권한 확인
+        if(!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            //전체 회원 정보 조회 (페이징 처리X)
+            List<MemberListDto> memberAllList = memberService.getMemberList();
+
+            response.put("memberAllList", memberAllList);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (DataAccessException e) {
+            response.put("errorMessage", "데이터베이스 오류로 인해 조회할 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }catch (Exception e) {
+            response.put("errorMessage", "알 수 없는 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -110,7 +139,7 @@ public class AdminApiController {
 
     //포인트 환급 목록 조회 요청
     @GetMapping("/point/list")
-    public ResponseEntity<Map<String, Object>> pointList(Authentication auth, Criteria cri) {
+    public ResponseEntity<Map<String, Object>> pointListWithPaging (Authentication auth, Criteria cri) {
 
         //관리자 권한 확인
         if(!isAdmin(auth)) {
@@ -123,11 +152,42 @@ public class AdminApiController {
             //전체 포인트 환급 목록 조회
             List<PointRequestDto> pointReqList = pointReqService.getPointRequestsWithPaging(cri);
 
+            int totalPoint = pointReqService.getTotalPointRequests();   //전체 포인트 환급 요청의 수
+            PageDto pageInfo = new PageDto(cri, totalPoint);     //페이지 정보 생성
+
             response.put("pointReqList", pointReqList);
+            response.put("pageInfo", pageInfo);
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (DataAccessException dae) {
             response.put("errorMessage", "데이터베이스 오류로 인해 조회할 수 없습니다.");
 
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }catch (Exception e) {
+            response.put("errorMessage", "알 수 없는 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    //포인트 환급 요청 전체 데이터 조회
+    @GetMapping("/point/all")
+    public ResponseEntity<Map<String, Object>> pointAllList (Authentication auth) {
+        //관리자 권한 확인
+        if(!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            //전체 포인트 환급 요청 목록 조회 (페이징 처리X)
+            List<PointRequestDto> pointAllList = pointReqService.getPointRequestList();
+
+            response.put("pointAllList", pointAllList);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (DataAccessException dae) {
+            response.put("errorMessage", "데이터베이스 오류로 인해 조회할 수 없습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }catch (Exception e) {
             response.put("errorMessage", "알 수 없는 오류가 발생했습니다.");
@@ -159,7 +219,7 @@ public class AdminApiController {
         }
     }
 
-    //포인트 환급 처리 요청
+    //포인트 환급 요청 처리
     @PutMapping("/point/process/{requestId}")
     public ResponseEntity<Map<String, Object>> processPoint(@PathVariable Long requestId,
                                                @RequestBody PointRequestProcessDto pointRequestDto,

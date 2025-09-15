@@ -15,6 +15,9 @@
  * @history
  * - 250902 | yukyeong | 라우팅 리팩토링: props.navigateTo 제거 → react-router-dom useNavigate() 도입
  * - 250910 | heekyung | 기존 페이지 내용 유지 및 검색 기능 추가
+ * - 250915 | heekyung | How it works: 기존 CSS 전량 교체(화살표 제거, 숫자 배지 좌상단 이동, 카드/호버/간격 리디자인)
+ * - 250915 | heekyung | Map: 지도 래퍼(.map-visual) 추가로 카드화 + 우측 리스트 제목/필터 레이아웃/알약 사이즈 조정
+ * - 250915 | heekyung | Benefits: 카드화(라운드/보더/섀도), 진입/호버 효과 추가, 설명 \n + pre-line로 강제 줄바꿈
  */
 
 import React, { useEffect, useState } from 'react';
@@ -75,7 +78,7 @@ const MainPage = () => {
   const handleSearch = () => {
     const { sido, sigungu, dong } = searchParams;
     const query = `sido=${sido}&sigungu=${sigungu}&dong=${dong}`;
-    
+
     api.get(`/api/locations?${query}`)
       .then(response => {
         setKioskLocations(response.data);
@@ -85,12 +88,20 @@ const MainPage = () => {
       });
   };
 
-  const benefits = [
-    { icon: '⚡', title: '즉시 포인트 적립', description: '페트병을 넣는 순간 바로 포인트가 적립되어 실시간으로 확인 가능합니다', gradient: 'from-yellow-400 to-orange-500' },
-    { icon: '💳', title: '현금 전환 가능', description: '적립된 포인트를 언제든지 현금으로 출금하여 바로 사용할 수 있습니다', gradient: 'from-green-400 to-blue-500' },
-    { icon: '🌍', title: '지구 환경 보호', description: '재활용을 통해 환경을 보호하고 지속가능한 미래를 함께 만들어갑니다', gradient: 'from-green-400 to-green-600' },
-    { icon: '🎯', title: '간편한 이용', description: '복잡한 절차 없이 페트병만 넣으면 끝! 누구나 쉽게 이용 가능합니다', gradient: 'from-purple-400 to-pink-500' }
-  ];
+const benefits = [
+  { icon: '⚡', title: '즉시 포인트 적립',
+    description: '페트병을 넣는 순간 바로 포인트가 적립되어\n실시간으로 확인 가능합니다',
+    gradient: 'from-yellow-400 to-orange-500' },
+  { icon: '💳', title: '현금 전환 가능',
+    description: '적립된 포인트를 언제든지 현금으로 출금하여\n바로 사용할 수 있습니다',
+    gradient: 'from-green-400 to-blue-500' },
+  { icon: '🌍', title: '지구 환경 보호',
+    description: '재활용을 통해 환경을 보호하고\n지속가능한 미래를 함께 만들어갑니다',
+    gradient: 'from-green-400 to-green-600' },
+  { icon: '🎯', title: '간편한 이용',
+    description: '복잡한 절차 없이 페트병만 넣으면 끝!\n누구나 쉽게 이용 가능합니다',
+    gradient: 'from-purple-400 to-pink-500' }
+];
 
   return (
     <div className="main-page">
@@ -103,7 +114,7 @@ const MainPage = () => {
             <div className="shape shape-3">💚</div>
           </div>
         </div>
-        
+
         <div className="hero-content">
           <div className="hero-text">
             <div className="hero-badge">
@@ -120,7 +131,7 @@ const MainPage = () => {
             <div className="hero-buttons">
               <button
                 className="btn-primary glow"
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate('/login')}
               >
                 <span>지금 시작하기</span>
                 <div className="btn-shine"></div>
@@ -133,7 +144,7 @@ const MainPage = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="hero-visual">
             <div className="main-kiosk-container">
               <div className="kiosk-mockup">
@@ -187,7 +198,7 @@ const MainPage = () => {
                 {index < 3 && (
                   <div className="step-connector">
                     <div className="connector-line"></div>
-                    <div className="connector-arrow">→</div>
+                    <div className="connector-arrow" />
                   </div>
                 )}
               </div>
@@ -207,33 +218,58 @@ const MainPage = () => {
           <div className="map-container">
             {/* 지도 */}
             <div className="map-visual">
-              <KioskMap locations={kioskLocations} /> 
+              <KioskMap locations={kioskLocations} />
             </div>
 
             {/* 검색 + 결과 리스트 */}
             <div className="location-list">
+              {/* ① 헤더는 타이틀만 */}
               <div className="location-header">
                 <h3 className="location-title">주변 키오스크</h3>
-                <div className="search-container">
-                  <select value={searchParams.sido} onChange={e => setSearchParams({ ...searchParams, sido: e.target.value })}>
-                    <option value="">시 선택</option>
-                    {sidoList.map((sido, idx) => <option key={idx} value={sido}>{sido}</option>)}
-                  </select>
-
-                  <select value={searchParams.sigungu} onChange={e => setSearchParams({ ...searchParams, sigungu: e.target.value })}>
-                    <option value="">구 선택</option>
-                    {sigunguList.map((sigungu, idx) => <option key={idx} value={sigungu}>{sigungu}</option>)}
-                  </select>
-
-                  <select value={searchParams.dong} onChange={e => setSearchParams({ ...searchParams, dong: e.target.value })}>
-                    <option value="">동 선택</option>
-                    {dongList.map((dong, idx) => <option key={idx} value={dong}>{dong}</option>)}
-                  </select>
-
-                  <button onClick={handleSearch}>검색</button>
-                </div>
               </div>
 
+              {/* ② 제목 아래 전용 행(그리드) */}
+              <form
+                className="location-filters wide"
+                onSubmit={(e) => { e.preventDefault(); handleSearch(); }}
+              >
+                <select
+                  className="ui-select"
+                  value={searchParams.sido}
+                  onChange={e => setSearchParams({ ...searchParams, sido: e.target.value })}
+                >
+                  <option value="">시 선택</option>
+                  {sidoList.map((sido, idx) => (
+                    <option key={idx} value={sido}>{sido}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="ui-select"
+                  value={searchParams.sigungu}
+                  onChange={e => setSearchParams({ ...searchParams, sigungu: e.target.value })}
+                >
+                  <option value="">구 선택</option>
+                  {sigunguList.map((sigungu, idx) => (
+                    <option key={idx} value={sigungu}>{sigungu}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="ui-select"
+                  value={searchParams.dong}
+                  onChange={e => setSearchParams({ ...searchParams, dong: e.target.value })}
+                >
+                  <option value="">동 선택</option>
+                  {dongList.map((dong, idx) => (
+                    <option key={idx} value={dong}>{dong}</option>
+                  ))}
+                </select>
+
+                <button className="ui-btn primary" type="submit">검색</button>
+              </form>
+
+              {/* 리스트 */}
               {kioskLocations.length > 0 ? (
                 kioskLocations.map((location, index) => (
                   <div key={index} className="location-item">
@@ -259,7 +295,7 @@ const MainPage = () => {
             <h2 className="section-title">PETCOIN의 특별한 장점</h2>
             <p className="section-subtitle">왜 PETCOIN를 선택해야 할까요?</p>
           </div>
-        <div className="benefits-grid">
+          <div className="benefits-grid">
             {benefits.map((benefit, index) => (
               <div key={index} className="benefit-card" style={{ '--delay': `${index * 0.1}s` }}>
                 <div className={`benefit-gradient bg-gradient-to-br ${benefit.gradient}`}></div>
@@ -289,7 +325,7 @@ const MainPage = () => {
             <div className="cta-buttons">
               <button
                 className="btn-primary large glow"
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate('/login')}
               >
                 <span>무료 회원가입</span>
                 <div className="btn-shine"></div>

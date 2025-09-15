@@ -28,6 +28,7 @@ import java.util.List;
  * - 250827 | sehui | 회원 정보 단건 조회 기능 (+포인트 내역 조회) 추가
  * - 250828 | heekyung | 로그인 시 비밀번호 반드시 필요하여 비밀번호 관련 코드 추가 | 암호화 저장
  * - 250829 | sehui | 페이징 처리를 위한 전체 회원 수 조회 기능 추가
+ * - 250915 | sehui | 전체 회원 정보 데이터 조회 기능 추가 (페이징 처리 없는 통계용)
  */
 
 @Service
@@ -80,7 +81,7 @@ public class MemberServiceImpl implements MemberService {
 
     //전체 회원 조회
     @Override
-    public List<MemberListDto> getMemberList(Criteria cri) {
+    public List<MemberListDto> getMemberListWithPaging(Criteria cri) {
         List<MemberListDto> memberList = memberMapper.findMemberListWithPaging(cri);
 
         if(memberList == null || memberList.isEmpty()) {
@@ -125,5 +126,17 @@ public class MemberServiceImpl implements MemberService {
         }
 
         return totalMember;
+    }
+
+    //전체 회원 정보 조회 (페이징 처리 없는 단순 조회)
+    @Override
+    public List<MemberListDto> getMemberList() {
+        List<MemberListDto> memberAllList = memberMapper.findMemberList();
+
+        if(memberAllList == null || memberAllList.isEmpty()) {
+            throw new IllegalArgumentException("회원을 조회할 수 없습니다.");
+        }
+
+        return memberAllList;
     }
 }

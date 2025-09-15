@@ -26,6 +26,7 @@ import java.util.List;
  * - 250827 | sehui | 전체 회원 목록 조회 Test
  * - 250827 | sehui | 회원 정보 단건 조희 Test
  * - 250829 | sehui | 전체 회원 수 조회 Test
+ * - 250915 | sehui | 전체 회원 정보 데이터 조회(페이징 기능 없는 통계용) Test
  */
 
 @SpringBootTest
@@ -72,7 +73,7 @@ class MemberMapperTest {
 
     @Test
     @DisplayName("전체 회원 조회 - 검색 조건 없이")
-    void testMemberList() {
+    void testMemberListNoSearch() {
 
         //given : 페이징 처리, 검색 조건 없이 설정
         Criteria cri = new Criteria(1, 10);
@@ -159,6 +160,20 @@ class MemberMapperTest {
         assertFalse(totalMember == 0, "조회된 전체 회원의 수가 0입니다.");
 
         log.info("Total Member >> {}", totalMember);
+    }
+
+    @Test
+    @DisplayName("전체 회원 정보 데이터 조회 - 단순 조회")
+    void testMemberList() {
+
+        //when : 전체 회원 정보 데이터 조회
+        List<MemberListDto> memberList = memberMapper.findMemberList();
+
+        //then : 결과 검증
+        assertNotNull(memberList);
+        memberList.stream().forEach(memberListDto -> {
+            log.info("MemberList >> {}", memberListDto);
+        });
     }
 
 }

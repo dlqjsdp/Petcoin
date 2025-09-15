@@ -18,6 +18,9 @@
  *   - 250911 | yukyeong | 경과 시간 계산 로직 추가 (분/시간/일 단위 표시)
  *   - 250911 | yukyeong | todayCollection, capacity, 센서 데이터(온도/습도/오류) 섹션 주석 처리
  *   - 250911 | yukyeong | ONLINE/MAINT 상태를 뱃지(`status-badge`) 스타일로 표시하도록 수정
+ *   - 250913 | yukyeong | 리스트 key를 name 대신 recycleId로 사용하여 경고 제거, OFFLINE 상태를 inactive로 매핑해 UI 표시 개선
+ *   - 250915 | yukyeong | props를 selectedRecycleId/setSelectedRecycleId로 교체
+ *   - 250915 | yukyeong | 카드 key 안전 처리(recycleId → kioskId → name 순서)
  */
 
 import React from 'react';
@@ -25,17 +28,18 @@ import React from 'react';
 const statusToCss = (s) => {
     if (s === 'ONLINE') return 'active';
     if (s === 'MAINT') return 'maintenance';
+    if (s === 'OFFLINE') return 'inactive';
     return 'unknown';
 };
 
-function CollectionHistoryTab({ kioskData, selectedKiosk, setSelectedKiosk, getFilteredKioskData }) {
+function CollectionHistoryTab({ kioskData, selectedRecycleId, setSelectedRecycleId, getFilteredKioskData }) {
     return (
         <div className="collection-section">
             <div className="collection-header">
                 <h2>수거 내역</h2>
                 <select
-                    value={selectedKiosk}
-                    onChange={(e) => setSelectedKiosk(e.target.value)}
+                    value={selectedRecycleId}
+                    onChange={(e) => setSelectedRecycleId(e.target.value)}
                     className="kiosk-select"
                 >
                     <option value="all">전체 수거함</option>
@@ -49,13 +53,13 @@ function CollectionHistoryTab({ kioskData, selectedKiosk, setSelectedKiosk, getF
 
             <div className="collection-stats">
                 {getFilteredKioskData().map(kiosk => (
-                    <div key={kiosk.name} className="collection-card">
+                    <div key={kiosk.recycleId ?? kiosk.kioskId ?? kiosk.name} className="collection-card">
                         <div className="collection-card-header">
                             <h3>📍 {kiosk.recycleName ?? kiosk.name}</h3>
                             <span className={`status-badge ${statusToCss(kiosk.status)}`}>
                                 {kiosk.status === 'ONLINE' ? '운영중' 
                                     : kiosk.status === 'MAINT' ? '점검중' 
-                                    : '알수없음'}
+                                    : kiosk.status === 'OFFLINE' ? '미운영'  : '알수없음'}
                             </span>
                         </div>
 
