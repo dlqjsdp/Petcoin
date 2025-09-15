@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - 250827 | sehui | 전체 회원 조회 Test
  * - 250827 | sehui | 회원 정보 단건 조회 Test
  * - 250829 | sehui | 전체 회원 수 조회 Test
+ * - 250915 | sehui | 전체 회원 정보 데이터 조회 (페이징 처리 없는 통계용) Test
  */
 
 @SpringBootTest
@@ -65,13 +66,13 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("전체 회원 조회 - 검색 조건 없이")
-    void testGetList() {
+    void testGetListNoSearch() {
 
         //given : 페이징 조건 설정
         Criteria cri = new Criteria();
 
         //when : 전체 상품 조회
-        List<MemberListDto> memberList = memberService.getMemberList(cri);
+        List<MemberListDto> memberList = memberService.getMemberListWithPaging(cri);
 
         //then : 결과 검증
         assertNotNull(memberList, "전체 회원 목록이 null입니다.");
@@ -91,7 +92,7 @@ class MemberServiceTest {
         cri.setPhone("5");
 
         //when : 전체 상품 조회
-        List<MemberListDto> memberList = memberService.getMemberList(cri);
+        List<MemberListDto> memberList = memberService.getMemberListWithPaging(cri);
 
         //then : 결과 검증
         assertNotNull(memberList, "전체 회원 목록이 null입니다.");
@@ -129,5 +130,20 @@ class MemberServiceTest {
         assertNotNull(totalMember, "전체 회원 수가 null입니다.");
 
         log.info("Total Member >> {}", totalMember);
+    }
+
+    @Test
+    @DisplayName("전체 회원 정보 데이터 조회 - 단순 조회")
+    void testMemberList() {
+
+        //when : 전체 회원 정보 데이터 조회
+        List<MemberListDto> memberList = memberService.getMemberList();
+
+        //then : 결과 검증
+        assertNotNull(memberList);
+
+        memberList.stream().forEach(memberListDto -> {
+            log.info("Member >> {}", memberListDto);
+        });
     }
 }

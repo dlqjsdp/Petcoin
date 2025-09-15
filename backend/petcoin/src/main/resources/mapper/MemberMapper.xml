@@ -15,6 +15,7 @@
     - 250829 | sehui | 페이징 처리를 위한 전체 회원 수 조회 기능 추가
     - 250909 | sehui | Member 테이블에 가입일(created_at) 컬럼 추가
     - 250909 | sehui | 전체 회원 목록 조회 기능에 누적 포인트(totalPoints), 가입일(createdAt), 총 수거량(totalCollections) 컬럼 추가
+    - 250915 | sehui | 전체 회원 정보 데이터 조회 기능 추가 (페이징 처리 없는 통계용)
 -->
 
 <mapper namespace="com.petcoin.mapper.MemberMapper">
@@ -110,6 +111,35 @@
     <select id="getTotalMember" resultType="int">
         SELECT count(*)
         FROM member
+    </select>
+
+    <!-- 전체 회원 정보 조회 (페이징 처리 없음) -->
+    <select id="findMemberList" resultType="com.petcoin.dto.MemberListDto">
+        SELECT
+            m.member_id AS memberId,
+            m.phone AS phone,
+            m.role AS role,
+            COALESCE(ph.point_balance, 0) AS currentPoint,
+            COALESCE(SUM(ph_all.point_balance), 0) AS totalPoints,
+            m.created_at AS createdAt,
+            -- 총 수거량 계산
+            (SELECT COUNT(*)
+            FROM pet_collection_log pcl
+            WHERE pcl.member_id = m.member_id
+            AND pcl.is_collected = 1
+            ) AS totalCollections
+        FROM member m
+        LEFT JOIN
+            point_history ph ON m.member_id = ph.member_id
+        AND ph.history_id = (
+            SELECT MAX(history_id)
+            FROM point_history
+            WHERE member_id = m.member_id
+            )
+        LEFT JOIN point_history ph_all
+            ON m.member_id = ph_all.member_id
+        GROUP BY m.member_id, m.phone, m.role, ph.point_balance, m.created_at
+        ORDER BY m.member_id DESC
     </select>
 
 </mapper>

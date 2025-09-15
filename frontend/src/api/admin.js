@@ -33,6 +33,8 @@
  *   - 250910 | sehui | 대시보드 API 함수 추가
  *   - 250911 | yukyeong | 무인 회수기 수거 내역 조회 API 함수(getRecycleStats) 추가
  *   - 250911 | yukyeong | 키오스크 상태 변경 API 함수(updateKioskStatus)
+ *   - 250915 | sehui | 포인트 환급 요청 전체 데이터 조회 API 함수(getPointAllList) 추가
+ *   - 250915 | sehui | 전체 회원 정보 조회 API 함수(getMemberAllList) 추가
  */
 
 
@@ -44,6 +46,10 @@ import api from './axios';
 export const getAllMembers = (params) =>
     api.get('/api/admin/member/list', { params });
 
+// 전체 회원 정보 조회 (페이징 처리 없는 통계용)
+export const getMemberAllList = () =>
+    api.get('/api/admin/member/all');
+
 // 회원 단건 조회 (서버가 포인트 내역까지 포함해 주면 그대로 사용)
 export const getMemberDetail = (memberId) =>
     api.get(`/api/admin/member/${memberId}`);
@@ -51,6 +57,10 @@ export const getMemberDetail = (memberId) =>
 // 포인트 환급 요청 목록 조회 (Criteria를 쿼리스트링으로 전달)
 export const getPointRequests = (params) =>
     api.get('/api/admin/point/list', { params });
+
+// 포인트 환급 요청 전체 데이터 조회
+export const getPointAllList = () =>
+    api.get('/api/admin/point/all');
 
 // 포인트 환급 단건 상세 조회
 export const getPointRequestById = (requestId) =>
@@ -104,7 +114,7 @@ export const getKioskRun = (runId) =>
 
 /* 대시보드 */
 export const getTotal = () =>
-    api.get(`/api/admin/dashboard`);
+    api.get('/api/admin/dashboard');
 
 
 // 수거 내역(무인 회수기 통계) 조회

@@ -20,6 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
  *  - 250829 | sehui | 포인트 환급 요청 처리 API Test
  *  - 250902 | sehui | 전체 무인 회수기 수거 내역 조회 API Test
  *  - 250909 | sehui | 대시보드 조회 API Test
+ *  - 250915 | sehui | 포인트 환급 요청 전체 데이터 조회 API Test
  */
 
 @SpringBootTest
@@ -322,5 +324,69 @@ class AdminApiControllerTest {
 
         //then : 응답 내용 출력
         log.info("Dashboard >> {}", responseContent);
+    }
+
+    @Test
+    @DisplayName("포인트 환급 요청 전체 데이터 조회")
+    void testPointAllList() throws Exception {
+
+        //given : 테스트용 CustomUserDetails 생성
+        MemberVO testMember = new MemberVO();
+        testMember.setPhone("010-2222-3333");
+        testMember.setRole(Role.ADMIN);
+        testMember.setPassword("$2a$10$qjH49PuTf1e3yPPKqC0WZe4NTnP9vTz8az1iDdHZvdtABclp1dU9W");
+
+        CustomUserDetails userDetails = new CustomUserDetails(testMember);
+
+        //SecurityContext에 Authentication 설정
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        //when : MockMvc 호출하여 GET 요청 수행 후 검증
+        String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/point/all"))
+                .andExpect(status().isOk())     //HTTP 상태 코드 200 OK
+                .andDo(print())
+                .andReturn()       //응답 결과 반환
+                .getResponse()
+                .getContentAsString();      //문자열로 반환
+
+        //then : 응답 내용 출력
+        log.info("Point All List >> {}", responseContent);
+    }
+
+    @Test
+    @DisplayName("전체 회원 정보 데이터 조회 - 단순 조회")
+    void testMemberAllList() throws Exception {
+
+        //given : 테스트용 CustomUserDetails 생성
+        MemberVO testMember = new MemberVO();
+        testMember.setPhone("010-2222-3333");
+        testMember.setRole(Role.ADMIN);
+        testMember.setPassword("$2a$10$qjH49PuTf1e3yPPKqC0WZe4NTnP9vTz8az1iDdHZvdtABclp1dU9W");
+
+        CustomUserDetails userDetails = new CustomUserDetails(testMember);
+
+        //SecurityContext에 Authentication 설정
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        //when : MockMvc 호출하여 GET 요청 수행 후 검증
+        String responseContent = mvc.perform(MockMvcRequestBuilders.get("/api/admin/member/all"))
+                .andExpect(status().isOk())         //HTTP 상태 코드 200 OK
+                .andDo(print())
+                .andReturn()        //응답 결과 반환
+                .getResponse()
+                .getContentAsString();      //문자열로 반환
+
+        //then : 응답 내용 출력
+        log.info("Member All List >> {}", responseContent);
     }
 }
