@@ -60,8 +60,6 @@ public class SecurityConfig {
                         ).permitAll()
                         //키오스크 종료시 플라스크에서 end api 호출
                         .requestMatchers("/api/kiosk-runs/**").permitAll()
-                        //마이페이지 포인트 관련 테스트용
-                        .requestMatchers("/api/mypage/pointrefund/*").permitAll()
                         // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/prediction/save").permitAll()
@@ -83,8 +81,16 @@ public class SecurityConfig {
                 )
                 // 폼 로그인/로그아웃/HTTP Basic 전부 비활성화 (JWT만 사용)
                 .formLogin(f -> f.disable())
-                .logout(l -> l.disable())
+                .logout(logout -> logout
+                        .logoutUrl("/logout")                  // 로그아웃 요청 URL
+                        .logoutSuccessHandler((req, res, auth) -> {
+                            res.setContentType("application/json;charset=UTF-8");
+                            res.getWriter().write("{\"message\":\"Logged out\"}");
+                        })
+                        .invalidateHttpSession(false)          // 세션은 사용하지 않으므로 false
+                )
                 .httpBasic(b -> b.disable());
+
 
         // JwtFilter가 먼저 실행되도록 등록
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

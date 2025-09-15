@@ -32,6 +32,8 @@ import DisposalHistoryTab from '../pages/DisposalHistoryTab.js'; // 이미 맞�
 import SettingsTab from '../pages/SettingsTab.js';    // 이미 맞음
 import { Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import LogoutButton from '../../components/pages/Logout.js';
+
 
 function UserMyPage({
     phoneNumber = "010-1234-5678",
@@ -290,6 +292,7 @@ function UserMyPage({
                                 <p className="profile-details">마이페이지 • {currentTime}</p>
                             </div>
                         </div>
+                        <LogoutButton />
                     </div>
 
                 </div>
