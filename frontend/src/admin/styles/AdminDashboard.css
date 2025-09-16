@@ -314,6 +314,11 @@
     color: #991b1b;
 }
 
+.history-status.COMPLETED {
+    background-color: #dcfce7;
+    color: #3b82f6;
+}
+
 .history-sub {
     display: flex;
     justify-content: space-between;
@@ -1569,7 +1574,7 @@
 
 .table-header {
     display: grid;
-    grid-template-columns: 100px 120px 200px 150px 100px 140px 140px 100px 100px;
+    grid-template-columns: 100px 120px 200px 150px 100px 140px 140px 100px 100px;       
     gap: 15px;
     padding: 20px;
     background-color: #f8fafc;
