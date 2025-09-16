@@ -189,6 +189,7 @@ function AdminDashboard({ onNavigateToMain }) {
                 if (alive) {
                     setKioskLogs([]);
                     setKioskRunPageInfo({}); // 실패 시 빈 객체
+
                 }
             }
         })();

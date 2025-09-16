@@ -117,9 +117,9 @@ const benefits = [
 
         <div className="hero-content">
           <div className="hero-text">
-            <div className="hero-badge">
+            {/*<div className="hero-badge">
               <span>🎉 신규 회원 1,000P 지급!</span>
-            </div>
+            </div>*/}
             <h1 className="hero-title">
               페트병 재활용하고<br />
               <span className="highlight-text">현금 포인트</span> 받아가세요!

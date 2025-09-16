@@ -117,8 +117,10 @@ const ProcessingScreen = ({ runId, onComplete }) => {
   return (
     <div className="content">
       <h1 className="title">분석 중입니다.</h1>
+      <br></br>
+      <p className="info">라벨 및 이물질을 제거해주세요.</p><br></br>
 
-      <div className="loading-spinner"></div>
+      <div className="loading-spinner large"></div>
 
       <div className="processing-text">
         페트병을 분석하고 있습니다.<br />

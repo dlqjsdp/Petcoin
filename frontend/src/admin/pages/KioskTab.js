@@ -160,7 +160,7 @@ function KioskTab({
                         const { bottles, sessions } = getTodayStats(kiosk);
 
                         // 용량은 BE가 없으므로 기본값 사용
-                        const CAPACITY_DEFAULT = 300;
+                        const CAPACITY_DEFAULT = 500;
                         const cap = CAPACITY_DEFAULT;
 
                         // 오늘 기준 남은 용량/퍼센트
