@@ -21,7 +21,7 @@
 
 import React from 'react';
 
-const CAPACITY_DEFAULT = 300; // 임시 총 수용량(병 개수)
+const CAPACITY_DEFAULT = 500; // 임시 총 수용량(병 개수)
 
 const statusToCss = (s) => {
     if (s === 'ONLINE') return 'active';

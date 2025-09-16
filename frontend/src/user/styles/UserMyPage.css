@@ -1345,7 +1345,7 @@ section {
     opacity: 0.6;
 }
 
-/* 로딩 스피너 */
+/* 로딩 스피너 
 .loading-spinner {
     width: 16px;
     height: 16px;
@@ -1353,7 +1353,7 @@ section {
     border-top: 2px solid white;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-}
+}*/
 
 @keyframes spin {
     0% {
@@ -1422,10 +1422,10 @@ section {
         font-size: 11px;
     }
     
-    .loading-spinner {
+    /*.loading-spinner {
         width: 14px;
         height: 14px;
-    }
+    }*/
 }
 
 /* ==================== 접근성 향상 ==================== */
@@ -1460,10 +1460,10 @@ section {
 @media (prefers-reduced-motion: reduce) {
     .save-button,
     .save-message,
-    .loading-spinner {
+    /*.loading-spinner {
         animation: none;
         transition: none;
-    }
+    }*/
     
     .save-button:hover:not(.disabled) {
         transform: none;

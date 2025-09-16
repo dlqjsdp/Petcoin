@@ -11,7 +11,7 @@ function PointHistoryList() {
 
     const refundAmountNum = Number(refundAmount);
     const isValidAmount =
-        refundAmountNum >= 100 &&
+        refundAmountNum >= 2000 &&
         refundAmountNum <= availablePoints &&
         bankName.trim() !== "" &&
         accountNumber.trim() !== "" &&

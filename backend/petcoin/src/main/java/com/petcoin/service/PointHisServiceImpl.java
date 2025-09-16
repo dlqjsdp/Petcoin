@@ -126,10 +126,6 @@ public class PointHisServiceImpl implements PointHisService {
     //포인트 적립 내역 추가
     @Override
     public void plusPoint(Long memberId, int totalPet) {
-        // memberId가 null이면 1로 처리
-        if (memberId == null) {
-            memberId = 1L;
-        }
 
         int pointChange = totalPet * POINT_PER_PET; // 규칙에 따라 계산
 

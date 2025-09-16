@@ -83,7 +83,7 @@ function UserMyPage({
     /* ==================== 상태 관리 ==================== */
 
     const [currentTime, setCurrentTime] = useState('');
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState('points');
 
     /* ==================== 사용자 기본 정보 ==================== */
 
@@ -302,19 +302,19 @@ function UserMyPage({
             <nav className="mypage-nav">
                 <div className="container">
                     <div className="nav-tabs">
-                        <button
+                        {/*<button
                             className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
                             onClick={() => setActiveTab('dashboard')}
                         >
                             <span>📊</span> 대시보드
-                        </button>
+                        </button>*/}
                         <button
                             className={`nav-tab ${activeTab === 'points' ? 'active' : ''}`}
                             onClick={() => setActiveTab('points')}
                         >
                             <span>💰</span> 포인트
                         </button>
-                        <button
+                        {/*<button
                             className={`nav-tab ${activeTab === 'disposal' ? 'active' : ''}`}
                             onClick={() => setActiveTab('disposal')}
                         >
@@ -325,7 +325,7 @@ function UserMyPage({
                             onClick={() => setActiveTab('settings')}
                         >
                             <span>⚙️</span> 설정
-                        </button>
+                        </button>*/}
                     </div>
                 </div>
             </nav>

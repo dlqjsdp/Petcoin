@@ -141,7 +141,9 @@ public class KioskRunServiceImpl implements KioskRunService{
 
         //이지혜 포인트 적립 메소드 추가
         Long memberId = cur.getMemberId();
+        if (memberId != null && memberId > 0) {
         pointHisService.plusPoint(memberId, totalPet);
+        }
 
         // 4) 최신값 재조회 후 반환
         KioskRunVO saved = kioskRunMapper.readRunAsVO(runId);
