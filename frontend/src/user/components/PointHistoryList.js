@@ -45,7 +45,14 @@ function PointHistoryList() {
             .then(res => {
                 alert("환급 요청이 완료되었습니다!");
                 setShowRefundModal(false);
-                setLastPointBalance(prev => prev - refundAmountNum);
+
+                
+                /* 환급 요청 후 UI 상태 */
+                //전체 포인트(lastPointBalance)는 환급 승인 전이기 때문에 그대로 유지
+                setAvailablePoints(prev => prev - refundAmountNum);         //사용 가능한 포인트 감소
+                setPendingRefundPoints(prev => prev + refundAmountNum);     //환급 요청한 포인트 증가
+
+                //입력창 초기화
                 setRefundAmount("");
                 setBankName("");
                 setAccountNumber("");

@@ -10,6 +10,7 @@ import React from 'react';
  *   - 250909 | sehui | Controller에서 넘겨주는 DTO 값에 맞게 <span> 값 변경
  *   - 250915 | sehui | 페이지네이션 코드 수정
  *   - 250915 | sehui | 회원 통계 전체 데이터(allMemberData)으로 변경
+ *   - 250916 | sehui | 회원 활성화/비활성화 상태 관리 주석 처리
  */
 
 
@@ -26,7 +27,7 @@ function UserManagementTab({ memberData, allMemberData, pageInfo, handleMemberSt
                 </div>
                 <div className="summary-item">
                     <span className="summary-label">활성 회원</span>
-                    <span className="summary-value activeMember">{allMemberData.filter(m => m.status === 'active').length}명</span>
+                    <span className="summary-value activeMember">{memberData.filter(m => (m.status || 'active') === 'active').length}명</span>
                 </div>
                 <div className="summary-item">
                     <span className="summary-label">총 보유 포인트</span>
@@ -55,18 +56,18 @@ function UserManagementTab({ memberData, allMemberData, pageInfo, handleMemberSt
                         <span className="member-bottles">{member.totalCollections}개</span>
                         <span className="member-points">{member.currentPoint}P</span>
                         <span className="member-total-points">{member.totalPoints}P</span>
-                        <span className={`member-status ${member.status}`}>
-                            {member.status === 'active' ? '활성' : '비활성'}
+                        <span className={`member-status ${member.status || 'active'}`}>
+                            {member.status === 'inactive' ? '비활성' : '활성'}
                         </span>
                         <div className="member-actions">
                             <button 
                                 className="action-btn"
                                 onClick={() => handleMemberStatusChange(
                                     member.memberId, 
-                                    member.status === 'active' ? 'inactive' : 'active'
+                                    (member.status || 'active') === 'active' ? 'inactive' : 'active'
                                 )}
                             >
-                                {member.status === 'active' ? '비활성화' : '활성화'}
+                                {(member.status || 'active') === 'inactive' ? '비활성화' : '활성화'}
                             </button>
                         </div>
                     </div>
