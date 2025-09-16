@@ -197,7 +197,8 @@ function PointsTab({ refundRequests, allRefundRequests, pageInfo, handleRefundPr
                                     <span className="history-member">{request.phone}</span>
                                     <span className="history-amount">{request.requestAmount}P</span>
                                     <span className={`history-status ${request.requestStatus}`}>
-                                        {request.requestStatus === 'APPROVED' ? '승인' : '거부'}
+                                        {request.requestStatus === 'APPROVED' ? '승인' 
+                                            : request.requestStatus === 'COMPLETED' ? '완료' : '거부'}
                                     </span>
                                 </div>
                                 <div className="history-sub">

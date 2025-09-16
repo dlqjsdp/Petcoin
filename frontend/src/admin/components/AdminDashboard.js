@@ -188,7 +188,8 @@ function AdminDashboard({ onNavigateToMain }) {
                 console.error('키오스크 로그 로딩 실패', e);
                 if (alive) {
                     setKioskLogs([]);
-                    //setPageInfo({}); // 실패 시 빈 객체
+                    setKioskRunPageInfo({}); // 실패 시 빈 객체
+
                 }
             }
         })();
