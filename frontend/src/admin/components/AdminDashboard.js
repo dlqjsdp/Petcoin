@@ -75,6 +75,7 @@ import '../styles/AdminDashboard.css'; // styles 폴더 위치 확인 필요
 import logo from '../img/logo.png';    // img 폴더 위치 확인 필요
 import { Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import LogoutButton from '../../components/pages/Logout.js';
 
 const formatPhone = (p) => {
     const d = String(p ?? "").replace(/\D/g, "");
@@ -477,6 +478,7 @@ function AdminDashboard({ onNavigateToMain }) {
                                 </p>
                             </div>
                         </div>
+                        <LogoutButton />
                     </div>
                 </div>
             </header>
