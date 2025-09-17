@@ -29,6 +29,7 @@
  *   - 250905 | yukyeong | Flask 응답 done을 엄격 비교(res?.data?.done === true)로 변경, totalPet 안전 파싱 보강
  *   - 250905 | yukyeong | onComplete에 status('DONE'|'TIMEOUT'|'ERROR') 포함하도록 계약 
  *   - 250908 | yukyeong | 폴링 최대 재시도 시간을 60초(30회) → 5분(150회)로 확장(2초 간격 유지)
+ *   - 250917 | yukyeong | 폴링 최대 재시도 시간을 5분(150회) → 2분(60회)로 단축, UX 개선
  */
 
 import React, { useEffect } from 'react';
@@ -47,7 +48,7 @@ const ProcessingScreen = ({ runId, onComplete }) => {
     }
 
     let attempts = 0;
-    const maxAttempts = 150; // 5분
+    const maxAttempts = 60; // 2분
     let isMounted = true;
 
     const interval = setInterval(async () => {

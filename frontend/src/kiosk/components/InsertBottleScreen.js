@@ -26,10 +26,10 @@
 import React, { useState } from 'react';
 import '../styles/common.css';
 import { conveyorStart } from '../../api/pi';
-import { startKioskRun } from '../../api/kiosk';
+import { startKioskRun, cancelKioskRun } from '../../api/kiosk';
 
 // 상위 컴포넌트(KioskApp)에서 전달할 setRunId를 props로 추가
-const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId, accessToken }) => {
+const InsertBottleScreen = ({ onNext, onBack, onHome, memberId, kioskId, setRunId, accessToken }) => {
   const [showInstructions, setShowInstructions] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -43,25 +43,25 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId, acces
     setIsStarting(true);
     console.log('시작 버튼 클릭됨'); // 디버깅용
 
+    let runIdLocal = null;   // 생성된 runId를 로컬에 보관
+
     try {
       // 1) payload 구성: 회원이면 memberId 포함, 비회원이면 kioskId만
       const payload = Number.isFinite(memberId) ? { kioskId, memberId } : { kioskId };
 
       // 2) 세션 시작 → runId 생성 (회원 모드면 토큰 전달)
       const runResponse = await startKioskRun(payload, accessToken);
-      const runId = runResponse?.data?.runId;
-      console.log("생성된 runId:", runId);
-      if (!runId) throw new Error('runId 생성 실패');
-
-      setRunId(runId); // run_id 추가
+      runIdLocal = runResponse?.data?.runId;
+      if (!runIdLocal) throw new Error('runId 생성 실패');
+      setRunId(runIdLocal);
 
       // 콘솔에 확인용 로그 추가
       console.log("✔️ 라즈베리파이에 전달할 데이터:");
       console.log("memberId:", memberId);
-      console.log("runId:", runId);
+      console.log("runId:", runIdLocal);
 
       // 3) 라즈베리파이에 conveyor 시작 지시 (runId + memberId 전달)
-      const piPayload = { message: 'start', runId };
+      const piPayload = { message: 'start', runId: runIdLocal };
       // 비회원이면 memberId를 아예 포함하지 않음
       if (Number.isFinite(memberId)) piPayload.memberId = memberId;
       await conveyorStart(piPayload);
@@ -69,20 +69,19 @@ const InsertBottleScreen = ({ onNext, onBack, memberId, kioskId, setRunId, acces
       // 3초 후 다음 단계로 이동
       setTimeout(() => {
         console.log('다음 화면으로 이동');
-        onNext(runId);
+        onNext(runIdLocal);
       }, 3000);
 
     } catch (err) {
       // 상태코드별 사용자 안내
-      const status = err?.response?.status;
-      if (status === 409) {
-        alert('이미 진행 중인 세션이 있습니다. 잠시 후 다시 시도해주세요.');
-      } else if (status === 400) {
-        alert('요청 값이 올바르지 않습니다. (회원/기기 정보를 확인해주세요)');
-      } else {
-        alert('기기와의 통신에 문제가 발생했습니다.');
-      }
-      setIsStarting(false); // 실패 시 다시 버튼 활성화
+      console.error('❌ 시작 실패:', err);
+      // runId가 생성된 뒤 실패했다면 세션 취소로 정리
+      if (runIdLocal) {
+        try { await cancelKioskRun(runIdLocal); } catch (_) {}
+        }
+        alert('기기와의 통신에 문제가 발생했습니다.\n세션을 종료하고 홈으로 돌아갑니다.');
+        // ✅ 안전 초기화(홈 복귀)
+        onHome?.();
     }
   };
 
