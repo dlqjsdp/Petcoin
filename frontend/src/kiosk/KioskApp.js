@@ -28,6 +28,7 @@
  *   - 250905 | yukyeong | JWT 디코딩으로 memberId 추출 로직 정리 및 runId 가드 추가
  *   - 250905 | yukyeong | CompletionScreen에 status="DONE" 전달(취소/에러 시 종료 API 호출 방지와 연계)
  *   - 250908 | yukyeong | CompletionScreen에 memberId 전달 → Boot API(getPointChange)로 잔여 포인트 조회; runId는 표시/디버깅용으로 유지
+ *   - 250917 | yukyeong | 예외/실패 플로우 일원화: InsertBottleScreen에 onHome 전달, ProcessingScreen onComplete에 runId 가드 및 실패 시 alert+handleGoHome 처리
  * 
  */
 
@@ -112,6 +113,7 @@ function KioskApp() {
             }}
             // 뒤로가기: 회원이면 Step2, 비회원이면 Step1
             onBack={() => (accessToken ? goToStep(2) : goToStep(1))}
+            onHome={handleGoHome}   // ✅ 홈 초기화 함수 전달
             accessToken={accessToken} // 필요 시 API 호출용
             memberId={memberId} // 동적으로 추출
             kioskId={kioskId} // 기기 고유값
